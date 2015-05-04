@@ -1,1 +1,2 @@
 git subtree add --squash --prefix Cdaskr https://github.com/wibraun/Cdaskr master
+git subtree pull --squash --prefix Cdaskr https://github.com/sjoelund/Cdaskr master
