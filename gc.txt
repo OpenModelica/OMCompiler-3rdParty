@@ -1,0 +1,9 @@
+# To make omc be compiled/linked only against our version of libgc:
+sed -i s/libgc/libomcgc/g 3rdParty/gc/Makefile.am 3rdParty/gc/configure.ac
+
+using commit: bf62552626acc7ad8babdc350a6365cb97ec8776
+git subtree add --squash --prefix gc https://github.com/ivmai/bdwgc
+using commit: c6f7c2e3477648814fda13aca1c58d9ecd47278a
+git subtree add --squash --prefix gc/libatomic_ops https://github.com/OpenModelica/libatomic_ops
+
+By creating a fork with a branch named openmodelica in each of them
