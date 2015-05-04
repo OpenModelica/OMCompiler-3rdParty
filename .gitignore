@@ -26,3 +26,14 @@
 *.exe
 *.out
 *.app
+
+lis-1.4.12/**/Makefile
+config.log
+config.status
+autom4te.cache
+lis-1.4.12/include/lis_config.h
+lis-1.4.12/include/lisf.h
+lis-1.4.12/include/stamp-h1
+lis-1.4.12/libtool
+lis-1.4.12/src/.libs/
+lis-1.4.12/configure
