@@ -1,0 +1,15 @@
+git init
+git remote add origin git@github.com:sjoelund/MSL-split
+git remote add MSL git@github.com:modelica/Modelica.git
+git fetch MSL master
+git branch MSL_master MSL/master
+git checkout -f MSL/master
+git subtree split --squash --prefix="Modelica/Resources/C-Sources" -b MSL_sources
+git subtree split --squash --prefix="Modelica/Resources/BuildProjects/autotools" -b MSL_autotools
+git push -u origin MSL_master
+git push -u origin MSL_sources
+git push -u origin MSL_autotools
+
+# In 3rdParty
+git subtree add --squash --prefix="ModelicaExternalC/C-Sources" git@github.com:sjoelund/MSL-split MSL_sources
+git subtree add --squash --prefix="ModelicaExternalC/BuildProjects/autotools" git@github.com:sjoelund/MSL-split MSL_autotools
