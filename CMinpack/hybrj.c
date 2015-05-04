@@ -13,7 +13,7 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
 	maxfev, real *diag, int mode, real factor, int
 	nprint, int *nfev, int *njev, real *r, 
 	int lr, real *qtf, real *wa1, real *wa2, 
-	real *wa3, real *wa4)
+	real *wa3, real *wa4, void* user_data)
 {
     /* Initialized data */
 
@@ -229,7 +229,7 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
 /*     evaluate the function at the starting point */
 /*     and calculate its norm. */
 
-    iflag = fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 1);
+    iflag = fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 1, user_data);
     *nfev = 1;
     if (iflag < 0) {
 	goto TERMINATE;
@@ -251,7 +251,7 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
 
 /*        calculate the jacobian matrix. */
 
-        iflag = fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 2);
+        iflag = fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 2, user_data);
         ++(*njev);
         if (iflag < 0) {
             goto TERMINATE;
@@ -347,7 +347,7 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
             if (nprint > 0) {
                 iflag = 0;
                 if ((iter - 1) % nprint == 0) {
-                    iflag = fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 0);
+                    iflag = fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 0, user_data);
                 }
                 if (iflag < 0) {
                     goto TERMINATE;
@@ -375,7 +375,7 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
 
 /*           evaluate the function at x + p and calculate its norm. */
 
-            iflag = fcnder_nn(p, n, &wa2[1], &wa4[1], &fjac[fjac_offset], ldfjac, 1);
+            iflag = fcnder_nn(p, n, &wa2[1], &wa4[1], &fjac[fjac_offset], ldfjac, 1, user_data);
             ++(*nfev);
             if (iflag < 0) {
                 goto TERMINATE;
@@ -539,7 +539,7 @@ TERMINATE:
 	info = iflag;
     }
     if (nprint > 0) {
-	fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 0);
+	fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 0, user_data);
     }
     return info;
 

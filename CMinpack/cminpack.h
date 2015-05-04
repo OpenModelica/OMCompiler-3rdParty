@@ -143,7 +143,7 @@ __cminpack_type_fcn_nn__(void *p, int n, const __cminpack_real__ *x, __cminpack_
 /*         return this matrix in fjac. do not alter fvec. */
 /* return a negative value to terminate hybrj1/hybrj */
 __cminpack_type_fcnder_nn__(void *p, int n, const __cminpack_real__ *x, __cminpack_real__ *fvec, __cminpack_real__ *fjac,
-                                  int ldfjac, int iflag );
+                                  int ldfjac, int iflag, void *user_data );
 
 /* for lmdif1 and lmdif */
 /*         calculate the functions at x and */
@@ -209,7 +209,7 @@ int CMINPACK_EXPORT __cminpack_func__(hybrd)( __cminpack_decl_fcn_nn__
 __cminpack_attr__
 int CMINPACK_EXPORT __cminpack_func__(hybrj1)( __cminpack_decl_fcnder_nn__ void *p, int n, __cminpack_real__ *x,
 	       __cminpack_real__ *fvec, __cminpack_real__ *fjac, int ldfjac, __cminpack_real__ tol,
-	       __cminpack_real__ *wa, int lwa );
+	       __cminpack_real__ *wa, int lwa, void *user_data );
           
 /* find a zero of a system of N nonlinear functions in N variables by
    a modification of the Powell hybrid method (user-supplied Jacobian,
@@ -220,7 +220,7 @@ int CMINPACK_EXPORT __cminpack_func__(hybrj)( __cminpack_decl_fcnder_nn__ void *
 	      int maxfev, __cminpack_real__ *diag, int mode, __cminpack_real__ factor,
 	      int nprint, int *nfev, int *njev, __cminpack_real__ *r,
 	      int lr, __cminpack_real__ *qtf, __cminpack_real__ *wa1, __cminpack_real__ *wa2,
-	      __cminpack_real__ *wa3, __cminpack_real__ *wa4 );
+	      __cminpack_real__ *wa3, __cminpack_real__ *wa4, void *user_data );
 
 /* minimize the sum of the squares of nonlinear functions in N
    variables by a modification of the Levenberg-Marquardt algorithm

@@ -39,7 +39,7 @@ endif ()
 #set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/../build)
 
 add_subdirectory (cmake)
-add_subdirectory (examples)
+#add_subdirectory (examples)
 
 set (cminpack_srcs
   cminpack.h cminpackP.h
