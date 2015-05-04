@@ -1,30 +1,30 @@
-#!/usr/bin/make  
+#!/usr/bin/make
 
-CLAGS=-O3 -Wall -std=c90
-CC=gcc 
+CFLAGS=-O3 -Wall -std=c90
+CC=gcc
 
 OBJS = \
 	daux.o ddaskr.o dlinpk.o
-   
-# target dir for install 
-DESTDIR=/usr/local 
- 
-#  Static library target 
-# 
- 
+
+# target dir for install
+DESTDIR=/usr/local
+
+#  Static library target
+#
+
 all: libcdaskr.a
-   
-libcdaskr.a:  $(OBJS) 
-	ar r $@ $(OBJS) 
 
-%.o: %.c 
-	$(CC) -c -o $@ $<  $(CLAGS)
+libcdaskr.a:  $(OBJS)
+	ar r $@ $(OBJS)
 
-install: libcdaskr.a 
-	cp libcdaskrk.a ${DESTDIR}/lib 
-	chmod 644 ${DESTDIR}/lib/libcdaskr.a 
-  
-clean: 
+%.o: %.c
+	$(CC) -c -o $@ $<  $(CFLAGS)
+
+install: libcdaskr.a
+	cp libcdaskrk.a ${DESTDIR}/lib
+	chmod 644 ${DESTDIR}/lib/libcdaskr.a
+
+clean:
 	  rm -f *.o libcdaskr.a *~ #*#
 
 remove: libcdaskr.a
