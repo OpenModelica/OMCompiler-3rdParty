@@ -476,14 +476,14 @@ AM_CONDITIONAL(AVOID_CPP_LIB,test $avoid_cpp_lib = yes)
 # extra LD Flags which are required for targets
 case "${host}" in
   *-*-darwin*)
-    extra_ldflags_libgc=-Wl,-single_module
+    extra_ldflags_libomcgc=-Wl,-single_module
     ;;
 esac
-AC_SUBST(extra_ldflags_libgc)
+AC_SUBST(extra_ldflags_libomcgc)
 
 AC_SUBST(EXTRA_TEST_LIBS)
 
-target_all=libgc.la
+target_all=libomcgc.la
 AC_SUBST(target_all)
 
 dnl If the target is an eCos system, use the appropriate eCos
