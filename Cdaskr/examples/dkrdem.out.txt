@@ -1,0 +1,106 @@
+ DKRDEM: Demonstration Program for DDASKR
+
+
+ Problem 1..
+
+ Problem is  dY/dT = ((2*LOG(Y)+8)/T - 5)*Y,  Y(1) = 1
+ Solution is  Y(T) = EXP(-T**2 + 5*T - 4)
+ Root functions are..
+ R1 = dY/dT  (root at T = 2.5)
+ R2 = LOG(Y) - 2.2491  (roots at T = 2.47 and T = 2.53)
+ RTOL =   0.0E+00   ATOL =   1.0E-06    JTYPE =   2
+
+ At t =  2.0000000E+00     y =  7.3890874E+00     error =  3.1317E-05
+ At t =  2.4698972E+00     y =  9.4792007E+00     error =  5.8564E-05
+
+      Root found at t =  2.4698972E+00      JROOT =   0    1
+      Error in t location of root is  -1.0279E-04
+ At t =  2.5000012E+00     y =  9.4877952E+00     error =  5.9400E-05
+
+      Root found at t =  2.5000012E+00      JROOT =  -1    0
+      Error in t location of root is   1.2362E-06
+ At t =  2.5301055E+00     y =  9.4792007E+00     error =  6.0108E-05
+
+      Root found at t =  2.5301055E+00      JROOT =   0   -1
+      Error in t location of root is   1.0550E-04
+ At t =  3.0000000E+00     y =  7.3891136E+00     error =  5.7519E-05
+ At t =  4.0000000E+00     y =  1.0000180E+00     error =  1.7992E-05
+ At t =  5.0000000E+00     y =  1.8315206E-02     error = -4.3336E-07
+ At t =  6.0000000E+00     y =  4.5938398E-05     error =  5.3847E-07
+
+ Final statistics for this run..
+ number of steps =  156
+ number of Gs    =  234
+ (excluding Js)  =  216
+ number of Js    =   18
+ number of Rs    =  204
+ error overrun   =  6.01E+01
+
+--------------------------------------------------------------------------------
+ Problem 2.. Van Der Pol oscillator
+ Problem is dY1/dT = Y2,  dY2/dT = 100*(1-Y1**2)*Y2 - Y1
+            Y1(0) = 2,  Y2(0) = 0
+ Root function is R(T,Y,YP) = Y1
+ RTOL =   1.0E-06   ATOL =   1.0E-06   1.0E-04
+
+
+--------------------------------------------------------------------------------
+ Solution with JTYPE =   1
+ At t =  2.0000000E+01     y1 =  1.8582144E+00     y2 = -7.5751E-03
+ At t =  4.0000000E+01     y1 =  1.6932198E+00     y2 = -9.0685E-03
+ At t =  6.0000000E+01     y1 =  1.4845990E+00     y2 = -1.2327E-02
+ At t =  8.0000000E+01     y1 =  1.0862066E+00     y2 = -5.8470E-02
+ At t =  8.1163512E+01     y1 = -9.9115413E-11     y2 = -6.7141E+01
+
+      Root found at t =  8.1163512E+01      JROOT =  -1
+      Error in t location of root is  -8.8660E-03
+ At t =  1.0000000E+02     y1 = -1.8688462E+00     y2 =  7.4974E-03
+ At t =  1.2000000E+02     y1 = -1.7059166E+00     y2 =  8.9302E-03
+ At t =  1.4000000E+02     y1 = -1.5017298E+00     y2 =  1.1961E-02
+ At t =  1.6000000E+02     y1 = -1.1487589E+00     y2 =  3.5691E-02
+ At t =  1.6257461E+02     y1 =  1.3010348E-10     y2 =  6.7140E+01
+
+      Root found at t =  1.6257461E+02      JROOT =   1
+      Error in t location of root is  -1.6308E-02
+ At t =  1.8000000E+02     y1 =  1.8793730E+00     y2 = -7.4222E-03
+ At t =  2.0000000E+02     y1 =  1.7184281E+00     y2 = -8.7983E-03
+
+ Final statistics for this run..
+ number of steps =  619
+ number of Gs    = 1012
+ (excluding Js)  = 1012
+ number of Js    =   69
+ number of Rs    =  656
+
+--------------------------------------------------------------------------------
+ Solution with JTYPE =   2
+ At t =  2.0000000E+01     y1 =  1.8582144E+00     y2 = -7.5751E-03
+ At t =  4.0000000E+01     y1 =  1.6932198E+00     y2 = -9.0685E-03
+ At t =  6.0000000E+01     y1 =  1.4845990E+00     y2 = -1.2327E-02
+ At t =  8.0000000E+01     y1 =  1.0862066E+00     y2 = -5.8470E-02
+ At t =  8.1163512E+01     y1 = -3.5566367E-13     y2 = -6.7141E+01
+
+      Root found at t =  8.1163512E+01      JROOT =  -1
+      Error in t location of root is  -8.8660E-03
+ At t =  1.0000000E+02     y1 = -1.8688462E+00     y2 =  7.4974E-03
+ At t =  1.2000000E+02     y1 = -1.7059166E+00     y2 =  8.9302E-03
+ At t =  1.4000000E+02     y1 = -1.5017298E+00     y2 =  1.1961E-02
+ At t =  1.6000000E+02     y1 = -1.1487589E+00     y2 =  3.5691E-02
+ At t =  1.6257461E+02     y1 =  1.2991372E-10     y2 =  6.7140E+01
+
+      Root found at t =  1.6257461E+02      JROOT =   1
+      Error in t location of root is  -1.6308E-02
+ At t =  1.8000000E+02     y1 =  1.8793730E+00     y2 = -7.4222E-03
+ At t =  2.0000000E+02     y1 =  1.7184281E+00     y2 = -8.7983E-03
+
+ Final statistics for this run..
+ number of steps =  619
+ number of Gs    = 1288
+ (excluding Js)  = 1150
+ number of Js    =   69
+ number of Rs    =  651
+
+--------------------------------------------------------------------------------
+
+ Number of errors encountered =   0
+ **********DDASKR passed all tests**********

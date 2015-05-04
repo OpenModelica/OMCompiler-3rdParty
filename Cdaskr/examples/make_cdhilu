@@ -1,0 +1,29 @@
+#
+# This makefile compiles and loads the DDASKR example program dheatilu.
+# If necessary, change the constants COMP and FFLAGS below for the
+# compiler to be used.
+
+CC = gcc
+CFLAGS = -O3 -Wall -ansi
+
+SOLVR = ../solver
+
+PRECON = ../preconds
+
+OBJS = $(SOLVR)/ddaskr.o $(SOLVR)/daux.o $(SOLVR)/dlinpk.o \
+        $(PRECON)/dilupre.o $(PRECON)/dsparsk.o
+
+HEATILU = dheatilu.o $(OBJS)
+
+HEATILU: $(HEATILU)
+	$(CC) $(CFLAGS) -o heatilu $(HEATILU) -lm
+
+dheatilu.o: dheatilu.c
+	$(CC) $(CFLAGS) -c dheatilu.c
+
+# Rule for compiling a Fortran source file:
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+clean: 
+	rm -f $(HEATILU) heatilu
