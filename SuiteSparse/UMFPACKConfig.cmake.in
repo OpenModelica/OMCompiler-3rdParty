@@ -1,0 +1,65 @@
+#test my destination
+if(EXISTS ${UMFPACK_DIR}/Include/umfpack.h)
+  set(UMFPACK_INCLUDE_DIRS "${UMFPACK_DIR}/Include")
+  unset(UMFPACK_LIBRARIES )
+  find_library(UMFPACK_LIB "umfpack" PATH ${UMFPACK_DIR}/lib NO_DEFAULT_PATH)
+  if(UMFPACK_LIB)
+    list(APPEND UMFPACK_LIBRARIES ${UMFPACK_LIB})
+  else()
+  message(FATAL_ERROR "this umfpack configuration file
+          does not belong to this installation")
+  endif()
+else()
+   message(FATAL_ERROR "this umfpack configuration file
+		does not belong to this	installation")
+endif()
+
+find_library(SUITESPARSE_CONFIG_LIB SuiteSparse_config PATH ${UMFPACK_DIR}/lib NO_DEFAULT_PATH)
+if(SUITESPARSE_CONFIG_LIB)
+  list(APPEND UMFPACK_LIBRARIES ${SUITESPARSE_CONFIG_LIB})
+else()
+  find_file(UFCONFIG_H UFconfig.h PATH ${UMFPACK_DIR}/Include NO_DEFAULT_PATH)
+  if(NOT UFCONFIG_H)
+    message(FATAL_ERROR "this umfpack configuration file
+        does not belong to this installation")
+  endif()
+endif()
+
+find_library(AMD_LIB amd PATH ${UMFPACK_DIR}/lib NO_DEFAULT_PATH)
+if(AMD_LIB)
+  list(APPEND UMFPACK_LIBRARIES ${AMD_LIB})
+else()
+  message(FATAL_ERROR "this umfpack configuration file
+        does not belong to this installation")
+endif()
+
+set(UMF_WITH_BLAS @WITH_BLAS@)
+set(UMF_WITH_CHOLMOD @WITH_CHOLMOD@)
+
+if(UMF_WITH_BLAS)
+  find_package(BLAS REQUIRED)
+  list(APPEND UMFPACK_LIBRARIES ${BLAS_LIBRARIES})
+endif()
+
+if(UMF_WITH_CHOLMOD)
+  find_library(CHOLMOD_LIB cholmod PATH ${UMFPACK_DIR}/lib NO_DEFAULT_PATH)
+  if(CHOLMOD_LIB)
+    list(APPEND UMFPACK_LIBRARIES ${CHOLMOD_LIB})
+  else()
+  message(FATAL_ERROR "this umfpack configuration file
+     does not belong to this installation")
+  endif()
+  find_library(COLAMD_LIB colamd PATH ${UMFPACK_DIR}/lib NO_DEFAULT_PATH)
+  if(COLAMD_LIB)
+    list(APPEND UMFPACK_LIBRARIES ${COLAMD_LIB})
+  else()
+  message(FATAL_ERROR "this umfpack configuration file
+     does not belong to this installation")
+  endif()
+endif()
+find_library(MATHLIB m)
+if(MATHLIB)
+  list(APPEND UMFPACK_LIBRARIES "${MATHLIB}")
+endif()
+
+
