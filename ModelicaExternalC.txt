@@ -13,3 +13,5 @@ git push -u origin MSL_autotools
 # In 3rdParty
 git subtree add --squash --prefix="ModelicaExternalC/C-Sources" git@github.com:sjoelund/MSL-split MSL_sources
 git subtree add --squash --prefix="ModelicaExternalC/BuildProjects/autotools" git@github.com:sjoelund/MSL-split MSL_autotools
+
+git subtree pull --squash --prefix="ModelicaExternalC/BuildProjects/autotools" git@github.com:sjoelund/MSL-split MSL_autotools
