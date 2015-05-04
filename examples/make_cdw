@@ -1,0 +1,31 @@
+#
+# This makefile compiles and loads the DDASKR example program dheat.
+# If necessary, change the constants COMP and FFLAGS below for the
+# compiler to be used.
+
+CC = gcc
+CFLAGS = -O3 -Wall -ansi
+
+SOLVR = ../solver
+
+PRECON = ../preconds
+
+OBJS = $(SOLVR)/ddaskr.o $(SOLVR)/daux.o $(SOLVR)/dlinpk.o \
+        $(PRECON)/drbdpre.o $(PRECON)/drbgpre.o
+
+WEB = dweb.o $(OBJS)
+
+WEB : $(WEB)
+	$(CC) $(CFLAGS) -o web $(WEB) -lm
+
+dweb.o: dweb.c
+	$(CC) $(CFLAGS) -c dweb.c
+
+
+# Rule for compiling a Fortran source file:
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+clean: 
+	rm -f $(WEB) web
+
