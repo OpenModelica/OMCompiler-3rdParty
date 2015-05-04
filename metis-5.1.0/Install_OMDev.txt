@@ -1,0 +1,37 @@
+Requirements to build on Windows with MinGW and OMDev:
+ - use CMake with MinGW generator if sh.exe is in PATH, otherwise use MSYS or UNIX generator
+ - you will get the error " file GKlib/conf/check_thread_storage not found"
+   --> You have to modify the file "GKlib/GKlibSystem.cmake":
+       Add
+        'if(WIN32)
+           set(GKLIB_PATH "${CMAKE_BINARY_DIR}/GKLib")
+         endif(WIN32)'
+        before the 'try_compile(HAVE_THREADLOCALSTORAGE...)' command
+ - now, if you try to build it with 'make', you will see the error 'sys/resource.h not found'
+   --> You have to enter the absolute path to the file or remove the include. The "sys/resource" - file is located in the OMDev/MSys-Folder
+
+
+These are some preliminary instructions for the 5.0 release of METIS.
+
+1. You need to have a C compiler that supports the C99 standard. 
+   Gcc works just fine, but I have not tested it on many other architectures
+   (any feedback/patches for different architectures are welcomed)
+   
+2. You need to have GNU make and CMake 2.8 (http://www.cmake.org/) installed.
+
+3. Edit the file include/metis.h and specify the width (32 or 64 bits) of the
+   elementary data type used in METIS. This is controled by the IDXTYPEWIDTH
+   constant.
+
+   For now, on a 32 bit architecture you can only specify a width of 32, 
+   whereas for a 64 bit architecture you can specify a width of either 
+   32 or 64 bits.
+
+
+4. At the top of Metis' directory execute 'make' and follow the instructions.
+   
+      make
+
+5. To build on windows using Visual Studio follow the instructions in the
+   file BUILD-Windows.txt.
+
