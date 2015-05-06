@@ -39,6 +39,7 @@ lis-1.4.12/src/.libs/
 lis-1.4.12/configure
 
 Ipopt/Ipopt/contrib/MatlabInterface/examples/startup.m
+Ipopt/Ipopt/contrib/RInterface/src/Makevars.win
 Ipopt/Ipopt/doxydoc/doxygen.conf
 Ipopt/Ipopt/examples/ScalableProblems/config.h
 Ipopt/Ipopt/examples/hs071_f/hs071_f.f
@@ -100,6 +101,7 @@ ModelicaExternalC/BuildProjects/autotools/missing
 ModelicaExternalC/C-Sources/.deps/
 ModelicaExternalC/C-Sources/.dirstamp
 ModelicaExternalC/C-Sources/zlib/.deps/
+ModelicaExternalC/C-Sources/zlib/.dirstamp
 
 SuiteSparse/build/
 
