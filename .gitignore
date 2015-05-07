@@ -51,6 +51,7 @@ Ipopt/Ipopt/src/Common/config_ipopt.h
 Ipopt/**/stamp*
 Ipopt/**/.libs/
 Ipopt/**/.deps/
+Ipopt/Ipopt/src/Algorithm/LinearSolvers/IpMumpsSolverInterface.loT
 Ipopt/Ipopt/test/hs071_c.c
 Ipopt/Ipopt/test/hs071_main.cpp
 Ipopt/Ipopt/test/hs071_nlp.cpp
