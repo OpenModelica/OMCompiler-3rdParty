@@ -133,3 +133,10 @@ metis-5.1.0/programs/graphchk
 metis-5.1.0/programs/m2gmetis
 metis-5.1.0/programs/mpmetis
 metis-5.1.0/programs/ndmetis
+
+CMinpack/install_msvc/
+FMIL/build_msvc/
+FMIL/install_msvc/
+SuiteSparse/build_msvc/
+SuiteSparse/install_msvc/
+
