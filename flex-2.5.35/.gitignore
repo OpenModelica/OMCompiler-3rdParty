@@ -1,0 +1,17 @@
+.deps/
+AUTHORS
+ChangeLog
+INSTALL
+Makefile
+Makefile.in
+NEWS
+README
+THANKS
+aclocal.m4
+conf.in
+config.h
+configure
+flex
+m4/Makefile
+m4/Makefile.in
+stamp-h1
