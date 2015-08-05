@@ -55,7 +55,5 @@ then
 fi
 
 AC_PROG_INSTALL
-AC_CONFIG_FILES([ \
-	Makefile \
-])
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
