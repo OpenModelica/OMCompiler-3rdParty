@@ -160,3 +160,6 @@ sqlite3/libtool
 sqlite3/ltmain.sh
 sqlite3/missing
 sqlite3/sqlite3.pc
+
+sundials/build/
+sundials/build_msvc/
