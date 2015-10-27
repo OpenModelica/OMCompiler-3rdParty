@@ -43,7 +43,9 @@ DLL_HANDLE jm_portability_load_dll_handle(const char* dll_file_path)
 #ifdef WIN32
 	/* printf("Will try to load %s\n", dll_file_path); */
 	return LoadLibrary(dll_file_path);
-#else	
+#elif defined(RTLD_DEEPBIND)
+	return dlopen(dll_file_path, RTLD_NOW|RTLD_LOCAL|RTLD_DEEPBIND);
+#else
 	return dlopen(dll_file_path, RTLD_NOW|RTLD_LOCAL);
 #endif
 }
