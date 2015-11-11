@@ -3,7 +3,7 @@ OBJDIR=obj
 SRCDIR=src
 INCDIR=include
 
-ifeq ($(shell uname),Darwin)
+ifeq (darwin,$(findstring darwin,$(shell $(CC) -v 2>&1 | grep ^Target)))
 	AR=libtool
 	ARFLAGS=-static -o
 else
@@ -16,10 +16,10 @@ CWARN = -W -Wall -Wshadow -Wimplicit -Wreturn-type -Wcomment -Wtrigraphs -Wforma
 CDBG = -g $(CWARN) -fno-inline
 DFLAGS = -I$(INCDIR) -g $(CWARN) -fno-inline -DDEBUG=1
 
-ifeq (MINGW,$(findstring MINGW,$(shell uname)))
+ifeq (mingw,$(findstring mingw,$(shell $(CC) -v 2>&1 | grep ^Target)))
 	SOCKET_LIB = -lwsock32
 else
-	SOCKET_LIB = 
+	SOCKET_LIB =
 endif
 
 
@@ -35,8 +35,8 @@ OBJS = \
     $(OBJDIR)/netstream-storage.o  \
 	$(OBJDIR)/netstream-socket.o \
     $(OBJDIR)/netstream-sender.o \
-	$(OBJDIR)/netstream-main.o 
-	 
+	$(OBJDIR)/netstream-main.o
+
 .SECONDARY:
 
 #-- Rules
@@ -46,7 +46,7 @@ $(OUT_BINARY): $(OBJS)
 	$(CXX) $(CFLAGS) -I$(INCDIR) $(OBJS) -o $(OUT_BINARY) $(SOCKET_LIB)
 
 $(OUT_LIBRARY): $(OBJS)
-	$(AR) $(ARFLAGS) $(OUT_LIBRARY)  $(OBJS) 
+	$(AR) $(ARFLAGS) $(OUT_LIBRARY)  $(OBJS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	mkdir -p $(OBJDIR)
