@@ -1,0 +1,11 @@
+https://github.com/open62541/open62541
+
+License: LGPLv3, with static linking exception. To update (from an
+open62541 checkout):
+
+cmake -D UA_ENABLE_SUBSCRIPTIONS=ON -D UA_ENABLE_AMALGAMATION=ON .
+make -j2
+cp open62541.{c,h} /path/to/3rdParty/open62541/
+
+We only include the single c/h-file in order to not include
+documentation, etc.
