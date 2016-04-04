@@ -37,6 +37,7 @@
 
 #include "lpkit.h"
 #include "yacc_read.h"
+#include "y.tab.h"
 
 typedef struct parse_vars_s
 {

@@ -14,6 +14,10 @@ INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL = @INSTALL@
 mkdir_p = mkdir -p
+
+YACC= bison --no-lines -y -d
+LEX= flex -L
+
 HEADERS = \
 	declare.h \
 	fortify.h \
@@ -72,11 +76,23 @@ SOURCES = lp_MDO.c \
 	lp_utils.c \
         yacc_read.c
 
-all: liblpsolve55.a @SHARED_LIB@
+all: $(LEXFILE.c) $(YACCFILE.c) liblpsolve55.a @SHARED_LIB@
 
 # OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
 #.c.o:
 #	$(CC) -s -c $(INCLUDES) $(CFLAGS) $(DEFINES) $(SOURCES)
+
+lp_rlp.h: lp_rlp.l
+	$(LEX) lp_rlp.l
+	sed -e "s/yy/lp_yy/g" lex.yy.c >lp_rlp.h
+	rm -f lex.yy.c
+
+lp_rlp.c: lp_rlp.y
+	$(YACC) lp_rlp.y
+	sed -e "s/yy/lp_yy/g" y.tab.c >lp_rlp.c
+	rm -f y.tab.c
+
+lp_rlp.o: lp_rpl.h lp_rlp.c
 
 liblpsolve55.a: $(SOURCES)
 	$(CC) -s -c $(INCLUDES) $(CFLAGS) $(DEFINES) $(SOURCES)

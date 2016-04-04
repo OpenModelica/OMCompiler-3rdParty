@@ -144,6 +144,7 @@ SuiteSparse/install_msvc/
 lpsolve/Makefile
 lpsolve/build/
 lpsolve/configure
+lpsolve/y.tab.h
 sqlite3/.deps/
 sqlite3/.libs/
 sqlite3/Makefile
