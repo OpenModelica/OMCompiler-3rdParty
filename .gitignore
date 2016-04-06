@@ -145,6 +145,9 @@ lpsolve/Makefile
 lpsolve/build/
 lpsolve/configure
 lpsolve/y.tab.h
+lpsolve/lp_rlp.h
+lpsolve/lp_rlp.c
+
 sqlite3/.deps/
 sqlite3/.libs/
 sqlite3/Makefile
