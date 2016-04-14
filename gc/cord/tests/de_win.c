@@ -46,10 +46,7 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
    WNDCLASS    wndclass;
    HANDLE      hAccel;
 
-#  ifdef THREAD_LOCAL_ALLOC
-     GC_INIT();  /* Required if GC is built with THREAD_LOCAL_ALLOC     */
-                 /* Always safe, but this is used as a GC test.         */
-#  endif
+   GC_INIT();
 
    if (!hPrevInstance)
    {
@@ -131,6 +128,7 @@ char * plain_chars(char * text, size_t len)
     char * result = GC_MALLOC_ATOMIC(len + 1);
     register size_t i;
 
+    if (NULL == result) return NULL;
     for (i = 0; i < len; i++) {
        if (iscntrl(((unsigned char *)text)[i])) {
            result[i] = ' ';
@@ -149,6 +147,7 @@ char * control_chars(char * text, size_t len)
     char * result = GC_MALLOC_ATOMIC(len + 1);
     register size_t i;
 
+    if (NULL == result) return NULL;
     for (i = 0; i < len; i++) {
        if (iscntrl(((unsigned char *)text)[i])) {
            result[i] = text[i] + 0x40;
@@ -317,20 +316,25 @@ LRESULT CALLBACK WndProc (HWND hwnd, UINT message,
                    char * blanks = CORD_to_char_star(CORD_chars(' ',
                                                                 COLS - len));
                    char * control = control_chars(text, len);
+                   if (NULL == plain || NULL == control)
+                       de_error("Out of memory!");
+
 #                  define RED RGB(255,0,0)
 
                    SetBkMode(dc, OPAQUE);
                    SetTextColor(dc, GetSysColor(COLOR_WINDOWTEXT));
 
-                   TextOutA(dc, this_line.left, this_line.top,
-                            plain, (int)len);
+                   if (plain != NULL)
+                       TextOutA(dc, this_line.left, this_line.top,
+                                plain, (int)len);
                    TextOutA(dc, this_line.left + (int)len * char_width,
                             this_line.top,
                             blanks, (int)(COLS - len));
                    SetBkMode(dc, TRANSPARENT);
                    SetTextColor(dc, RED);
-                   TextOutA(dc, this_line.left, this_line.top,
-                            control, (int)strlen(control));
+                   if (control != NULL)
+                       TextOutA(dc, this_line.left, this_line.top,
+                                control, (int)strlen(control));
                }
            }
            EndPaint(hwnd, &ps);
