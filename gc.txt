@@ -19,4 +19,7 @@ Push your changes to your local github repo:
 # for OMCompiler-3rdParty in your github USER space
 > git add remote USER https://github.com/USER/OMCompiler-3rdParty.git
 > git push USER update_gc_NUMBER
+# now go to your github account and create a pull request for OMCompiler-3rdParty from the branch update_gc_NUMBER
+
+
 
