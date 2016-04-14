@@ -172,7 +172,7 @@
 #if defined(GC_DLL) && !defined(GC_API)
 
 # if defined(__MINGW32__) || defined(__CEGCC__)
-#   ifdef GC_BUILD
+#   if defined(GC_BUILD) || defined(__MINGW32_DELAY_LOAD__)
 #     define GC_API __declspec(dllexport)
 #   else
 #     define GC_API __declspec(dllimport)
@@ -202,8 +202,8 @@
 
 # elif defined(__GNUC__)
     /* Only matters if used in conjunction with -fvisibility=hidden option. */
-#   if defined(GC_BUILD) && (__GNUC__ >= 4 \
-                             || defined(GC_VISIBILITY_HIDDEN_SET))
+#   if defined(GC_BUILD) && !defined(GC_NO_VISIBILITY) \
+            && (__GNUC__ >= 4 || defined(GC_VISIBILITY_HIDDEN_SET))
 #     define GC_API extern __attribute__((__visibility__("default")))
 #   endif
 # endif
