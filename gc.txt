@@ -1,4 +1,4 @@
-To update gc and libatomic_ops:
+To update gc and libatomic_ops
 
 cd OMCompiler/3rdParty
 # make a branch
@@ -6,11 +6,17 @@ cd OMCompiler/3rdParty
 # get the commits for bdwgc
 > git subtree pull --squash --prefix gc https://github.com/ivmai/bdwgc master
 # fix any conflicts we might have
+# make omc be compiled/linked only against our version of libgc:
 > sed -i s/libgc/libomcgc/g Makefile.am configure.ac
 > commit the changes
 
 # get the commits for libatomic_ops
 > git subtree pull --squash --prefix gc/libatomic_ops https://github.com/ivmai/libatomic_ops master
 # fix any conflicts we might have
-# make omc be compiled/linked only against our version of libgc:
+> commit the changes
+
+Push your changes to your local github repo:
+# for OMCompiler-3rdParty in your github USER space
+> git add remote USER https://github.com/USER/OMCompiler-3rdParty.git
+> git push USER update_gc_NUMBER
 
