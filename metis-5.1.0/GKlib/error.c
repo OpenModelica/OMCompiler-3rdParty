@@ -18,7 +18,12 @@ This file contains functions dealing with error reporting and termination
 
 /* These are the jmp_buf for the graceful exit in case of severe errors.
    Multiple buffers are defined to allow for recursive invokation. */
+#if defined(__APPLE_CC__) && defined(__apple_build_version__) && __apple_build_version__==7030029
+/* Fix for broken xcode */
+#define MAX_JBUFS 16
+#else
 #define MAX_JBUFS 128
+#endif
 __thread int gk_cur_jbufs=-1;
 __thread jmp_buf gk_jbufs[MAX_JBUFS];
 __thread jmp_buf gk_jbuf;
