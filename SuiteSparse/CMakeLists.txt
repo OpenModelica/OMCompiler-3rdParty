@@ -182,6 +182,7 @@ if(SS_DIR)
     set(KLU_OBJECTS "${KLU_OBJECTS};\$<TARGET_OBJECTS:klu_object_${mode}>")
   endforeach()
   add_library(klu ${KLU_OBJECTS})
+  target_link_libraries(klu btf colamd amd)
   install(TARGETS klu DESTINATION ${LIB_OMC})
   install(FILES ${KLU_DIR}/Include/klu.h DESTINATION include/omc/c/suitesparse/Include)
 
@@ -244,6 +245,7 @@ if(SS_DIR)
     set(UMFPACK_OBJECTS "${UMFPACK_OBJECTS};\$<TARGET_OBJECTS:${olib}>")
   endforeach()
   add_library(umfpack ${UMFPACK_OBJECTS})
+  target_link_libraries(umfpack amd)
   install(TARGETS umfpack DESTINATION ${LIB_OMC})
 
 

@@ -112,6 +112,8 @@ IF(BUILD_STATIC_LIBS)
   # Add the build target for the static CVODE library
   ADD_LIBRARY(sundials_cvode_static STATIC 
     ${cvode_SOURCES}  ${cvode_BL_SOURCES} ${shared_SOURCES})
+	
+  TARGET_LINK_LIBRARIES(sundials_cvode_static ${KLU_LIBRARIES})
 
   # Set the library name and make sure it is not deleted
   SET_TARGET_PROPERTIES(sundials_cvode_static
@@ -129,6 +131,8 @@ IF(BUILD_SHARED_LIBS)
   ADD_LIBRARY(sundials_cvode_shared SHARED 
     ${cvode_SOURCES}  ${cvode_BL_SOURCES}  ${shared_SOURCES})
 
+  TARGET_LINK_LIBRARIES(sundials_cvode_shared ${KLU_LIBRARIES})
+	
   # Set the library name and make sure it is not deleted
   SET_TARGET_PROPERTIES(sundials_cvode_shared
     PROPERTIES OUTPUT_NAME sundials_cvode CLEAN_DIRECT_OUTPUT 1)
