@@ -37,7 +37,7 @@ if(KLU_LIBRARIES)
     "INCLUDE_DIRECTORIES(${KLU_INCLUDE_DIR})\n"
 	"LINK_DIRECTORIES(${KLU_LIBRARY_DIR})\n"
     "ADD_EXECUTABLE(ltest ltest.c)\n"
-    "TARGET_LINK_LIBRARIES(ltest ${KLU_LIBRARIES})\n")    
+    "TARGET_LINK_LIBRARIES(ltest ${KLU_LIBRARIES} m)\n")    
 # Create a C source file which calls a KLU function
 # SGS TODO what is a simple KLU method to invoke?
   file(WRITE ${KLUTest_DIR}/ltest.c
