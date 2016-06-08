@@ -104,11 +104,7 @@ antlr3AsciiFileStreamNew(pANTLR3_UINT8 fileName)
 ANTLR3_API ANTLR3_UINT32
 antlr3readAscii(pANTLR3_INPUT_STREAM    input, pANTLR3_UINT8 fileName)
 {
-#if defined(__MINGW32__) || defined(_MSC_VER)
-  char *fileOpenMode = "rt"; /* on Windows do translation so that \n becomes \r\n */
-#else
-  char *fileOpenMode = "rb";  /* on Unixes don't bother, do it binary mode */
-#endif
+	char *fileOpenMode = "rb";  /* on Unixes don't bother, do it binary mode */
 
 	ANTLR3_FDSC		    infile;
 	ANTLR3_UINT32	    fSize;
@@ -191,28 +187,6 @@ antlr3Fread(ANTLR3_FDSC fdsc, ANTLR3_UINT32 count,  void * data)
   */
   ANTLR3_UINT32 total = 0;
   ANTLR3_UINT32 cnt = 0;
-#if defined(__MINGW32__) || defined(_MSC_VER)
-  /* adrpo: 2010-09-24
-   * in windows we cannot use fread(data, fileSize) as fileSize could be *MORE* than
-   * the contents of the file because \r\n is translated to \n
-   */
-  while( !feof( fdsc ) )
-  {
-     /* Attempt to read in count bytes: */
-     cnt = fread( data, sizeof(char), count, fdsc );
-     if( ferror( fdsc ) )
-     {
-        perror( "ANTLR3: File read error" );
-        total = 0;
-        break;
-     }
-     else
-     {
-       /* Total up actual bytes read */
-       total += cnt;
-     }
-  }
-#else
   cnt = fread(data, (size_t)count, 1, fdsc);
   if( (cnt != 1) || ferror( fdsc ))
   {
@@ -221,7 +195,6 @@ antlr3Fread(ANTLR3_FDSC fdsc, ANTLR3_UINT32 count,  void * data)
   }
   else
     total = count;
-#endif
   return total;
 }
 
