@@ -155,7 +155,7 @@ int realloc_count = 0;
 
   void GC_amiga_free_all_mem(void);
   void Amiga_Fail(void){GC_amiga_free_all_mem();abort();}
-# define FAIL (void)Amiga_Fail()
+# define FAIL Amiga_Fail()
   void *GC_amiga_gctest_malloc_explicitly_typed(size_t lb, GC_descr d){
     void *ret=GC_malloc_explicitly_typed(lb,d);
     if(ret==NULL){
@@ -188,7 +188,7 @@ int realloc_count = 0;
 #else /* !AMIGA_FASTALLOC */
 
 # if defined(PCR) || defined(LINT2)
-#   define FAIL (void)abort()
+#   define FAIL abort()
 # else
 #   define FAIL ABORT("Test failed")
 # endif
@@ -260,9 +260,10 @@ sexpr cons (sexpr x, sexpr y)
 }
 # endif
 
+#include "gc_mark.h"
+
 #ifdef GC_GCJ_SUPPORT
 
-#include "gc_mark.h"
 #include "gc_gcj.h"
 
 /* The following struct emulates the vtable in gcj.     */
@@ -412,6 +413,10 @@ sexpr uncollectable_ints(int low, int up)
 
 void check_ints(sexpr list, int low, int up)
 {
+    if (is_nil(list)) {
+        GC_printf("list is nil\n");
+        FAIL;
+    }
     if (SEXPR_TO_INT(car(car(list))) != low) {
         GC_printf(
            "List reversal produced incorrect list - collector is broken\n");
@@ -505,10 +510,18 @@ void check_marks_int_list(sexpr x)
       check_ints(reverse(reverse(ints(1, TINY_REVERSE_UPPER_VALUE))),
                  1, TINY_REVERSE_UPPER_VALUE);
     }
+#   if defined(GC_ENABLE_SUSPEND_THREAD)
+      /* Force collection from a thread. */
+      GC_gcollect();
+#   endif
     return 0;
 }
 
 # if defined(GC_PTHREADS)
+#   if defined(GC_ENABLE_SUSPEND_THREAD)
+#     include "javaxfc.h"
+#   endif
+
     void fork_a_thread(void)
     {
       pthread_t t;
@@ -517,6 +530,27 @@ void check_marks_int_list(sexpr x)
         GC_printf("Small thread creation failed %d\n", code);
         FAIL;
       }
+#     if defined(GC_ENABLE_SUSPEND_THREAD) && !defined(GC_DARWIN_THREADS) \
+         && !defined(GC_OPENBSD_UTHREADS) && !defined(GC_WIN32_THREADS) \
+         && !defined(NACL)
+        if (GC_is_thread_suspended(t)) {
+          GC_printf("Running thread should be not suspended\n");
+          FAIL;
+        }
+        /* Thread could be running or already terminated (but not joined). */
+        GC_suspend_thread(t);
+        if (!GC_is_thread_suspended(t)) {
+          GC_printf("Thread expected to be suspended\n");
+          FAIL;
+        }
+        GC_suspend_thread(t); /* should be no-op */
+        GC_resume_thread(t);
+        if (GC_is_thread_suspended(t)) {
+          GC_printf("Resumed thread should be not suspended\n");
+          FAIL;
+        }
+        GC_resume_thread(t); /* should be no-op */
+#     endif
       if ((code = pthread_join(t, 0)) != 0) {
         GC_printf("Small thread join failed %d\n", code);
         FAIL;
@@ -1243,6 +1277,7 @@ void run_one_test(void)
         FAIL;
       }
       z = GC_malloc(8);
+      CHECK_OUT_OF_MEMORY(z);
       GC_PTR_STORE(z, x);
       if (*z != x) {
         GC_printf("GC_PTR_STORE failed: %p != %p\n", (void *)(*z), (void *)x);
@@ -1396,6 +1431,32 @@ void run_one_test(void)
       GC_log_printf("Finished %p\n", (void *)&start_time);
 }
 
+void GC_CALLBACK reachable_objs_counter(void *obj, size_t size,
+                                        void *pcounter)
+{
+  if (0 == size) {
+    GC_printf("Reachable object has zero size\n");
+    FAIL;
+  }
+  if (GC_base(obj) != obj) {
+    GC_printf("Invalid reachable object base passed by enumerator: %p\n",
+              obj);
+    FAIL;
+  }
+  if (GC_size(obj) != size) {
+    GC_printf("Invalid reachable object size passed by enumerator: %lu\n",
+              (unsigned long)size);
+    FAIL;
+  }
+  (*(unsigned *)pcounter)++;
+}
+
+void * GC_CALLBACK reachable_objs_count_enumerator(void *pcounter)
+{
+  GC_enumerate_reachable_objects_inner(reachable_objs_counter, pcounter);
+  return NULL;
+}
+
 #define NUMBER_ROUND_UP(v, bound) ((((v) + (bound) - 1) / (bound)) * (bound))
 
 void check_heap_stats(void)
@@ -1411,6 +1472,7 @@ void check_heap_stats(void)
         int late_finalize_count = 0;
 #     endif
 #   endif
+    unsigned obj_count = 0;
 
 #   ifdef VERY_SMALL_CONFIG
     /* The upper bounds are a guess, which has been empirically */
@@ -1468,6 +1530,8 @@ void check_heap_stats(void)
           FAIL;
         }
       }
+    (void)GC_call_with_alloc_lock(reachable_objs_count_enumerator,
+                                  &obj_count);
     GC_printf("Completed %u tests\n", n_tests);
     GC_printf("Allocated %d collectable objects\n", collectable_count);
     GC_printf("Allocated %d uncollectable objects\n",
@@ -1519,9 +1583,11 @@ void check_heap_stats(void)
 #   endif
     GC_printf("Total number of bytes allocated is %lu\n",
                   (unsigned long)GC_get_total_bytes());
+    GC_printf("Total memory use by allocated blocks is %lu bytes\n",
+              (unsigned long)GC_get_memory_use());
     GC_printf("Final heap size is %lu bytes\n",
                   (unsigned long)GC_get_heap_size());
-    if (GC_get_total_bytes() < n_tests *
+    if (GC_get_total_bytes() < (size_t)n_tests *
 #   ifdef VERY_SMALL_CONFIG
         2700000
 #   else
@@ -1538,6 +1604,7 @@ void check_heap_stats(void)
             (unsigned long)max_heap_sz);
         FAIL;
     }
+    GC_printf("Final number of reachable objects is %u\n", obj_count);
 
 #   ifndef GC_GET_HEAP_USAGE_NOT_NEEDED
       /* Get global counters (just to check the functions work).  */
@@ -1593,7 +1660,8 @@ void GC_CALLBACK warn_proc(char *msg, GC_word p)
 
 #if !defined(PCR) && !defined(GC_WIN32_THREADS) && !defined(GC_PTHREADS) \
     || defined(LINT)
-#if defined(MSWIN32) && !defined(__MINGW32__) || defined(MSWINCE)
+#if ((defined(MSWIN32) && !defined(__MINGW32__)) || defined(MSWINCE)) \
+    && !defined(NO_WINMAIN_ENTRY)
   int APIENTRY WinMain(HINSTANCE instance GC_ATTR_UNUSED,
                        HINSTANCE prev GC_ATTR_UNUSED,
                        WINMAIN_LPTSTR cmd GC_ATTR_UNUSED,
@@ -1736,10 +1804,14 @@ DWORD __stdcall thr_window(void * arg GC_ATTR_UNUSED)
 }
 #endif
 
-int APIENTRY WinMain(HINSTANCE instance GC_ATTR_UNUSED,
-                     HINSTANCE prev GC_ATTR_UNUSED,
-                     WINMAIN_LPTSTR cmd GC_ATTR_UNUSED,
-                     int n GC_ATTR_UNUSED)
+#if !defined(NO_WINMAIN_ENTRY)
+  int APIENTRY WinMain(HINSTANCE instance GC_ATTR_UNUSED,
+                       HINSTANCE prev GC_ATTR_UNUSED,
+                       WINMAIN_LPTSTR cmd GC_ATTR_UNUSED,
+                       int n GC_ATTR_UNUSED)
+#else
+  int main(void)
+#endif
 {
 # if NTHREADS > 0
    HANDLE h[NTHREADS];

@@ -1,24 +1,42 @@
 
 == [7.5.0] (development) ==
 
+* Add initial nios2 architecture support.
+* Avoid atomic_compare_exchange_n if no __GCC_HAVE_SYNC_COMPARE_AND_SWAP_n.
+* Define AO_TS_SET as __GCC_ATOMIC_TEST_AND_SET_TRUEVAL if applicable.
+* Eliminate redundant lwsync 2nd call in CAS_full on fail (gcc/PowerPC).
+* Implement CAS_acquire/release/full using __atomic_compare_exchange_n (gcc).
+* Initial ibmc/powerpc (xlc) support.
+* New configure option (--enable-werror) to treat warnings as compiler errors.
+* New macro AO_PREFER_BUILTIN_ATOMICS to rely on C11 atomics fully (AArch64).
 * Relax shareability domain for dmb st in AO_nop_write (ARM/AArch64).
+* Support NaCl/arm.
+* Support n32 ABI for mips64.
+* Use GCC atomic intrinsics for x86, x64, ARM, MIPS (gcc 4.9+, clang 3.5+).
 * Use LLD and SCD instructions on mips64.
+Also, includes 7.4.4 changes.
 
 
 == [7.4.4] (unset) ==
 
+* Eliminate 'signed-to-unsigned value extension' compiler warning in malloc.
 * Eliminate 'variable set but not used' Cppcheck warnings in test_stack.
+* Fix GCC 5.x compatibility for AArch64 double-wide primitives.
 * Fix makefile preventing AO_pause undefined in libatomic_ops_gpl.
 * Fix missing casts to match printf format specifier in test_atomic.
 * Fix missing output folder on making auto-generated test files (Automake).
+* Fix typo in configure.ac (in description of AO_ASM_X64_AVAILABLE).
 * Minor fix of code alignment in mips AO_compare_and_swap.
+* Remove TODO file.
 * Restore contribution info in ChangeLog for authors not listed in git log.
+Also, includes 7.2g changes.
 
 
 == [7.4.2] 2014-05-02 ==
 
 * Fix a typo in doc/README.txt (remove redundant "an" article).
 * Update emails/links due to project site transition.
+Also, includes 7.2f changes.
 
 
 == [7.4.0] 2013-11-17 ==
@@ -121,6 +139,7 @@
 * Use __atomic GCC built-in to implement generic double-wide CAS.
 * Use built-in __sync CAS for double-CAS if AO_USE_SYNC_CAS_BUILTIN for x86.
 * Workaround GCC 4.4.3 warning reported for 'val' of list_atomic.c (tests).
+Also, includes 7.2e changes.
 
 
 == [7.3alpha2] 2012-05-11 ==
@@ -153,11 +172,14 @@
 * Show extra compiler warnings (GCC only).
 * Turn off AO primitives inlining if AO_NO_INLINE defined.
 * Use __builtin_expect in CAS failure loop condition checks (GCC only).
+Also, includes 7.2 changes.
 
 
 == [7.2g] (unset) ==
 
+* Regenerate configure files using official libtool release (v2.4.2).
 * Remove inclusion of acquire_release_volatile.h on MIPS.
+* Remove obsolete information from README about C++0x standard future.
 
 
 == [7.2f] 2014-05-02 ==
