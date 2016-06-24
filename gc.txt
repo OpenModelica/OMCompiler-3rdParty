@@ -1,9 +1,22 @@
-# To make omc be compiled/linked only against our version of libgc:
-sed -i s/libgc/libomcgc/g 3rdParty/gc/Makefile.am 3rdParty/gc/configure.ac
+To update gc and libatomic_ops
 
-using commit: bf62552626acc7ad8babdc350a6365cb97ec8776
-git subtree add --squash --prefix gc https://github.com/ivmai/bdwgc
-using commit: c6f7c2e3477648814fda13aca1c58d9ecd47278a
-git subtree add --squash --prefix gc/libatomic_ops https://github.com/OpenModelica/libatomic_ops
+cd OMCompiler/3rdParty
+# make a branch
+> git checkout -b update_gc_NUMBER
+# get the commits for bdwgc
+> git subtree pull --squash --prefix gc https://github.com/ivmai/bdwgc master
+# fix any conflicts we might have
+# make omc be compiled/linked only against our version of libgc:
+> cd gc
+> sed -i s/libgc/libomcgc/g Makefile.am configure.ac cord/cord.am
+> commit the changes
 
-By creating a fork with a branch named openmodelica in each of them
+# get the commits for libatomic_ops
+> git subtree pull --squash --prefix gc/libatomic_ops https://github.com/ivmai/libatomic_ops master
+# fix any conflicts we might have
+> commit the changes
+
+Push your changes to your local github repo:
+# for OMCompiler-3rdParty in your github USER space
+> git add remote USER https://github.com/USER/OMCompiler-3rdParty.git
+> git push USER update_gc_NUMBER
