@@ -1076,7 +1076,7 @@ struct roots {
 #   if CPP_WORDSZ > 32
 #     define MAX_HEAP_SECTS 8192        /* overflows at roughly 128 GB  */
 #   else
-#     define MAX_HEAP_SECTS 768         /* Separately added heap sections. */
+#     define MAX_HEAP_SECTS 2048        /* Separately added heap sections. */
 #   endif
 # elif defined(SMALL_CONFIG) && !defined(USE_PROC_FOR_LIBRARIES)
 #   if defined(PARALLEL_MARK) && (defined(MSWIN32) || defined(CYGWIN32))
