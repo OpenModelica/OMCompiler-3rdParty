@@ -187,7 +187,7 @@ case "$THREADS" in
         AC_DEFINE(THREAD_LOCAL_ALLOC)
         AC_MSG_WARN("Explicit GC_INIT() calls may be required.");
         ;;
-     *-*-linux*)
+     *-*-linux* | *-*-nacl*)
         AC_DEFINE(GC_LINUX_THREADS)
         AC_DEFINE(_REENTRANT)
         ;;
@@ -562,7 +562,8 @@ if test "${enable_shared}" = yes; then
                      [ac_cv_fvisibility_hidden=no])
       CFLAGS="$old_CFLAGS"
       AS_IF([test "$ac_cv_fvisibility_hidden" = yes],
-            [CFLAGS="-DGC_VISIBILITY_HIDDEN_SET -fvisibility=hidden $CFLAGS"])
+            [CFLAGS="-DGC_VISIBILITY_HIDDEN_SET -fvisibility=hidden $CFLAGS"],
+            [CFLAGS="-DGC_NO_VISIBILITY $CFLAGS"])
       AC_MSG_RESULT($ac_cv_fvisibility_hidden)
     fi
   fi
@@ -605,6 +606,9 @@ case "$host" in
     ;;
  ia64-*-*)
     machdep="ia64_save_regs_in_stack.lo"
+    ;;
+ *-*-nacl*)
+    AC_DEFINE(NO_EXECUTE_PERMISSION)
     ;;
 esac
 AC_MSG_RESULT($machdep)
@@ -678,6 +682,8 @@ AC_ARG_ENABLE(gcj-support,
         [Disable support for gcj.])])
 if test x"$enable_gcj_support" != xno; then
     AC_DEFINE(GC_GCJ_SUPPORT, 1, [Define to include support for gcj.])
+    AC_DEFINE([GC_ENABLE_SUSPEND_THREAD], 1,
+              [Define to turn on GC_suspend_thread support.])
 fi
 
 dnl Interaction with other programs that might use signals.
@@ -780,7 +786,7 @@ AC_ARG_ENABLE(atomic-uncollectable,
     [AC_HELP_STRING([--disable-atomic-uncollectible],
         [Disable support for atomic uncollectible allocation.])])
 if test x"$enable_atomic_uncollectible" != x"no"; then
-    AC_DEFINE(ATOMIC_UNCOLLECTABLE, 1,
+    AC_DEFINE([GC_ATOMIC_UNCOLLECTABLE], 1,
         [Define to enable atomic uncollectible allocation.])
 fi
 
@@ -887,6 +893,13 @@ else
 fi
 
 AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
+
+AC_ARG_ENABLE(werror, [--enable-werror Pass -Werror to the C compiler],
+              werror_flag=$enableval, werror_flag=no)
+if test x$werror_flag = xyes; then
+    WERROR_CFLAGS="-Werror"
+fi
+AC_SUBST([WERROR_CFLAGS])
 
 AC_ARG_ENABLE(single-obj-compilation,
    [AC_HELP_STRING([--enable-single-obj-compilation],
