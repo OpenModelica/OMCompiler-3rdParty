@@ -27,13 +27,15 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h> /* for exit() */
+
 #include "gc.h"
 #include "cord.h"
 
 #ifdef THINK_C
 #define MACINTOSH
-#include <ctype.h>
 #endif
+#include <ctype.h>
 
 #if (defined(__BORLANDC__) || defined(__CYGWIN__)) && !defined(WIN32)
     /* If this is DOS or win16, we'll fail anyway.      */
@@ -63,9 +65,15 @@
 #       define COLS 80
 #else
 #  include <curses.h>
+#  include <unistd.h> /* for sleep() */
 #  define de_error(s) { fprintf(stderr, s); sleep(2); }
 #endif
 #include "de_cmds.h"
+
+#define OUT_OF_MEMORY do { \
+                        fprintf(stderr, "Out of memory\n"); \
+                        exit(3); \
+                      } while (0)
 
 /* List of line number to position mappings, in descending order. */
 /* There may be holes.                                            */
@@ -136,6 +144,7 @@ void add_map(int line, size_t pos)
 {
     line_map new_map = GC_NEW(struct LineMapRep);
 
+    if (NULL == new_map) OUT_OF_MEMORY;
     if (current_map_size >= MAX_MAP_SIZE) prune_map();
     new_map -> line = line;
     new_map -> pos = pos;
@@ -181,6 +190,7 @@ void add_hist(CORD s)
 {
     history new_file = GC_NEW(struct HistoryRep);
 
+    if (NULL == new_file) OUT_OF_MEMORY;
     new_file -> file_contents = current = s;
     current_len = CORD_len(s);
     new_file -> previous = now;
@@ -215,10 +225,11 @@ void replace_line(int i, CORD s)
     if (screen == 0 || LINES > screen_size) {
         screen_size = LINES;
         screen = (CORD *)GC_MALLOC(screen_size * sizeof(CORD));
+        if (NULL == screen) OUT_OF_MEMORY;
     }
 #   if !defined(MACINTOSH)
         /* A gross workaround for an apparent curses bug: */
-        if (i == LINES-1 && len == COLS) {
+        if (i == LINES-1 && len == (unsigned)COLS) {
             s = CORD_substr(s, 0, len - 1);
         }
 #   endif
@@ -557,44 +568,44 @@ void generic_init(void)
 
 #ifndef WIN32
 
-main(argc, argv)
-int argc;
-char ** argv;
+int main(int argc, char **argv)
 {
     int c;
+    void *buf;
 
-#if defined(MACINTOSH)
+#   if defined(MACINTOSH)
         console_options.title = "\pDumb Editor";
         cshow(stdout);
         argc = ccommand(&argv);
-#endif
+#   endif
     GC_INIT();
 
-    if (argc != 2) goto usage;
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s file\n", argv[0]);
+        fprintf(stderr, "Cursor keys: ^B(left) ^F(right) ^P(up) ^N(down)\n");
+        fprintf(stderr, "Undo: ^U    Write to <file>.new: ^W");
+        fprintf(stderr, "Quit:^D     Repeat count: ^R[n]\n");
+        fprintf(stderr, "Top: ^T     Locate (search, find): ^L text ^L\n");
+        exit(1);
+    }
     arg_file_name = argv[1];
-    setvbuf(stdout, GC_MALLOC_ATOMIC(8192), _IOFBF, 8192);
+    buf = GC_MALLOC_ATOMIC(8192);
+    if (NULL == buf) OUT_OF_MEMORY;
+    setvbuf(stdout, buf, _IOFBF, 8192);
     initscr();
     noecho(); nonl(); cbreak();
     generic_init();
     while ((c = getchar()) != QUIT) {
-                if (c == EOF) break;
-            do_command(c);
+        if (c == EOF) break;
+        do_command(c);
     }
-done:
     move(LINES-1, 0);
     clrtoeol();
     refresh();
     nl();
     echo();
     endwin();
-    exit(0);
-usage:
-    fprintf(stderr, "Usage: %s file\n", argv[0]);
-    fprintf(stderr, "Cursor keys: ^B(left) ^F(right) ^P(up) ^N(down)\n");
-    fprintf(stderr, "Undo: ^U    Write to <file>.new: ^W");
-    fprintf(stderr, "Quit:^D  Repeat count: ^R[n]\n");
-    fprintf(stderr, "Top: ^T   Locate (search, find): ^L text ^L\n");
-    exit(1);
+    return 0;
 }
 
 #endif  /* !WIN32 */

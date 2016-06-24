@@ -57,6 +57,12 @@ if test "$GCC" = yes; then
   AC_MSG_RESULT($ac_cv_cc_wextra)
   AS_IF([test "$ac_cv_cc_wextra" = yes], [WEXTRA="-Wextra"], [WEXTRA="-W"])
   CFLAGS="-Wall $WEXTRA $CFLAGS"
+
+  AC_ARG_ENABLE(werror, [AC_HELP_STRING([--enable-werror],
+                            [Pass -Werror to the C compiler])])
+  if test "$enable_werror" = yes; then
+    CFLAGS="-Werror $CFLAGS"
+  fi
 else
   case "$host" in
     *-*-hpux*)
@@ -112,7 +118,7 @@ AH_TEMPLATE([AO_USE_PTHREAD_DEFS],
         [Emulate atomic operations via slow and async-signal-unsafe \
          pthread locking])
 AH_TEMPLATE([AO_ASM_X64_AVAILABLE],
-        [Inline assembly avalable (only VC/x86_64)])
+        [Inline assembly available (only VC/x86_64)])
 AH_TEMPLATE([AO_ASSUME_VISTA],
         [Assume Windows Server 2003, Vista or later target (only VC/x86)])
 AH_TEMPLATE([AO_ASSUME_WINDOWS98],
@@ -138,6 +144,12 @@ AH_TEMPLATE([AO_USE_SYNC_CAS_BUILTIN],
 AH_TEMPLATE([AO_WEAK_DOUBLE_CAS_EMULATION],
         [Emulate double-width CAS via pthread locking in case of no hardware \
          support (only gcc/x86_64, the emulation is unsafe)])
+AH_TEMPLATE([AO_DISABLE_GCC_ATOMICS],
+        [Do not use C11 atomic intrinsics even if available])
+AH_TEMPLATE([AO_PREFER_BUILTIN_ATOMICS],
+        [Prefer C11 atomic intrinsics over assembly-based implementation \
+        even in case of inefficient implementation (do not use assembly for \
+        any atomic_ops primitive if C11/GCC atomic intrinsics available)])
 
 AC_DEFINE(_REENTRANT, 1, [Required define if using POSIX threads.])
 
