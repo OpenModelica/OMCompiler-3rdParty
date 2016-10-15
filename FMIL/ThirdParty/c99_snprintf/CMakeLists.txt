@@ -86,12 +86,20 @@ foreach(check ${CHECKS})
         set(DEFINES ${DEFINES} -D${check}=${${check}})
     endif()
 endforeach()
+
+IF(MSVC_VERSION LESS 1900)
 add_definitions(
     -Dvsnprintf=rpl_vsnprintf
     -Dsnprintf=rpl_snprintf
     -Dvasprintf=rpl_vasprintf
     -Dasprintf=rpl_asprintf
     ${DEFINES})
+ELSE()
+add_definitions(
+    -Dvasprintf=rpl_vasprintf
+    -Dasprintf=rpl_asprintf
+    ${DEFINES})
+ENDIF(MSVC_VERSION LESS 1900)
 
 file(WRITE ${CMAKE_BINARY_DIR}/c99snprintf_defs "${DEFINES}")
 
