@@ -4,10 +4,6 @@
 # OMCompiler repository on your system. Use it to update Nox in OpenModelica
 # occasionally.
 #
-# Please note: On Windows there may be problems with file paths that are too
-# long. You may get a 'no such file or directory' error, which is really
-# irritating. So use places on your system with preferably short paths.
-#
 # The following variables have to be set by the user first.
 
 # Set Trilinos tag or branch to use.
@@ -62,17 +58,18 @@ cd "$TEMP_DIR"
 cmake \
 	-G "MSYS Makefiles" \
 	-DGIT_EXEC:FILEPATH="$GIT" \
-	-DBLAS_LIBRARY_DIRS:FILEPATH="$BLAS_LIBRARY_DIRS" \
-	-DLAPACK_LIBRARY_DIRS:FILEPATH="$LAPACK_LIBRARY_DIRS" \
-	-DTrilinos_ENABLE_ALL_PACKAGES:BOOL=OFF \
-	-DTrilinos_ENABLE_TESTS:BOOL=OFF \
+	-DBLAS_LIBRARY_DIRS="$BLAS_LIBRARY_DIRS" \
+	-DLAPACK_LIBRARY_DIRS="$LAPACK_LIBRARY_DIRS" \
+	-DTrilinos_ENABLE_ALL_PACKAGES=OFF \
+	-DTrilinos_ENABLE_EXAMPLES:BOOL=OFF \
 	-DBUILD_SHARED_LIBS:BOOL=ON \
 	-DTrilinos_ENABLE_NOX:BOOL=ON \
-	-DTrilinos_ENABLE_NOX_LAPACK:BOOL=ON \
+	-DTrilinos_ENABLE_TESTS:BOOL=OFF \
 	-DTrilinos_ASSERT_MISSING_PACKAGES:BOOL=OFF \
 	-DXpetra_ENABLE_Tpetra:BOOL=OFF \
 	-DTrilinos_ENABLE_ThyraCore:BOOL=OFF \
 	-DNOX_ENABLE_ThyraEpetraExtAdapters:BOOL=OFF \
+	-DTrilinos_ENABLE_Gtest:BOOL=OFF \
 	-DTrilinos_ENABLE_Epetra:BOOL=OFF \
 	-DTrilinos_ENABLE_Galeri:BOOL=OFF \
 	-DTrilinos_ENABLE_AztecOO:BOOL=OFF \
@@ -111,4 +108,3 @@ sed -i'' 's#template BLAS<long int, std::complex<float> >;##' "$THIRD_PARTY_DIR/
 sed -i'' 's#template BLAS<long int, std::complex<double> >;##' "$THIRD_PARTY_DIR/trilinos-nox/packages/teuchos/numerics/src/Teuchos_BLAS.cpp"
 sed -i'' 's#template BLAS<long int, float>;##' "$THIRD_PARTY_DIR/trilinos-nox/packages/teuchos/numerics/src/Teuchos_BLAS.cpp"
 sed -i'' 's#template BLAS<long int, double>;##' "$THIRD_PARTY_DIR/trilinos-nox/packages/teuchos/numerics/src/Teuchos_BLAS.cpp"
-
