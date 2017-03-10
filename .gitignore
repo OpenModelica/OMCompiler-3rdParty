@@ -167,3 +167,6 @@ sqlite3/sqlite3.pc
 
 sundials/build/
 sundials/build_msvc/
+
+trilinos-nox/build/
+trilinos-nox/build_msvc/
