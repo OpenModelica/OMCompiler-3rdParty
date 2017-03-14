@@ -116,7 +116,7 @@ IF(BUILD_STATIC_LIBS)
   ADD_LIBRARY(sundials_cvodes_static STATIC 
     ${cvodes_SOURCES}  ${cvodes_BL_SOURCES}  ${shared_SOURCES})
 
-  TARGET_LINK_LIBRARIES(sundials_cvodes_static ${KLU_LIBRARIES})
+  TARGET_LINK_LIBRARIES(sundials_cvodes_static ${KLU_LIBRARIES} ${LAPACK_LIBRARIES})
 	
   # Set the library name and make sure it is not deleted
   SET_TARGET_PROPERTIES(sundials_cvodes_static
@@ -134,7 +134,7 @@ IF(BUILD_SHARED_LIBS)
   ADD_LIBRARY(sundials_cvodes_shared SHARED 
     ${cvodes_SOURCES}  ${cvodes_BL_SOURCES}  ${shared_SOURCES})
 
-  TARGET_LINK_LIBRARIES(sundials_cvodes_shared ${KLU_LIBRARIES})
+  TARGET_LINK_LIBRARIES(sundials_cvodes_shared ${KLU_LIBRARIES} ${LAPACK_LIBRARIES})
   
   # Set the library name and make sure it is not deleted
   SET_TARGET_PROPERTIES(sundials_cvodes_shared

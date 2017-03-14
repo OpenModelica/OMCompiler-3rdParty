@@ -122,7 +122,7 @@ IF(BUILD_STATIC_LIBS)
   ADD_LIBRARY(sundials_kinsol_static STATIC
     ${kinsol_SOURCES} ${kinsol_BL_SOURCES} ${kinsol_SLU_SOURCES} ${shared_SOURCES})
 
-  TARGET_LINK_LIBRARIES(sundials_kinsol_static ${KLU_LIBRARIES})
+  TARGET_LINK_LIBRARIES(sundials_kinsol_static ${KLU_LIBRARIES} ${LAPACK_LIBRARIES})
 	
   # Set the library name and make sure it is not deleted
   SET_TARGET_PROPERTIES(sundials_kinsol_static
@@ -140,7 +140,7 @@ IF(BUILD_SHARED_LIBS)
   ADD_LIBRARY(sundials_kinsol_shared SHARED
     ${kinsol_SOURCES} ${kinsol_BL_SOURCES} ${kinsol_SLU_SOURCES} ${shared_SOURCES})
 
-  TARGET_LINK_LIBRARIES(sundials_kinsol_shared ${KLU_LIBRARIES})
+  TARGET_LINK_LIBRARIES(sundials_kinsol_shared ${KLU_LIBRARIES} ${LAPACK_LIBRARIES})
   
   # Set the library name and make sure it is not deleted
   SET_TARGET_PROPERTIES(sundials_kinsol_shared

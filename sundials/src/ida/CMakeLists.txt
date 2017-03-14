@@ -109,7 +109,7 @@ IF(BUILD_STATIC_LIBS)
   ADD_LIBRARY(sundials_ida_static STATIC 
     ${ida_SOURCES}  ${ida_BL_SOURCES}  ${shared_SOURCES})
   
-  TARGET_LINK_LIBRARIES(sundials_ida_static ${KLU_LIBRARIES})
+  TARGET_LINK_LIBRARIES(sundials_ida_static ${KLU_LIBRARIES} ${LAPACK_LIBRARIES})
   
   # Set the library name and make sure it is not deleted
   SET_TARGET_PROPERTIES(sundials_ida_static
@@ -127,7 +127,7 @@ IF(BUILD_SHARED_LIBS)
   ADD_LIBRARY(sundials_ida_shared SHARED
     ${ida_SOURCES}  ${ida_BL_SOURCES} ${shared_SOURCES})
 	
-  TARGET_LINK_LIBRARIES(sundials_ida_shared ${KLU_LIBRARIES})
+  TARGET_LINK_LIBRARIES(sundials_ida_shared ${KLU_LIBRARIES} ${LAPACK_LIBRARIES})
 
   # Set the library name and make sure it is not deleted
   SET_TARGET_PROPERTIES(sundials_ida_shared

@@ -122,7 +122,7 @@ IF(BUILD_STATIC_LIBS)
   ADD_LIBRARY(sundials_arkode_static STATIC 
     ${arkode_SOURCES}  ${arkode_BL_SOURCES} ${shared_SOURCES})
 
-  TARGET_LINK_LIBRARIES(sundials_arkode_static ${KLU_LIBRARIES})
+  TARGET_LINK_LIBRARIES(sundials_arkode_static ${KLU_LIBRARIES} ${LAPACK_LIBRARIES})
 	
   # Set the library name and make sure it is not deleted
   SET_TARGET_PROPERTIES(sundials_arkode_static
@@ -140,7 +140,7 @@ IF(BUILD_SHARED_LIBS)
   ADD_LIBRARY(sundials_arkode_shared SHARED 
     ${arkode_SOURCES}  ${arkode_BL_SOURCES}  ${shared_SOURCES})
 
-  TARGET_LINK_LIBRARIES(sundials_arkode_shared ${KLU_LIBRARIES})
+  TARGET_LINK_LIBRARIES(sundials_arkode_shared ${KLU_LIBRARIES} ${LAPACK_LIBRARIES})
   
   # Set the library name and make sure it is not deleted
   SET_TARGET_PROPERTIES(sundials_arkode_shared
