@@ -27,7 +27,6 @@ AC_ARG_ENABLE(shared-tables,
   [  --enable-shared-tables[=yes] Adds support for shared tables, reducing file I/O and reducing memory footprint],[test "xyes" = x"$enableval" && SHARED_TABLES="Yes"],[SHARED_TABLES="Yes"])
 AC_ARG_ENABLE(static-zlib, [  --enable-static-zlib[=no]],[test "xyes" = x"$enableval" && STATIC_ZLIB="Yes"],[STATIC_ZLIB="No"])
 
-LIBZLIB="libzlib.la"
 if test "$ZLIB" = "Yes"; then
   AC_CHECK_HEADERS(zlib.h,[AC_SEARCH_LIBS([gzclose], [z], [ZLIB="Yes"], [ZLIB="No"])],[ZLIB="No"])
   if test "$ZLIB" = "No" && test -d ../../C-Sources/zlib; then
@@ -114,8 +113,18 @@ LIBS=$LIBS_BEFORE
 
 fi
 
+AC_CHECK_HEADERS(dirent.h,[],[CPPFLAGS="$CPPFLAGS -DNO_FILE_SYSTEM"])
+AC_CHECK_HEADERS(locale.h,[],[CPPFLAGS="$CPPFLAGS -DNO_LOCALE"])
+AC_CHECK_HEADERS(time.h,[],[CPPFLAGS="$CPPFLAGS -DNO_TIME"])
+AC_MSG_CHECKING([for getpid()])
+AC_TRY_LINK([
+#include <unistd.h>
+],
+[getpid();],
+[AC_MSG_RESULT([yes])],
+[AC_MSG_RESULT([no]); CPPFLAGS="$CPPFLAGS -DNO_PID"])
+
 CPPFLAGS="$CPPFLAGS -DDUMMY_FUNCTION_USERTAB"
-CFLAGS="$CFLAGS -O0 -g"
 STATIC_CPPFLAGS="$CPPFLAGS -DDUMMY_FUNCTION_USERTAB"
 if test "$ZLIB" = "Yes"; then
 CPPFLAGS="$CPPFLAGS -DHAVE_ZLIB=1"
