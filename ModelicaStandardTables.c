@@ -1,6 +1,6 @@
-/* ModelicaStandardTable.c - External table functions
+/* ModelicaStandardTables.c - External table functions
 
-   Copyright (C) 2013-2016, Modelica Association, DLR and ITI GmbH
+   Copyright (C) 2013-2017, Modelica Association, DLR, and ESI ITI GmbH
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -46,9 +46,28 @@
                            utilized memory (tickets #1110 and #1550).
 
    Release Notes:
-      Jan. 15, 2016: by Thomas Beutlich, ITI GmbH
-                     Call Mat_VarReadDataAll instead of Mat_VarReadData in
-                     readMatTable (ticket #1881)
+      Mar. 08, 2017: by Thomas Beutlich, ESI ITI GmbH
+                     Moved file I/O functions to ModelicaIO (ticket #2192)
+
+      Feb. 26, 2017: by Thomas Beutlich, ESI ITI GmbH
+                     Fixed definition of uthash_fatal, called by HASH_ADD_KEYPTR in
+                     function readTable (ticket #2097)
+
+      Feb. 25, 2017: by Thomas Beutlich, ESI ITI GmbH
+                     Added support of extrapolation for CombiTable1D (ticket #1839)
+                     Added functions to retrieve minimum and maximum abscissa
+                     values of CombiTable1D (ticket #2120)
+
+      Jan. 27, 2017: by Thomas Beutlich, ESI ITI GmbH
+                     Always generate time events for CombiTimeTable with linear
+                     interpolation (similarly to constant segments)
+                     (tickets #1627 and #2080)
+
+      Aug. 10, 2016: by Thomas Beutlich, ESI ITI GmbH
+                     Fixed event detection of CombiTimeTable for restarted
+                     simulation (ticket #2040)
+                     Fixed tracing time events (DEBUG_TIME_EVENTS) of CombiTimeTable
+                     for negative simulation time
 
       Dec. 16, 2015: by Thomas Beutlich, ITI GmbH
                      Added univariate Steffen-spline interpolation (ticket #1814)
@@ -97,6 +116,8 @@
 
       May 21, 2014:  by Thomas Beutlich, ITI GmbH
                      Fixed bivariate Akima-spline extrapolation (ticket #1465)
+                     Improved error message in case of trailing numbers when parsing
+                     a line of an external ASCII text file (ticket #1494)
 
       Oct. 17, 2013: by Thomas Beutlich, ITI GmbH
                      Added support of 2D tables that actually degrade to 1D tables
@@ -111,26 +132,19 @@
                      Implemented a first version
 */
 
-#if defined(__gnu_linux__) && !defined(NO_FILE_SYSTEM)
-#define _GNU_SOURCE 1
-#endif
 #include "ModelicaStandardTables.h"
+#include "ModelicaIO.h"
 #include "ModelicaUtilities.h"
-#if !defined(NO_FILE_SYSTEM)
-#include <stdio.h>
-#include <locale.h>
-#include "ModelicaMatIO.h"
-#if defined(TABLE_SHARE)
-#define uthash_fatal(msg) ModelicaFormatMessage("Error: %s\n", msg); break
+#if defined(TABLE_SHARE) && !defined(NO_FILE_SYSTEM)
 #include "uthash.h"
+#undef uthash_fatal /* Ensure that nowhere in this file uses uthash_fatal by accident */
 #include "gconstructor.h"
-#endif
 #endif
 #include <float.h>
 #include <math.h>
 #include <string.h>
 
-#if defined(TABLE_SHARE) && !defined(NO_FILE_SYSTEM)
+#if !defined(NO_FILE_SYSTEM)
 /* The standard way to detect posix is to check _POSIX_VERSION,
  * which is defined in <unistd.h>
  */
@@ -223,6 +237,7 @@ typedef struct CombiTable1D {
     size_t nCol; /* Number of columns of table */
     size_t last; /* Last accessed row index of table */
     enum Smoothness smoothness; /* Smoothness kind */
+    enum Extrapolation extrapolation; /* Extrapolation kind */
     enum TableSource source; /* Source kind */
     int* cols; /* Columns of table to be interpolated */
     size_t nCols; /* Number of columns of table to be interpolated */
@@ -247,9 +262,12 @@ typedef struct CombiTable2D {
 
 /* ----- Internal constants ----- */
 
+#if !defined(_EPSILON)
 #define _EPSILON (1e-10)
+#endif
+#if !defined(MAX_TABLE_DIMENSIONS)
 #define MAX_TABLE_DIMENSIONS (3)
-#define LINE_BUFFER_LENGTH (64)
+#endif
 
 /* ----- Internal shortcuts ----- */
 
@@ -317,7 +335,7 @@ static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 #if !defined(WIN32_LEAN_AND_MEAN)
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include <Windows.h>
+#include <windows.h>
 static CRITICAL_SECTION cs;
 #ifdef G_DEFINE_CONSTRUCTOR_NEEDS_PRAGMA
 #pragma G_DEFINE_CONSTRUCTOR_PRAGMA_ARGS(initializeCS)
@@ -404,23 +422,6 @@ static double* readTable(_In_z_ const char* tableName, _In_z_ const char* fileNa
 
      <- RETURN: Pointer to array (row-wise storage) of table values
   */
-
-static double* readMatTable(_In_z_ const char* tableName, _In_z_ const char* fileName,
-                            _Inout_ size_t* nRow, _Inout_ size_t* nCol) MODELICA_NONNULLATTR;
-  /* Read a table from a MATLAB MAT-file using MatIO functions
-
-     <- RETURN: Pointer to array (row-wise storage) of table values
-  */
-
-static double* readTxtTable(_In_z_ const char* tableName, _In_z_ const char* fileName,
-                            _Inout_ size_t* nRow, _Inout_ size_t* nCol) MODELICA_NONNULLATTR;
-  /* Read a table from an ASCII text file
-
-     <- RETURN: Pointer to array (row-wise storage) of table values
-  */
-
-static int readLine(_In_ char** buf, _In_ int* bufLen, _In_ FILE* fp) MODELICA_NONNULLATTR;
-  /* Read line (of unknown and arbitrary length) from an ASCII text file */
 #endif /* #if !defined(NO_FILE_SYSTEM) */
 
 static CubicHermite1D* akimaSpline1DInit(_In_ const double* table, size_t nRow,
@@ -468,11 +469,12 @@ static void spline2DClose(CubicHermite2D** spline);
 
 /* ----- Interface functions ----- */
 
-void* ModelicaStandardTables_CombiTimeTable_init(const char* tableName,
-                                                 const char* fileName,
-                                                 double* table,
-                                                 size_t nRow, size_t nColumn,
-                                                 double startTime, int* cols,
+void* ModelicaStandardTables_CombiTimeTable_init(_In_z_ const char* tableName,
+                                                 _In_z_ const char* fileName,
+                                                 _In_ double* table, size_t nRow,
+                                                 size_t nColumn,
+                                                 double startTime,
+                                                 _In_ int* cols,
                                                  size_t nCols, int smoothness,
                                                  int extrapolation) {
     CombiTimeTable* tableID = (CombiTimeTable*)calloc(1, sizeof(CombiTimeTable));
@@ -492,6 +494,8 @@ void* ModelicaStandardTables_CombiTimeTable_init(const char* tableName,
             }
         }
         tableID->startTime = startTime;
+        tableID->preNextTimeEvent = -DBL_MAX;
+        tableID->preNextTimeEventCalled = -DBL_MAX;
         tableID->source = getTableSource(tableName, fileName);
 
         switch (tableID->source) {
@@ -806,11 +810,11 @@ double ModelicaStandardTables_CombiTimeTable_getValue(void* _tableID, int iCol,
             }
             else {
                 enum PointInterval extrapolate = IN_TABLE;
+                const double tMin = TABLE_ROW0(0);
+                const double tMax = TABLE_COL0(nRow - 1);
 
                 /* Periodic extrapolation */
                 if (tableID->extrapolation == PERIODIC) {
-                    const double tMin = TABLE_ROW0(0);
-                    const double tMax = TABLE_COL0(nRow - 1);
                     const double T = tMax - tMin;
                     /* Event handling for periodic extrapolation */
                     if (nextTimeEvent == preNextTimeEvent &&
@@ -848,10 +852,14 @@ double ModelicaStandardTables_CombiTimeTable_getValue(void* _tableID, int iCol,
 
                         t -= tableID->tOffset;
                         if (t < tMin) {
-                            t += T;
+                            do {
+                                t += T;
+                            } while (t < tMin);
                         }
                         else if (t > tMax) {
-                            t -= T;
+                            do {
+                                t -= T;
+                            } while (t > tMax);
                         }
                         tableID->last = findRowIndex(
                             table, nRow, nCol, tableID->last, t);
@@ -869,18 +877,16 @@ double ModelicaStandardTables_CombiTimeTable_getValue(void* _tableID, int iCol,
                         }
                     }
                 }
-                else if (t < TABLE_ROW0(0)) {
+                else if (t < tMin) {
                     extrapolate = LEFT;
                 }
-                else if (t >= TABLE_COL0(nRow - 1)) {
+                else if (t >= tMax) {
                     extrapolate = RIGHT;
-                    if (tableID->extrapolation != PERIODIC) {
-                        /* Event handling for non-periodic extrapolation */
-                        if (nextTimeEvent == preNextTimeEvent &&
-                            nextTimeEvent < DBL_MAX && tOld >= nextTimeEvent) {
-                            /* Before event iteration */
-                            extrapolate = IN_TABLE;
-                        }
+                    /* Event handling for non-periodic extrapolation */
+                    if (nextTimeEvent == preNextTimeEvent &&
+                        nextTimeEvent < DBL_MAX && tOld >= nextTimeEvent) {
+                        /* Before event iteration */
+                        extrapolate = IN_TABLE;
                     }
                 }
 
@@ -940,13 +946,6 @@ double ModelicaStandardTables_CombiTimeTable_getValue(void* _tableID, int iCol,
 
                     /* Interpolation */
                     switch (tableID->smoothness) {
-                        case CONSTANT_SEGMENTS:
-                            if (t >= TABLE_COL0(last + 1)) {
-                                last += 1;
-                            }
-                            y = TABLE(last, col);
-                            break;
-
                         case LINEAR_SEGMENTS: {
                             const double t0 = TABLE_COL0(last);
                             const double t1 = TABLE_COL0(last + 1);
@@ -961,10 +960,17 @@ double ModelicaStandardTables_CombiTimeTable_getValue(void* _tableID, int iCol,
                             break;
                         }
 
+                        case CONSTANT_SEGMENTS:
+                            if (t >= TABLE_COL0(last + 1)) {
+                                last += 1;
+                            }
+                            y = TABLE(last, col);
+                            break;
+
                         case AKIMA_C1:
                         case FRITSCH_BUTLAND_MONOTONE_C1:
                         case STEFFEN_MONOTONE_C1:
-                            if (tableID->spline != NULL) {
+                            if (NULL != tableID->spline) {
                                 const double* c = tableID->spline[
                                     IDX(last, iCol - 1, tableID->nCols)];
                                 t -= TABLE_COL0(last);
@@ -981,51 +987,60 @@ double ModelicaStandardTables_CombiTimeTable_getValue(void* _tableID, int iCol,
                 else {
                     /* Extrapolation */
                     switch (tableID->extrapolation) {
-                        case NO_EXTRAPOLATION:
-                            ModelicaError("Extrapolation error\n");
-                            return y;
-
-                        case HOLD_LAST_POINT:
-                            y = (extrapolate == RIGHT) ? TABLE(nRow - 1, col) :
-                                TABLE_ROW0(col);
-                            break;
-
                         case LAST_TWO_POINTS: {
                             const size_t last =
                                 (extrapolate == RIGHT) ? nRow - 2 : 0;
                             const double t0 = TABLE_COL0(last);
                             const double y0 = TABLE(last, col);
 
-                            if (tableID->smoothness == AKIMA_C1 ||
-                                tableID->smoothness == FRITSCH_BUTLAND_MONOTONE_C1 ||
-                                tableID->smoothness == STEFFEN_MONOTONE_C1) {
-                                if (tableID->spline != NULL) {
-                                    const double* c = tableID->spline[
-                                        IDX(last, iCol - 1, tableID->nCols)];
-                                    if (extrapolate == LEFT) {
-                                        y = LINEAR_SLOPE(y0, c[2], t - t0);
+                            switch(tableID->smoothness) {
+                                case LINEAR_SEGMENTS:
+                                case CONSTANT_SEGMENTS: {
+                                    const double t1 = TABLE_COL0(last + 1);
+                                    const double y1 = TABLE(last + 1, col);
+                                    if (isNearlyEqual(t0, t1)) {
+                                        y = y1;
                                     }
-                                    else /* if (extrapolate == RIGHT) */ {
-                                        const double t1 = TABLE_COL0(last + 1);
-                                        const double v = t1 - t0;
-                                        y = LINEAR_SLOPE(TABLE(last + 1, col),
-                                            (3*c[0]*v + 2*c[1])*v + c[2],
-                                            t - t1);
+                                    else {
+                                        LINEAR(t, t0, t1, y0, y1)
                                     }
+                                    break;
                                 }
-                            }
-                            else {
-                                const double t1 = TABLE_COL0(last + 1);
-                                const double y1 = TABLE(last + 1, col);
-                                if (isNearlyEqual(t0, t1)) {
-                                    y = y1;
-                                }
-                                else {
-                                    LINEAR(t, t0, t1, y0, y1)
-                                }
+
+                                case AKIMA_C1:
+                                case FRITSCH_BUTLAND_MONOTONE_C1:
+                                case STEFFEN_MONOTONE_C1:
+                                    if (NULL != tableID->spline) {
+                                        const double* c = tableID->spline[
+                                            IDX(last, iCol - 1, tableID->nCols)];
+                                        if (extrapolate == LEFT) {
+                                            y = LINEAR_SLOPE(y0, c[2], t - t0);
+                                        }
+                                        else /* if (extrapolate == RIGHT) */ {
+                                            const double t1 = TABLE_COL0(last + 1);
+                                            const double v = t1 - t0;
+                                            y = LINEAR_SLOPE(TABLE(last + 1, col),
+                                                (3*c[0]*v + 2*c[1])*v + c[2],
+                                                t - t1);
+                                        }
+                                    }
+                                    break;
+
+                                default:
+                                    ModelicaError("Unknown smoothness kind\n");
+                                    return y;
                             }
                             break;
                         }
+
+                        case HOLD_LAST_POINT:
+                            y = (extrapolate == RIGHT) ? TABLE(nRow - 1, col) :
+                                TABLE_ROW0(col);
+                            break;
+
+                        case NO_EXTRAPOLATION:
+                            ModelicaError("Extrapolation error\n");
+                            return y;
 
                         case PERIODIC:
                             /* Should not be possible to get here */
@@ -1068,13 +1083,13 @@ double ModelicaStandardTables_CombiTimeTable_getDerValue(void* _tableID, int iCo
 
             if (nRow > 1) {
                 enum PointInterval extrapolate = IN_TABLE;
+                const double tMin = TABLE_ROW0(0);
+                const double tMax = TABLE_COL0(nRow - 1);
                 size_t last = 0;
                 int haveLast = 0;
 
                 /* Periodic extrapolation */
                 if (tableID->extrapolation == PERIODIC) {
-                    const double tMin = TABLE_ROW0(0);
-                    const double tMax = TABLE_COL0(nRow - 1);
                     const double T = tMax - tMin;
                     /* Event handling for periodic extrapolation */
                     if (nextTimeEvent == preNextTimeEvent &&
@@ -1103,10 +1118,14 @@ double ModelicaStandardTables_CombiTimeTable_getDerValue(void* _tableID, int iCo
 
                         t -= tableID->tOffset;
                         if (t < tMin) {
-                            t += T;
+                            do {
+                                t += T;
+                            } while (t < tMin);
                         }
                         else if (t > tMax) {
-                            t -= T;
+                            do {
+                                t -= T;
+                            } while (t > tMax);
                         }
                         tableID->last = findRowIndex(
                             table, nRow, nCol, tableID->last, t);
@@ -1124,18 +1143,16 @@ double ModelicaStandardTables_CombiTimeTable_getDerValue(void* _tableID, int iCo
                         }
                     }
                 }
-                else if (t < TABLE_ROW0(0)) {
+                else if (t < tMin) {
                     extrapolate = LEFT;
                 }
-                else if (t >= TABLE_COL0(nRow - 1)) {
+                else if (t >= tMax) {
                     extrapolate = RIGHT;
-                    if (tableID->extrapolation != PERIODIC) {
-                        /* Event handling for non-periodic extrapolation */
-                        if (nextTimeEvent == preNextTimeEvent &&
-                            nextTimeEvent < DBL_MAX && tOld >= nextTimeEvent) {
-                            /* Before event iteration */
-                            extrapolate = IN_TABLE;
-                        }
+                    /* Event handling for non-periodic extrapolation */
+                    if (nextTimeEvent == preNextTimeEvent &&
+                        nextTimeEvent < DBL_MAX && tOld >= nextTimeEvent) {
+                        /* Before event iteration */
+                        extrapolate = IN_TABLE;
                     }
                 }
 
@@ -1196,9 +1213,6 @@ double ModelicaStandardTables_CombiTimeTable_getDerValue(void* _tableID, int iCo
                 if (extrapolate == IN_TABLE) {
                     /* Interpolation */
                     switch (tableID->smoothness) {
-                        case CONSTANT_SEGMENTS:
-                            break;
-
                         case LINEAR_SEGMENTS: {
                             const double t0 = TABLE_COL0(last);
                             const double t1 = TABLE_COL0(last + 1);
@@ -1210,10 +1224,13 @@ double ModelicaStandardTables_CombiTimeTable_getDerValue(void* _tableID, int iCo
                             break;
                         }
 
+                        case CONSTANT_SEGMENTS:
+                            break;
+
                         case AKIMA_C1:
                         case FRITSCH_BUTLAND_MONOTONE_C1:
                         case STEFFEN_MONOTONE_C1:
-                            if (tableID->spline != NULL) {
+                            if (NULL != tableID->spline) {
                                 const double* c = tableID->spline[
                                     IDX(last, iCol - 1, tableID->nCols)];
                                 t -= TABLE_COL0(last);
@@ -1230,43 +1247,51 @@ double ModelicaStandardTables_CombiTimeTable_getDerValue(void* _tableID, int iCo
                 else {
                     /* Extrapolation */
                     switch (tableID->extrapolation) {
-                        case NO_EXTRAPOLATION:
-                            ModelicaError("Extrapolation error\n");
-                            return der_y;
+                        case LAST_TWO_POINTS:
+                            last = (extrapolate == RIGHT) ? nRow - 2 : 0;
+                            switch(tableID->smoothness) {
+                                case LINEAR_SEGMENTS:
+                                case CONSTANT_SEGMENTS: {
+                                    const double t0 = TABLE_COL0(last);
+                                    const double t1 = TABLE_COL0(last + 1);
+                                    if (!isNearlyEqual(t0, t1)) {
+                                        der_y = (TABLE(last + 1, col) - TABLE(last, col))/
+                                            (t1 - t0);
+                                    }
+                                    break;
+                                }
+
+                                case AKIMA_C1:
+                                case FRITSCH_BUTLAND_MONOTONE_C1:
+                                case STEFFEN_MONOTONE_C1:
+                                    if (NULL != tableID->spline) {
+                                        const double* c = tableID->spline[
+                                            IDX(last, iCol - 1, tableID->nCols)];
+                                        if (extrapolate == LEFT) {
+                                            der_y = c[2];
+                                        }
+                                        else /* if (extrapolate == RIGHT) */ {
+                                            der_y = TABLE_COL0(last + 1) -
+                                                TABLE_COL0(last); /* = (t1 - t0) */
+                                            der_y = (3*c[0]*der_y + 2*c[1])*
+                                                der_y + c[2];
+                                        }
+                                    }
+                                    break;
+
+                                default:
+                                    ModelicaError("Unknown smoothness kind\n");
+                                    return der_y;
+                            }
+                            der_y *= der_t;
+                            break;
 
                         case HOLD_LAST_POINT:
                             break;
 
-                        case LAST_TWO_POINTS:
-                            last = (extrapolate == RIGHT) ? nRow - 2 : 0;
-
-                            if (tableID->smoothness == AKIMA_C1 ||
-                                tableID->smoothness == FRITSCH_BUTLAND_MONOTONE_C1 ||
-                                tableID->smoothness == STEFFEN_MONOTONE_C1) {
-                                if(tableID->spline) {
-                                    const double* c = tableID->spline[
-                                        IDX(last, iCol - 1, tableID->nCols)];
-                                    if (extrapolate == LEFT) {
-                                        der_y = c[2];
-                                    }
-                                    else /* if (extrapolate == RIGHT) */ {
-                                        der_y = TABLE_COL0(last + 1) -
-                                            TABLE_COL0(last); /* = (t1 - t0) */
-                                        der_y = (3*c[0]*der_y + 2*c[1])*
-                                            der_y + c[2];
-                                    }
-                                }
-                            }
-                            else {
-                                const double t0 = TABLE_COL0(last);
-                                const double t1 = TABLE_COL0(last + 1);
-                                if (!isNearlyEqual(t0, t1)) {
-                                    der_y = (TABLE(last + 1, col) - TABLE(last, col))/
-                                        (t1 - t0);
-                                }
-                            }
-                            der_y *= der_t;
-                            break;
+                        case NO_EXTRAPOLATION:
+                            ModelicaError("Extrapolation error\n");
+                            return der_y;
 
                         case PERIODIC:
                             /* Should not be possible to get here */
@@ -1286,7 +1311,7 @@ double ModelicaStandardTables_CombiTimeTable_getDerValue(void* _tableID, int iCo
 double ModelicaStandardTables_CombiTimeTable_minimumTime(void* _tableID) {
     double tMin = 0.;
     CombiTimeTable* tableID = (CombiTimeTable*)_tableID;
-    if (tableID != NULL && tableID->table != NULL) {
+    if (NULL != tableID && NULL != tableID->table) {
         const double* table = tableID->table;
         tMin = TABLE_ROW0(0);
     }
@@ -1296,7 +1321,7 @@ double ModelicaStandardTables_CombiTimeTable_minimumTime(void* _tableID) {
 double ModelicaStandardTables_CombiTimeTable_maximumTime(void* _tableID) {
     double tMax = 0.;
     CombiTimeTable* tableID = (CombiTimeTable*)_tableID;
-    if (tableID != NULL && tableID->table != NULL) {
+    if (NULL != tableID && NULL != tableID->table) {
         const double* table = tableID->table;
         const size_t nCol = tableID->nCol;
         tMax = TABLE_COL0(tableID->nRow - 1);
@@ -1308,14 +1333,22 @@ double ModelicaStandardTables_CombiTimeTable_nextTimeEvent(void* _tableID,
                                                            double t) {
     double nextTimeEvent = DBL_MAX;
     CombiTimeTable* tableID = (CombiTimeTable*)_tableID;
-    if (tableID != NULL && tableID->table != NULL) {
+    if (NULL != tableID && NULL != tableID->table) {
         const double* table = tableID->table;
         const size_t nRow = tableID->nRow;
         const size_t nCol = tableID->nCol;
 
         if (tableID->nEvent > 0) {
             if (t > tableID->preNextTimeEventCalled) {
-                tableID->preNextTimeEventCalled = t;
+                /* Intentionally empty */
+            }
+            else if (t < tableID->preNextTimeEventCalled) {
+                /* Force reinitialization of event interval */
+                tableID->eventInterval = 0;
+                /* Reset time event counter */
+                tableID->nEvent = 0;
+                /* Reset time event */
+                tableID->preNextTimeEvent = -DBL_MAX;
             }
             else {
                 return tableID->preNextTimeEvent;
@@ -1329,19 +1362,16 @@ double ModelicaStandardTables_CombiTimeTable_nextTimeEvent(void* _tableID,
 
             /* There is at least one time event at the interval boundaries */
             tableID->maxEvents = 1;
-            for (i = 0; i < nRow - 1; i++) {
-                double t0 = TABLE_COL0(i);
-                double t1 = TABLE_COL0(i + 1);
-                if (t1 > tEvent && !isNearlyEqual(t1, tMax)) {
-                    if (tableID->smoothness == CONSTANT_SEGMENTS) {
+            if (tableID->smoothness == LINEAR_SEGMENTS ||
+                tableID->smoothness == CONSTANT_SEGMENTS) {
+                for (i = 0; i < nRow - 1; i++) {
+                    double t0 = TABLE_COL0(i);
+                    double t1 = TABLE_COL0(i + 1);
+                    if (t1 > tEvent && !isNearlyEqual(t1, tMax)) {
                         if (!isNearlyEqual(t0, t1)) {
                             tEvent = t1;
                             tableID->maxEvents++;
                         }
-                    }
-                    else if (isNearlyEqual(t0, t1)) {
-                        tEvent = t1;
-                        tableID->maxEvents++;
                     }
                 }
             }
@@ -1355,7 +1385,8 @@ double ModelicaStandardTables_CombiTimeTable_nextTimeEvent(void* _tableID,
 
             tEvent = TABLE_ROW0(0);
             eventInterval = 0;
-            if (tableID->smoothness == CONSTANT_SEGMENTS) {
+            if (tableID->smoothness == LINEAR_SEGMENTS ||
+                tableID->smoothness == CONSTANT_SEGMENTS) {
                 for (i = 0; i < nRow - 1 &&
                     eventInterval < tableID->maxEvents; i++) {
                     double t0 = TABLE_COL0(i);
@@ -1376,31 +1407,9 @@ double ModelicaStandardTables_CombiTimeTable_nextTimeEvent(void* _tableID,
                     }
                 }
             }
-            else {
-                for (i = 0; i < nRow - 1 &&
-                    eventInterval < tableID->maxEvents; i++) {
-                    double t0 = TABLE_COL0(i);
-                    double t1 = TABLE_COL0(i + 1);
-                    if (t1 > tEvent) {
-                        if (isNearlyEqual(t0, t1)) {
-                            tEvent = t1;
-                            tableID->intervals[eventInterval][1] = i;
-                            eventInterval++;
-                            if (eventInterval < tableID->maxEvents) {
-                                tableID->intervals[eventInterval][0] = i + 1;
-                            }
-                        }
-                        else {
-                            tableID->intervals[eventInterval][1] = i + 1;
-                        }
-                    }
-                    else {
-                        tableID->intervals[eventInterval][0] = i + 1;
-                    }
-                }
-            }
         }
 
+        tableID->preNextTimeEventCalled = t;
         if (t < tableID->startTime) {
             nextTimeEvent = tableID->startTime;
         }
@@ -1459,34 +1468,24 @@ double ModelicaStandardTables_CombiTimeTable_nextTimeEvent(void* _tableID,
                     iEnd = iStart < (nRow - 1) ? iStart : (nRow - 1);
                 }
 
-                for (i = iStart + 1; i < nRow - 1; i++) {
-                    double t0 = TABLE_COL0(i);
-                    double t1 = TABLE_COL0(i + 1);
-                    if (t0 > t) {
-                        if (tableID->smoothness == CONSTANT_SEGMENTS) {
-                            nextTimeEvent = t0;
-                            break;
-                        }
-                        else if (isNearlyEqual(t0, t1)) {
+                if (tableID->smoothness == LINEAR_SEGMENTS ||
+                    tableID->smoothness == CONSTANT_SEGMENTS) {
+                    for (i = iStart + 1; i < nRow - 1; i++) {
+                        double t0 = TABLE_COL0(i);
+                        if (t0 > t) {
                             nextTimeEvent = t0;
                             break;
                         }
                     }
-                }
 
-                for (i = 0; i < iEnd; i++) {
-                    double t0 = TABLE_COL0(i);
-                    double t1 = TABLE_COL0(i + 1);
-                    if (t1 > tEvent && !isNearlyEqual(t1, tMax)) {
-                        if (tableID->smoothness == CONSTANT_SEGMENTS) {
+                    for (i = 0; i < iEnd; i++) {
+                        double t0 = TABLE_COL0(i);
+                        double t1 = TABLE_COL0(i + 1);
+                        if (t1 > tEvent && !isNearlyEqual(t1, tMax)) {
                             if (!isNearlyEqual(t0, t1)) {
                                 tEvent = t1;
                                 tableID->eventInterval++;
                             }
-                        }
-                        else if (isNearlyEqual(t0, t1)) {
-                            tEvent = t1;
-                            tableID->eventInterval++;
                         }
                     }
                 }
@@ -1543,8 +1542,10 @@ double ModelicaStandardTables_CombiTimeTable_nextTimeEvent(void* _tableID,
 
 #if defined(DEBUG_TIME_EVENTS)
         if (nextTimeEvent < DBL_MAX) {
-            ModelicaFormatMessage("At time %.17lg: %lu. time event at %.17lg\n", t,
-                (unsigned long)tableID->nEvent, nextTimeEvent);
+            ModelicaFormatMessage("At time %.17lg (interval %lu of %lu): %lu. "
+                "time event at %.17lg\n", t, (unsigned long)tableID->eventInterval,
+                (unsigned long)tableID->maxEvents, (unsigned long)tableID->nEvent,
+                nextTimeEvent);
         }
         else {
             ModelicaFormatMessage("No more time events for time > %.17lg\n", t);
@@ -1627,14 +1628,27 @@ double ModelicaStandardTables_CombiTimeTable_read(void* _tableID, int force,
     return 1.; /* Success */
 }
 
-void* ModelicaStandardTables_CombiTable1D_init(const char* tableName,
-                                               const char* fileName,
-                                               double* table, size_t nRow,
-                                               size_t nColumn, int* cols,
+void* ModelicaStandardTables_CombiTable1D_init(_In_z_ const char* tableName,
+                                               _In_z_ const char* fileName,
+                                               _In_ double* table, size_t nRow,
+                                               size_t nColumn,
+                                               _In_ int* cols,
                                                size_t nCols, int smoothness) {
+    return ModelicaStandardTables_CombiTable1D_init2(tableName, fileName,
+        table, nRow, nColumn, cols, nCols, smoothness, LAST_TWO_POINTS);
+}
+
+void* ModelicaStandardTables_CombiTable1D_init2(_In_z_ const char* tableName,
+                                                _In_z_ const char* fileName,
+                                                _In_ double* table, size_t nRow,
+                                                size_t nColumn,
+                                                _In_ int* cols,
+                                                size_t nCols, int smoothness,
+                                                int extrapolation) {
     CombiTable1D* tableID = (CombiTable1D*)calloc(1, sizeof(CombiTable1D));
     if (tableID != NULL) {
         tableID->smoothness = (enum Smoothness)smoothness;
+        tableID->extrapolation = (enum Extrapolation)extrapolation;
         tableID->nCols = nCols;
         if (nCols > 0) {
             tableID->cols = (int*)malloc(tableID->nCols*sizeof(int));
@@ -1947,13 +1961,32 @@ double ModelicaStandardTables_CombiTable1D_getValue(void* _tableID, int iCol,
         }
         else {
             enum PointInterval extrapolate = IN_TABLE;
+            const double uMin = TABLE_ROW0(0);
+            const double uMax = TABLE_COL0(nRow - 1);
             size_t last;
 
-            if (u < TABLE_ROW0(0)) {
+            /* Periodic extrapolation */
+            if (tableID->extrapolation == PERIODIC) {
+                const double T = uMax - uMin;
+
+                if (u < uMin) {
+                    do {
+                        u += T;
+                    } while (u < uMin);
+                }
+                else if (u > uMax) {
+                    do {
+                        u -= T;
+                    } while (u > uMax);
+                }
+                last = findRowIndex(table, nRow, nCol, tableID->last, u);
+                tableID->last = last;
+            }
+            else if (u < uMin) {
                 extrapolate = LEFT;
                 last = 0;
             }
-            else if (u > TABLE_COL0(nRow - 1)) {
+            else if (u > uMax) {
                 extrapolate = RIGHT;
                 last = nRow - 2;
             }
@@ -1962,52 +1995,101 @@ double ModelicaStandardTables_CombiTable1D_getValue(void* _tableID, int iCol,
                 tableID->last = last;
             }
 
-            switch (tableID->smoothness) {
-                case CONSTANT_SEGMENTS:
-                    if (extrapolate == IN_TABLE) {
+            if (extrapolate == IN_TABLE) {
+                switch (tableID->smoothness) {
+                    case LINEAR_SEGMENTS: {
+                        const double u0 = TABLE_COL0(last);
+                        const double u1 = TABLE_COL0(last + 1);
+                        const double y0 = TABLE(last, col);
+                        const double y1 = TABLE(last + 1, col);
+                        LINEAR(u, u0, u1, y0, y1)
+                        break;
+                    }
+
+                    case CONSTANT_SEGMENTS:
                         if (u >= TABLE_COL0(last + 1)) {
                             last += 1;
                         }
                         y = TABLE(last, col);
                         break;
-                    }
-                    /* Fall through: linear extrapolation */
-                case LINEAR_SEGMENTS: {
-                    const double u0 = TABLE_COL0(last);
-                    const double u1 = TABLE_COL0(last + 1);
-                    const double y0 = TABLE(last, col);
-                    const double y1 = TABLE(last + 1, col);
-                    LINEAR(u, u0, u1, y0, y1)
-                    break;
-                }
 
-                case AKIMA_C1:
-                case FRITSCH_BUTLAND_MONOTONE_C1:
-                case STEFFEN_MONOTONE_C1:
-                    if (tableID->spline != NULL) {
-                        const double* c = tableID->spline[
-                            IDX(last, iCol - 1, tableID->nCols)];
-                        const double u0 = TABLE_COL0(last);
-                        if (extrapolate == IN_TABLE) {
+                    case AKIMA_C1:
+                    case FRITSCH_BUTLAND_MONOTONE_C1:
+                    case STEFFEN_MONOTONE_C1:
+                        if (NULL != tableID->spline) {
+                            const double* c = tableID->spline[
+                                IDX(last, iCol - 1, tableID->nCols)];
+                            const double u0 = TABLE_COL0(last);
                             const double v = u - u0;
                             y = TABLE(last, col); /* c[3] = y0 */
                             y += ((c[0]*v + c[1])*v + c[2])*v;
                         }
-                        else if (extrapolate == LEFT) {
-                            y = LINEAR_SLOPE(TABLE(last, col), c[2], u - u0);
-                        }
-                        else /* if (extrapolate == RIGHT) */ {
-                            const double u1 = TABLE_COL0(last + 1);
-                            const double v = u1 - u0;
-                            y = LINEAR_SLOPE(TABLE(last + 1, col),
-                               (3*c[0]*v + 2*c[1])*v + c[2], u - u1);
-                        }
-                    }
-                    break;
+                        break;
 
-                default:
-                    ModelicaError("Unknown smoothness kind\n");
-                    return y;
+                    default:
+                        ModelicaError("Unknown smoothness kind\n");
+                        return y;
+                }
+            }
+            else {
+                /* Extrapolation */
+                switch (tableID->extrapolation) {
+                    case LAST_TWO_POINTS:
+                        switch (tableID->smoothness) {
+                            case LINEAR_SEGMENTS:
+                            case CONSTANT_SEGMENTS: {
+                                const double u0 = TABLE_COL0(last);
+                                const double u1 = TABLE_COL0(last + 1);
+                                const double y0 = TABLE(last, col);
+                                const double y1 = TABLE(last + 1, col);
+                                LINEAR(u, u0, u1, y0, y1)
+                                break;
+                            }
+
+                            case AKIMA_C1:
+                            case FRITSCH_BUTLAND_MONOTONE_C1:
+                            case STEFFEN_MONOTONE_C1:
+                                if (NULL != tableID->spline) {
+                                    const double u0 = TABLE_COL0(last);
+                                    const double* c = tableID->spline[
+                                        IDX(last, iCol - 1, tableID->nCols)];
+                                    if (extrapolate == LEFT) {
+                                        y = LINEAR_SLOPE(TABLE(last, col), c[2],
+                                            u - u0);
+                                    }
+                                    else /* if (extrapolate == RIGHT) */ {
+                                        const double u1 = TABLE_COL0(last + 1);
+                                        const double v = u1 - u0;
+                                        y = LINEAR_SLOPE(TABLE(last + 1, col),
+                                            (3*c[0]*v + 2*c[1])*v + c[2],
+                                            u - u1);
+                                    }
+                                }
+                                break;
+
+                            default:
+                                ModelicaError("Unknown smoothness kind\n");
+                                return y;
+                        }
+                        break;
+
+                    case HOLD_LAST_POINT:
+                        y = (extrapolate == RIGHT) ? TABLE(nRow - 1, col) :
+                            TABLE_ROW0(col);
+                        break;
+
+                    case NO_EXTRAPOLATION:
+                        ModelicaError("Extrapolation error\n");
+                        return y;
+
+                    case PERIODIC:
+                        /* Should not be possible to get here */
+                        break;
+
+                    default:
+                        ModelicaError("Unknown extrapolation kind\n");
+                        return y;
+                }
             }
         }
     }
@@ -2026,13 +2108,32 @@ double ModelicaStandardTables_CombiTable1D_getDerValue(void* _tableID, int iCol,
 
         if (nRow > 1) {
             enum PointInterval extrapolate = IN_TABLE;
+            const double uMin = TABLE_ROW0(0);
+            const double uMax = TABLE_COL0(nRow - 1);
             size_t last;
 
-            if (u < TABLE_ROW0(0)) {
+            /* Periodic extrapolation */
+            if (tableID->extrapolation == PERIODIC) {
+                const double T = uMax - uMin;
+
+                if (u < uMin) {
+                    do {
+                        u += T;
+                    } while (u < uMin);
+                }
+                else if (u > uMax) {
+                    do {
+                        u -= T;
+                    } while (u > uMax);
+                }
+                last = findRowIndex(table, nRow, nCol, tableID->last, u);
+                tableID->last = last;
+            }
+            else if (u < uMin) {
                 extrapolate = LEFT;
                 last = 0;
             }
-            else if (u > TABLE_COL0(nRow - 1)) {
+            else if (u > uMax) {
                 extrapolate = RIGHT;
                 last = nRow - 2;
             }
@@ -2041,47 +2142,113 @@ double ModelicaStandardTables_CombiTable1D_getDerValue(void* _tableID, int iCol,
                 tableID->last = last;
             }
 
-            switch (tableID->smoothness) {
-                case CONSTANT_SEGMENTS:
-                    if (extrapolate == IN_TABLE) {
+            if (extrapolate == IN_TABLE) {
+                switch (tableID->smoothness) {
+                    case LINEAR_SEGMENTS:
+                        der_y = (TABLE(last + 1, col) - TABLE(last, col))/
+                            (TABLE_COL0(last + 1) - TABLE_COL0(last));
+                        der_y *= der_u;
                         break;
-                    }
-                    /* Fall through: linear extrapolation */
-                case LINEAR_SEGMENTS:
-                    der_y = (TABLE(last + 1, col) - TABLE(last, col))/
-                        (TABLE_COL0(last + 1) - TABLE_COL0(last));
-                    der_y *= der_u;
-                    break;
 
-                case AKIMA_C1:
-                case FRITSCH_BUTLAND_MONOTONE_C1:
-                case STEFFEN_MONOTONE_C1:
-                    if (tableID->spline != NULL) {
-                        const double* c = tableID->spline[
-                            IDX(last, iCol - 1, tableID->nCols)];
-                        if (extrapolate == IN_TABLE) {
+                    case CONSTANT_SEGMENTS:
+                        break;
+
+                    case AKIMA_C1:
+                    case FRITSCH_BUTLAND_MONOTONE_C1:
+                    case STEFFEN_MONOTONE_C1:
+                        if (NULL != tableID->spline) {
+                            const double* c = tableID->spline[
+                                IDX(last, iCol - 1, tableID->nCols)];
                             const double v = u - TABLE_COL0(last);
                             der_y = (3*c[0]*v + 2*c[1])*v + c[2];
+                            der_y *= der_u;
                         }
-                        else if (extrapolate == LEFT) {
-                            der_y = c[2];
-                        }
-                        else /* if (extrapolate == RIGHT) */ {
-                            const double v = TABLE_COL0(last + 1) -
-                                TABLE_COL0(last);
-                            der_y = (3*c[0]*v + 2*c[1])*v + c[2];
+                        break;
+
+                    default:
+                        ModelicaError("Unknown smoothness kind\n");
+                        return der_y;
+                }
+            }
+            else {
+                /* Extrapolation */
+                switch (tableID->extrapolation) {
+                    case LAST_TWO_POINTS:
+                        switch (tableID->smoothness) {
+                            case LINEAR_SEGMENTS:
+                            case  CONSTANT_SEGMENTS: {
+                                const double u0 = TABLE_COL0(last);
+                                const double u1 = TABLE_COL0(last + 1);
+                                der_y = (TABLE(last + 1, col) - TABLE(last, col))/
+                                    (u1 - u0);
+                                break;
+                            }
+
+                            case AKIMA_C1:
+                            case FRITSCH_BUTLAND_MONOTONE_C1:
+                            case STEFFEN_MONOTONE_C1:
+                                if (NULL != tableID->spline) {
+                                    const double* c = tableID->spline[
+                                        IDX(last, iCol - 1, tableID->nCols)];
+                                    if (extrapolate == LEFT) {
+                                        der_y = c[2];
+                                    }
+                                    else /* if (extrapolate == RIGHT) */ {
+                                        der_y = TABLE_COL0(last + 1) -
+                                            TABLE_COL0(last); /* = (t1 - t0) */
+                                        der_y = (3*c[0]*der_y + 2*c[1])*
+                                            der_y + c[2];
+                                    }
+                                }
+                                break;
+
+                            default:
+                                ModelicaError("Unknown smoothness kind\n");
+                                return der_y;
                         }
                         der_y *= der_u;
-                    }
-                    break;
+                        break;
 
-                default:
-                    ModelicaError("Unknown smoothness kind\n");
-                    return der_y;
+                    case HOLD_LAST_POINT:
+                        break;
+
+                    case NO_EXTRAPOLATION:
+                        ModelicaError("Extrapolation error\n");
+                        return der_y;
+
+                    case PERIODIC:
+                        /* Should not be possible to get here */
+                        break;
+
+                    default:
+                        ModelicaError("Unknown extrapolation kind\n");
+                        return der_y;
+                }
             }
         }
     }
     return der_y;
+}
+
+double ModelicaStandardTables_CombiTable1D_minimumAbscissa(void* _tableID) {
+    double uMin = 0.;
+    CombiTable1D* tableID = (CombiTable1D*)_tableID;
+    if (NULL != tableID && NULL != tableID->table) {
+        const double* table = tableID->table;
+        uMin = TABLE_ROW0(0);
+    }
+    return uMin;
+}
+
+double ModelicaStandardTables_CombiTable1D_maximumAbscissa(void* _tableID) {
+    double uMax = 0.;
+    CombiTable1D* tableID = (CombiTable1D*)_tableID;
+    if (NULL != tableID && NULL != tableID->table) {
+        const double* table = tableID->table;
+        const size_t nCol = tableID->nCol;
+        uMax = TABLE_COL0(tableID->nRow - 1);
+    }
+    return uMax;
 }
 
 double ModelicaStandardTables_CombiTable1D_read(void* _tableID, int force,
@@ -2150,9 +2317,9 @@ double ModelicaStandardTables_CombiTable1D_read(void* _tableID, int force,
     return 1.; /* Success */
 }
 
-void* ModelicaStandardTables_CombiTable2D_init(const char* tableName,
-                                               const char* fileName,
-                                               double* table, size_t nRow,
+void* ModelicaStandardTables_CombiTable2D_init(_In_z_ const char* tableName,
+                                               _In_z_ const char* fileName,
+                                               _In_ double* table, size_t nRow,
                                                size_t nColumn, int smoothness) {
     CombiTable2D* tableID = (CombiTable2D*)calloc(1, sizeof(CombiTable2D));
     if (tableID != NULL) {
@@ -2389,7 +2556,7 @@ double ModelicaStandardTables_CombiTable2D_getValue(void* _tableID, double u1,
                                                     double u2) {
     double y = 0;
     CombiTable2D* tableID = (CombiTable2D*)_tableID;
-    if (tableID != NULL && tableID->table != NULL) {
+    if (NULL != tableID && NULL != tableID->table) {
         const double* table = tableID->table;
         const size_t nRow = tableID->nRow;
         const size_t nCol = tableID->nCol;
@@ -2436,7 +2603,7 @@ double ModelicaStandardTables_CombiTable2D_getValue(void* _tableID, double u1,
                 }
 
                 case AKIMA_C1:
-                    if (tableID->spline != NULL) {
+                    if (NULL != tableID->spline) {
                         const double* c = tableID->spline[last2];
                         const double u20 = TABLE_ROW0(last2 + 1);
                         if (extrapolate2 == IN_TABLE) {
@@ -2506,7 +2673,7 @@ double ModelicaStandardTables_CombiTable2D_getValue(void* _tableID, double u1,
                 }
 
                 case AKIMA_C1:
-                    if (tableID->spline != NULL) {
+                    if (NULL != tableID->spline) {
                         const double* c = tableID->spline[last1];
                         const double u10 = TABLE_COL0(last1 + 1);
                         if (extrapolate1 == IN_TABLE) {
@@ -2599,7 +2766,7 @@ double ModelicaStandardTables_CombiTable2D_getValue(void* _tableID, double u1,
                 }
 
                 case AKIMA_C1:
-                    if (tableID->spline != NULL) {
+                    if (NULL != tableID->spline) {
                         const double* c = tableID->spline[
                             IDX(last1, last2, nCol - 2)];
                         if (extrapolate1 == IN_TABLE) {
@@ -2742,7 +2909,7 @@ double ModelicaStandardTables_CombiTable2D_getDerValue(void* _tableID, double u1
                                                        double der_u2) {
     double der_y = 0;
     CombiTable2D* tableID = (CombiTable2D*)_tableID;
-    if (tableID != NULL && tableID->table != NULL) {
+    if (NULL != tableID && NULL != tableID->table) {
         const double* table = tableID->table;
         const size_t nRow = tableID->nRow;
         const size_t nCol = tableID->nCol;
@@ -2781,7 +2948,7 @@ double ModelicaStandardTables_CombiTable2D_getDerValue(void* _tableID, double u1
                 }
 
                 case AKIMA_C1:
-                    if (tableID->spline != NULL) {
+                    if (NULL != tableID->spline) {
                         const double* c = tableID->spline[last2];
                         const double u20 = TABLE_ROW0(last2 + 1);
                         if (extrapolate2 == IN_TABLE) {
@@ -2843,7 +3010,7 @@ double ModelicaStandardTables_CombiTable2D_getDerValue(void* _tableID, double u1
                 }
 
                 case AKIMA_C1:
-                    if (tableID->spline != NULL) {
+                    if (NULL != tableID->spline) {
                         const double* c = tableID->spline[last1];
                         const double u10 = TABLE_COL0(last1 + 1);
                         if (extrapolate1 == IN_TABLE) {
@@ -2931,7 +3098,7 @@ double ModelicaStandardTables_CombiTable2D_getDerValue(void* _tableID, double u1
                 }
 
                 case AKIMA_C1:
-                    if (tableID->spline != NULL) {
+                    if (NULL != tableID->spline) {
                         const double* c = tableID->spline[
                             IDX(last1, last2, nCol - 2)];
                         if (extrapolate1 == IN_TABLE) {
@@ -3116,7 +3283,7 @@ static size_t findRowIndex(const double* table, size_t nRow, size_t nCol,
     return i0;
 }
 
-static size_t findColIndex(const double* table, size_t nCol, size_t last,
+static size_t findColIndex(_In_ const double* table, size_t nCol, size_t last,
                            double x) {
     size_t i0 = 0;
     size_t i1 = nCol - 1;
@@ -3145,7 +3312,7 @@ static size_t findColIndex(const double* table, size_t nCol, size_t last,
 
 /* ----- Internal check functions ----- */
 
-static int isValidName(const char* name) {
+static int isValidName(_In_z_ const char* name) {
     int isValid = 0;
     if (name != NULL) {
         if (strcmp(name, "NoName") != 0) {
@@ -3385,8 +3552,8 @@ static int isValidCombiTable2D(const CombiTable2D* tableID) {
     return isValid;
 }
 
-static enum TableSource getTableSource(const char *tableName,
-                                       const char *fileName) {
+static enum TableSource getTableSource(_In_z_ const char *tableName,
+                                       _In_z_ const char *fileName) {
     enum TableSource tableSource;
     int tableNameGiven = isValidName(tableName);
     int fileNameGiven = isValidName(fileName);
@@ -3422,8 +3589,8 @@ static enum TableSource getTableSource(const char *tableName,
 
 /* ----- Internal univariate spline functions ---- */
 
-static CubicHermite1D* akimaSpline1DInit(const double* table, size_t nRow,
-                                         size_t nCol, const int* cols,
+static CubicHermite1D* akimaSpline1DInit(_In_ const double* table, size_t nRow,
+                                         size_t nCol, _In_ const int* cols,
                                          size_t nCols) {
   /* Reference:
 
@@ -3500,9 +3667,9 @@ static CubicHermite1D* akimaSpline1DInit(const double* table, size_t nRow,
     return spline;
 }
 
-static CubicHermite1D* fritschButlandSpline1DInit(const double* table,
+static CubicHermite1D* fritschButlandSpline1DInit(_In_ const double* table,
                                                   size_t nRow, size_t nCol,
-                                                  const int* cols,
+                                                  _In_ const int* cols,
                                                   size_t nCols) {
   /* Reference:
 
@@ -3570,9 +3737,9 @@ static CubicHermite1D* fritschButlandSpline1DInit(const double* table,
     return spline;
 }
 
-static CubicHermite1D* steffenSpline1DInit(const double* table,
+static CubicHermite1D* steffenSpline1DInit(_In_ const double* table,
                                            size_t nRow, size_t nCol,
-                                           const int* cols,
+                                           _In_ const int* cols,
                                            size_t nCols) {
   /* Reference:
 
@@ -3696,9 +3863,8 @@ static void spline1DExtrapolateRight(double x1, double x2, double x3, double x4,
     }
 }
 
-#define TABLE_EX(i, j) tableEx[IDX(i, j, nCol + 3)]
-
-static CubicHermite2D* spline2DInit(const double* table, size_t nRow, size_t nCol) {
+static CubicHermite2D* spline2DInit(_In_ const double* table, size_t nRow,
+                                    size_t nCol) {
   /* Reference:
 
      Hiroshi Akima. A method of bivariate interpolation and smooth surface
@@ -3706,6 +3872,7 @@ static CubicHermite2D* spline2DInit(const double* table, size_t nRow, size_t nCo
      Jan. 1974. (http://dx.doi.org/10.1145/360767.360779)
   */
 
+#define TABLE_EX(i, j) tableEx[IDX(i, j, nCol + 3)]
     CubicHermite2D* spline = NULL;
     if (nRow == 2 /* && nCol > 3 */) {
         CubicHermite1D* spline1D;
@@ -4078,9 +4245,8 @@ static CubicHermite2D* spline2DInit(const double* table, size_t nRow, size_t nCo
         free(d2z_dxdy);
     }
     return spline;
-}
-
 #undef TABLE_EX
+}
 
 static void spline2DClose(CubicHermite2D** spline) {
     if (spline != NULL && *spline != NULL) {
@@ -4089,7 +4255,7 @@ static void spline2DClose(CubicHermite2D** spline) {
     }
 }
 
-static void transpose(double* table, size_t nRow, size_t nCol) {
+static void transpose(_Inout_ double* table, size_t nRow, size_t nCol) {
   /* Reference:
 
      Cycle-based in-place array transposition
@@ -4127,8 +4293,17 @@ static void transpose(double* table, size_t nRow, size_t nCol) {
 /* ----- Internal I/O functions ----- */
 
 #if !defined(NO_FILE_SYSTEM)
-static double* readTable(const char* tableName, const char* fileName,
-                         size_t* nRow, size_t* nCol, int verbose, int force) {
+static double* readTable(_In_z_ const char* tableName, _In_z_ const char* fileName,
+                         _Inout_ size_t* nRow, _Inout_ size_t* nCol, int verbose,
+                         int force) {
+#if defined(TABLE_SHARE)
+#define uthash_fatal(msg) do { \
+    MUTEX_UNLOCK(); \
+    ModelicaFormatMessage("Error in uthash: %s\n" \
+        "Hash table for table cache may be left in corrupt state.\n", msg); \
+    return table; \
+} while (0)
+#endif
     double* table = NULL;
     if (tableName != NULL && fileName != NULL && nRow != NULL && nCol != NULL) {
 #if defined(TABLE_SHARE)
@@ -4143,37 +4318,13 @@ static double* readTable(const char* tableName, const char* fileName,
             MUTEX_LOCK();
             HASH_FIND_STR(tableShare, key, iter);
             if (iter == NULL || force) {
-#endif
-                const char* ext;
-                int isMatExt = 0;
-
-                /* Table file can be either ASCII text or binary MATLAB MAT-file */
-                ext = strrchr(fileName, '.');
-                if (ext != NULL) {
-                    if (0 == strncmp(ext, ".mat", 4) ||
-                        0 == strncmp(ext, ".MAT", 4)) {
-                        isMatExt = 1;
-                    }
-                }
-
-                if (verbose == 1) {
-                    /* Print info message, that table / file is loading */
-                    ModelicaFormatMessage("... loading \"%s\" from \"%s\"\n",
-                        tableName, fileName);
-                }
-
-#if defined(TABLE_SHARE)
-                /* Release lock since readMatTable/readTxtTable may fail with
+                /* Release lock since ModelicaIO_readRealTable may fail with
                    ModelicaError
                 */
                 MUTEX_UNLOCK();
 #endif
-                if (isMatExt) {
-                    table = readMatTable(tableName, fileName, nRow, nCol);
-                }
-                else {
-                    table = readTxtTable(tableName, fileName, nRow, nCol);
-                }
+                table = ModelicaIO_readRealTable(fileName, tableName,
+                    nRow, nCol, verbose);
                 if (table == NULL) {
 #if defined(TABLE_SHARE)
                     free(key);
@@ -4238,494 +4389,9 @@ static double* readTable(const char* tableName, const char* fileName,
 #endif
     }
     return table;
-}
-
-static double* readMatTable(const char* tableName, const char* fileName,
-                            size_t* _nRow, size_t* _nCol) {
-    double* table = NULL;
-    if (tableName != NULL && fileName != NULL && _nRow != NULL && _nCol != NULL) {
-        mat_t* mat;
-        matvar_t* matvar;
-        matvar_t* matvarRoot;
-        size_t nRow, nCol;
-        int tableReadError = 0;
-        char* tableNameCopy;
-        char* token;
-
-        tableNameCopy = (char*)malloc((strlen(tableName) + 1)*sizeof(char));
-        if (tableNameCopy != NULL) {
-            strcpy(tableNameCopy, tableName);
-        }
-        else {
-            ModelicaError("Memory allocation error\n");
-            return NULL;
-        }
-
-        mat = Mat_Open(fileName, (int)MAT_ACC_RDONLY);
-        if (mat == NULL) {
-            free(tableNameCopy);
-            ModelicaFormatError("Not possible to open file \"%s\": "
-                "No such file or directory\n", fileName);
-            return NULL;
-        }
-
-        token = strtok(tableNameCopy, ".");
-        matvarRoot = Mat_VarReadInfo(mat, token == NULL ? tableName : token);
-        if (matvarRoot == NULL) {
-            free(tableNameCopy);
-            (void)Mat_Close(mat);
-            ModelicaFormatError(
-                "Table variable \"%s\" not found on file \"%s\".\n",
-                token == NULL ? tableName : token, fileName);
-            return NULL;
-        }
-
-        matvar = matvarRoot;
-        token = strtok(NULL, ".");
-        /* Get field while matvar is of struct class and of 1x1 size */
-        while (token != NULL && matvar != NULL &&
-            matvar->class_type == MAT_C_STRUCT && matvar->rank == 2 &&
-            matvar->dims[0] == 1 && matvar->dims[1] == 1) {
-            matvar = Mat_VarGetStructField(matvar, (void*)token, MAT_BY_NAME, 0);
-            token = strtok(NULL, ".");
-        }
-        free(tableNameCopy);
-
-        if (matvar == NULL) {
-            Mat_VarFree(matvarRoot);
-            (void)Mat_Close(mat);
-            ModelicaFormatError(
-                "Table matrix \"%s\" not found on file \"%s\".\n", tableName,
-                fileName);
-            return NULL;
-        }
-
-        /* Check if matvar is a matrix */
-        if (matvar->rank != 2) {
-            Mat_VarFree(matvarRoot);
-            (void)Mat_Close(mat);
-            ModelicaFormatError(
-                "Table array \"%s\" has not the required rank 2.\n", tableName);
-            return NULL;
-        }
-
-        /* Check if matvar is of double precision class (and thus non-sparse) */
-        if (matvar->class_type != MAT_C_DOUBLE) {
-            Mat_VarFree(matvarRoot);
-            (void)Mat_Close(mat);
-            ModelicaFormatError("Table matrix \"%s\" has not the required "
-                "double precision class.\n", tableName);
-            return NULL;
-        }
-
-        /* Check if matvar is purely real-valued */
-        if (matvar->isComplex) {
-            Mat_VarFree(matvarRoot);
-            (void)Mat_Close(mat);
-            ModelicaFormatError("Table matrix \"%s\" must not be complex.\n",
-                tableName);
-            return NULL;
-        }
-
-        nRow = matvar->dims[0];
-        nCol = matvar->dims[1];
-        tableReadError = Mat_VarReadDataAll(mat, matvar);
-        if (tableReadError == 0) {
-            matvar->mem_conserve = 1;
-            table = (double*)matvar->data;
-        }
-
-        Mat_VarFree(matvarRoot);
-        (void)Mat_Close(mat);
-
-        if (tableReadError == 0) {
-            /* Array is stored column-wise -> need to transpose */
-            transpose(table, nRow, nCol);
-            *_nRow = nRow;
-            *_nCol = nCol;
-        }
-        else {
-            free(table);
-            *_nRow = 0;
-            *_nCol = 0;
-            ModelicaFormatError(
-                "Error when reading numeric data of matrix \"%s(%lu,%lu)\" "
-                "from file \"%s\"\n", tableName, (unsigned long)nRow,
-                (unsigned long)nCol, fileName);
-            return NULL;
-        }
-    }
-    return table;
-}
-
-#define DELIM_TABLE_HEADER " \t(,)\r"
-#define DELIM_TABLE_NUMBER " \t,;\r"
-
-static double* readTxtTable(const char* tableName, const char* fileName,
-                            size_t* _nRow, size_t* _nCol) {
-    double* table = NULL;
-    if (tableName != NULL && fileName != NULL && _nRow != NULL && _nCol != NULL) {
-        char* buf;
-        int bufLen = LINE_BUFFER_LENGTH;
-        FILE* fp;
-        int foundTable = 0;
-        int tableReadError;
-        unsigned long nRow = 0;
-        unsigned long nCol = 0;
-        unsigned long lineNo = 1;
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-        _locale_t loc;
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
-        locale_t loc;
-#else
-        char* dec;
+#if defined(TABLE_SHARE)
+#undef uthash_fatal
 #endif
-
-        fp = fopen(fileName, "r");
-        if (fp == NULL) {
-            ModelicaFormatError("Not possible to open file \"%s\": "
-                "No such file or directory\n", fileName);
-            return NULL;
-        }
-
-        buf = (char*)malloc(LINE_BUFFER_LENGTH*sizeof(char));
-        if (buf == NULL) {
-            fclose(fp);
-            ModelicaError("Memory allocation error\n");
-            return NULL;
-        }
-
-        /* Read file header */
-        if ((tableReadError = readLine(&buf, &bufLen, fp)) != 0) {
-            free(buf);
-            fclose(fp);
-            if (tableReadError < 0) {
-                ModelicaFormatError(
-                    "Error reading first line from file \"%s\": "
-                    "End-Of-File reached.\n", fileName);
-            }
-            return NULL;
-        }
-
-        /* Expected file header format: "#1" */
-        if (0 != strncmp(buf, "#1", 2)) {
-            size_t len = strlen(buf);
-            fclose(fp);
-            if (len == 0) {
-                free(buf);
-                ModelicaFormatError(
-                    "Error reading format and version information in first "
-                    "line of file \"%s\": \"#1\" expected.\n", fileName);
-            }
-            else if (len == 1) {
-                char c0 = buf[0];
-                free(buf);
-                ModelicaFormatError(
-                    "Error reading format and version information in first "
-                    "line of file \"%s\": \"#1\" expected, but \"%c\" found.\n",
-                    fileName, c0);
-            }
-            else {
-                char c0 = buf[0];
-                char c1 = buf[1];
-                free(buf);
-                ModelicaFormatError(
-                    "Error reading format and version information in first "
-                    "line of file \"%s\": \"#1\" expected, but \"%c%c\" "
-                    "found.\n", fileName, c0, c1);
-            }
-            return NULL;
-        }
-
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-        loc = _create_locale(LC_NUMERIC, "C");
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
-        loc = newlocale(LC_NUMERIC, "C", NULL);
-#else
-        dec = localeconv()->decimal_point;
-#endif
-
-        /* Loop over lines of file */
-        while (readLine(&buf, &bufLen, fp) == 0) {
-            char* token;
-            char* endptr;
-
-            lineNo++;
-            /* Expected table header format: "dataType tableName(nRow,nCol)" */
-            token = strtok(buf, DELIM_TABLE_HEADER);
-            if (token == NULL) {
-                continue;
-            }
-            if ((0 != strcmp(token, "double")) && (0 != strcmp(token, "float"))) {
-                continue;
-            }
-            token = strtok(NULL, DELIM_TABLE_HEADER);
-            if (token == NULL) {
-                continue;
-            }
-            if (0 == strcmp(token, tableName)) {
-                foundTable = 1;
-            }
-            else {
-                continue;
-            }
-            token = strtok(NULL, DELIM_TABLE_HEADER);
-            if (token == NULL) {
-                continue;
-            }
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-            nRow = (unsigned long)_strtol_l(token, &endptr, 10, loc);
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
-            nRow = (unsigned long)strtol_l(token, &endptr, 10, loc);
-#else
-            nRow = (unsigned long)strtol(token, &endptr, 10);
-#endif
-            if (*endptr != 0) {
-                continue;
-            }
-            token = strtok(NULL, DELIM_TABLE_HEADER);
-            if (token == NULL) {
-                continue;
-            }
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-            nCol = (unsigned long)_strtol_l(token, &endptr, 10, loc);
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
-            nCol = (unsigned long)strtol_l(token, &endptr, 10, loc);
-#else
-            nCol = (unsigned long)strtol(token, &endptr, 10);
-#endif
-            if (*endptr != 0) {
-                continue;
-            }
-
-            { /* foundTable == 1 */
-                size_t i = 0;
-                size_t j = 0;
-
-                table = (double*)malloc(nRow*nCol*sizeof(double));
-                if (table == NULL) {
-                    *_nRow = 0;
-                    *_nCol = 0;
-                    free(buf);
-                    fclose(fp);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-                    _free_locale(loc);
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
-                    freelocale(loc);
-#endif
-                    ModelicaError("Memory allocation error\n");
-                    return table;
-                }
-
-                /* Loop over rows and store table row-wise */
-                while (tableReadError == 0 && i < nRow) {
-                    int k = 0;
-
-                    lineNo++;
-                    if ((tableReadError = readLine(&buf, &bufLen, fp)) != 0) {
-                        break;
-                    }
-                    /* Ignore leading white space */
-                    while (k < bufLen - 1) {
-                        if (buf[k] != ' ' && buf[k] != '\t') {
-                            break;
-                        }
-                        k++;
-                    }
-                    if (buf[k] == '\0' || buf[k] == '#') {
-                        /* Skip empty or comment line */
-                        continue;
-                    }
-                    token = strtok(&buf[k], DELIM_TABLE_NUMBER);
-                    while (token != NULL && i < nRow && j < nCol) {
-                        if (token[0] == '#') {
-                            /* Skip trailing comment line */
-                            break;
-                        }
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-                        TABLE(i, j) = _strtod_l(token, &endptr, loc);
-                        if (*endptr != 0) {
-                            tableReadError = 1;
-                        }
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
-                        TABLE(i, j) = strtod_l(token, &endptr, loc);
-                        if (*endptr != 0) {
-                            tableReadError = 1;
-                        }
-#else
-                        if (*dec == '.') {
-                            TABLE(i, j) = strtod(token, &endptr);
-                        }
-                        else if (NULL == strchr(token, '.')) {
-                            TABLE(i, j) = strtod(token, &endptr);
-                        }
-                        else {
-                            char* token2 = (char*)malloc(
-                                (strlen(token) + 1)*sizeof(char));
-                            if (token2 != NULL) {
-                                char* p;
-                                strcpy(token2, token);
-                                p = strchr(token2, '.');
-                                *p = *dec;
-                                TABLE(i, j) = strtod(token2, &endptr);
-                                if (*endptr != 0) {
-                                    tableReadError = 1;
-                                }
-                                free(token2);
-                            }
-                            else {
-                                *_nRow = 0;
-                                *_nCol = 0;
-                                free(buf);
-                                fclose(fp);
-                                tableReadError = 1;
-                                ModelicaError("Memory allocation error\n");
-                                break;
-                            }
-                        }
-#endif
-                        if (++j == nCol) {
-                            i++; /* Increment row index */
-                            j = 0; /* Reset column index */
-                        }
-                        if (tableReadError == 0) {
-                            token = strtok(NULL, DELIM_TABLE_NUMBER);
-                            continue;
-                        }
-                        else {
-                            break;
-                        }
-                    }
-                    /* Check for trailing non-comment character */
-                    if (token != NULL && token[0] != '#') {
-                        /* Check for trailing number */
-                        if (i == nRow) {
-                            int foundExponentSign = 0;
-                            int foundExponent = 0;
-                            int foundDec = 0;
-                            tableReadError = 2;
-                            if (token[0] == '+' || token[0] == '-') {
-                                k = 1;
-                            }
-                            else {
-                                k = 0;
-                            }
-                            while (token[k] != '\0') {
-                                if (token[k] >= '0' && token[k] <= '9') {
-                                    k++;
-                                }
-                                else if (token[k] == '.' && foundDec == 0 &&
-                                    foundExponent == 0 && foundExponentSign == 0) {
-                                    foundDec = 1;
-                                    k++;
-                                }
-                                else if ((token[k] == 'e' || token[k] == 'E') &&
-                                    foundExponent == 0) {
-                                    foundExponent = 1;
-                                    k++;
-                                }
-                                else if ((token[k] == '+' || token[k] == '-') &&
-                                    foundExponent == 1 && foundExponentSign == 0) {
-                                    foundExponentSign = 1;
-                                    k++;
-                                }
-                                else {
-                                    tableReadError = 1;
-                                    break;
-                                }
-                            }
-                        }
-                        else {
-                            tableReadError = 1;
-                        }
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-
-        free(buf);
-        fclose(fp);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-        _free_locale(loc);
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
-        freelocale(loc);
-#endif
-        if (foundTable == 0) {
-            ModelicaFormatError(
-                "Table matrix \"%s\" not found on file \"%s\".\n",
-                tableName, fileName);
-            return table;
-        }
-
-        if (tableReadError == 0) {
-            *_nRow = (size_t)nRow;
-            *_nCol = (size_t)nCol;
-        }
-        else {
-            free(table);
-            table = NULL;
-            *_nRow = 0;
-            *_nCol = 0;
-            if (tableReadError == EOF) {
-                ModelicaFormatError(
-                    "End-of-file reached when reading numeric data of matrix "
-                    "\"%s(%lu,%lu)\" from file \"%s\"\n", tableName, nRow,
-                    nCol, fileName);
-            }
-            else if (tableReadError == 2) {
-                ModelicaFormatError(
-                    "The table dimensions of matrix \"%s(%lu,%lu)\" from file "
-                    "\"%s\" do not match the actual table size.\n", tableName,
-                    nRow, nCol, fileName);
-            }
-            else {
-                ModelicaFormatError(
-                    "Error in line %lu when reading numeric data of matrix "
-                    "\"%s(%lu,%lu)\" from file \"%s\"\n", lineNo, tableName,
-                    nRow, nCol, fileName);
-            }
-        }
-    }
-    return table;
-}
-
-#undef DELIM_TABLE_HEADER
-#undef DELIM_TABLE_NUMBER
-
-static int readLine(char** buf, int* bufLen, FILE* fp) {
-    char* offset;
-    int oldBufLen;
-
-    if (fgets(*buf, *bufLen, fp) == NULL) {
-        return EOF;
-    }
-
-    do {
-        char* p;
-        char* tmp;
-
-        if ((p = strchr(*buf, '\n')) != NULL) {
-            *p = '\0';
-            return 0;
-        }
-
-        oldBufLen = *bufLen;
-        *bufLen *= 2;
-        tmp = (char*)realloc(*buf, (size_t)*bufLen);
-        if (tmp == NULL) {
-            fclose(fp);
-            free(*buf);
-            ModelicaError("Memory allocation error\n");
-            return 1;
-        }
-        *buf = tmp;
-        offset = &((*buf)[oldBufLen - 1]);
-
-    } while (fgets(offset, oldBufLen + 1, fp));
-
-    return 0;
 }
 #endif /* #if !defined(NO_FILE_SYSTEM) */
 
