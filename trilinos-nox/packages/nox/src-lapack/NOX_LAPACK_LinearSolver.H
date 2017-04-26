@@ -138,11 +138,10 @@ namespace NOX {
       Teuchos::LAPACK<int,T> lapack;
       
       
-      double* sv;//singular values
-      int rcond;
-      int rank;
-      double* work;
       int lwork;
+      int rank;
+      double* sv;//singular values
+      double* work;
 
     };
 
@@ -158,8 +157,9 @@ NOX::LAPACK::LinearSolver<T>::LinearSolver(int n) :
   isValidLU(false),
   blas(),
   lapack(),
-  sv(NULL),
-  work(NULL)
+  lwork(10*mat.numRows()+1),
+  sv(new double [mat.numRows()]),//this array is only used as output and is not necessary
+  work(new double [lwork])//this array is only used as output and is not necessary
 {
 }
 
@@ -171,8 +171,9 @@ NOX::LAPACK::LinearSolver<T>::LinearSolver(const NOX::LAPACK::LinearSolver<T>& s
   isValidLU(s.isValidLU),
   blas(),
   lapack(),
-  sv(NULL),
-  work(NULL)
+  lwork(10*mat.numRows()+1),
+  sv(new double [mat.numRows()]),//this array is only used as output and is not necessary
+  work(new double [lwork])//this array is only used as output and is not necessary
 {
 }
 
@@ -192,8 +193,9 @@ NOX::LAPACK::LinearSolver<T>::operator=(const NOX::LAPACK::LinearSolver<T>& s)
     lu = s.lu;
     pivots = s.pivots;
     isValidLU = s.isValidLU;
-    sv = NULL;//sv=((s.sv) ? (new double[mat.numRows()]) : NULL);
-    work = NULL;
+    lwork = s.lwork;
+    sv = new double [mat.numRows()];//this array is only used as output and is not necessary
+    work = new double [lwork];//this array is only used as output and is not necessary
   }
 
   return *this;
@@ -244,21 +246,16 @@ NOX::LAPACK::LinearSolver<T>::solve(bool trans, int ncols, T* output)
 {
   int info;
   int n = mat.numRows();
+  int rcond = -1.0;
 
   // Compute LU factorization if necessary
   if (!isValidLU) {
     lu = mat;
     lapack.GETRF(n, n, &lu(0,0), n, &pivots[0], &info);
     if (info != 0){//try solving a least squares problem instead (in case the linear system has infinitely many solutions)
-      rcond = -1.0;
-      lwork = 10*n+1;//max(5*n,1) is the minimum, the more, the better (But the more, the less memory efficient)
-      if (sv) delete [] sv;
-      if (work) delete [] work;
-      sv=new double [n];
-      work=new double [lwork];
       lu=mat;
       lapack.GELSS(n,n,ncols,&lu(0,0), n, output, n, sv, rcond, &rank, work, lwork, &info);
-      return (info == 0);
+      return false;
     }
     isValidLU = true;
   }
@@ -274,7 +271,7 @@ NOX::LAPACK::LinearSolver<T>::solve(bool trans, int ncols, T* output)
   lapack.GETRS(tr, n, ncols, &lu(0,0), n, &pivots[0], output, n, &info);
 
   if (info != 0)
-    return false;//this throws an error in the higher level function NOX::Direction::Newton::compute or prints a Warning there.
+    return false;
   return true;
 }
 
