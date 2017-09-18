@@ -1,6 +1,7 @@
-/* ModelicaStandardTable.h - External table functions header
+/* ModelicaStandardTables.h - External table functions header
 
-   Copyright (C) 2013-2016, Modelica Association, DLR and ITI GmbH
+   Copyright (C) 2013-2017, Modelica Association, DLR, and ESI ITI GmbH
+   Copyright (C) 2008-2013, Modelica Association and DLR
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -34,6 +35,12 @@
       Modelica.Blocks.Tables.CombiTable2D
 
    Release Notes:
+      Feb. 25, 2017: by Thomas Beutlich, ESI ITI GmbH
+                     Added support of extrapolation for CombiTable1D
+                     Added functions to retrieve minimum and maximum
+                     abscissa values of CombiTable1D
+                     (ticket #2120)
+
       Oct. 27, 2015: by Thomas Beutlich, ITI GmbH
                      Added nonnull attribute/annotations (ticket #1436)
 
@@ -42,31 +49,6 @@
 
       Jan. 27, 2008: by Martin Otter, DLR
                      Implemented a first version
-
-   Copyright (C) 2008, Modelica Association and DLR
-   Copyright (C) 2013-2015, Modelica Association, DLR and ITI GmbH
-   All rights reserved.
-
-   Redistribution and use in source and binary forms, with or without
-   modification, are permitted provided that the following conditions are met:
-
-   1. Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimer.
-
-   2. Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-   FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-   SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-   CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-   OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /* A table can be defined in the following ways when initializing the table:
@@ -78,7 +60,9 @@
      (2) Read from a file (tableName, fileName have to be supplied).
 
    Tables may be linearly interpolated or the first derivative
-   may be continuous. In the latter case, Akima-Splines are used.
+   may be continuous. In the latter case, cubic Hermite splines with Akima slope
+   approximation, Fritsch-Butland slope approximation (univariate only) or Steffen
+   slope approximation (univariate only) are used.
 */
 
 #ifndef _MODELICASTANDARDTABLES_H_
@@ -128,14 +112,18 @@ void* ModelicaStandardTables_CombiTimeTable_init(_In_z_ const char* tableName,
      -> columns: Columns of table to be interpolated
      -> nCols: Number of columns of table to be interpolated
      -> smoothness: Interpolation type
-                    = 1: constant
-                    = 2: linear
-                    = 3: continuous first derivative
+                    = 1: linear
+                    = 2: continuous first derivative (by Akima splines)
+                    = 3: constant
+                    = 4: monotonicity-preserving, continuous first derivative
+                         (by Fritsch-Butland splines)
+                    = 5: monotonicity-preserving, continuous first derivative
+                         (by Steffen splines)
      -> extrapolation: Extrapolation type
-                       = 1: no
-                       = 2: hold first/last value
-                       = 3: linear
-                       = 4: periodic
+                       = 1: hold first/last value
+                       = 2: linear
+                       = 3: periodic
+                       = 4: no
      <- RETURN: Pointer to internal memory of table structure
   */
 
@@ -153,10 +141,10 @@ double ModelicaStandardTables_CombiTimeTable_read(void* tableID, int force,
   */
 
 double ModelicaStandardTables_CombiTimeTable_minimumTime(void* tableID);
-  /* Return minimum time defined in table (= table[1,1]) */
+  /* Return minimum abscissa defined in table (= table[1,1]) */
 
 double ModelicaStandardTables_CombiTimeTable_maximumTime(void* tableID);
-  /* Return maximum time defined in table (= table[end,1]) */
+  /* Return maximum abscissa defined in table (= table[end,1]) */
 
 double ModelicaStandardTables_CombiTimeTable_getValue(void* tableID,
                                                       int icol, double t,
@@ -203,6 +191,15 @@ void* ModelicaStandardTables_CombiTable1D_init(_In_z_ const char* tableName,
                                                size_t nColumn,
                                                _In_ int* columns,
                                                size_t nCols, int smoothness) MODELICA_NONNULLATTR;
+  /* Same as ModelicaStandardTables_CombiTable1D_init2, but without extrapolation argument */
+
+void* ModelicaStandardTables_CombiTable1D_init2(_In_z_ const char* tableName,
+                                                _In_z_ const char* fileName,
+                                                _In_ double* table, size_t nRow,
+                                                size_t nColumn,
+                                                _In_ int* columns,
+                                                size_t nCols, int smoothness,
+                                                int extrapolation) MODELICA_NONNULLATTR;
   /* Initialize 1-dim. table defined by matrix, where first column
      is x-axis and further columns of matrix are interpolated
 
@@ -218,9 +215,18 @@ void* ModelicaStandardTables_CombiTable1D_init(_In_z_ const char* tableName,
      -> columns: Columns of table to be interpolated
      -> nCols: Number of columns of table to be interpolated
      -> smoothness: Interpolation type
-                    = 1: constant
-                    = 2: linear
-                    = 3: continuous first derivative
+                    = 1: linear
+                    = 2: continuous first derivative (by Akima splines)
+                    = 3: constant
+                    = 4: monotonicity-preserving, continuous first derivative
+                         (by Fritsch-Butland splines)
+                    = 5: monotonicity-preserving, continuous first derivative
+                         (by Steffen splines)
+     -> extrapolation: Extrapolation type
+                       = 1: hold first/last value
+                       = 2: linear
+                       = 3: periodic
+                       = 4: no
      <- RETURN: Pointer to internal memory of table structure
   */
 
@@ -236,6 +242,12 @@ double ModelicaStandardTables_CombiTable1D_read(void* tableID, int force,
      -> verbose: Print message that file is loading
      <- RETURN: = 1, if table was successfully read from file
   */
+
+double ModelicaStandardTables_CombiTable1D_minimumAbscissa(void* tableID);
+  /* Return minimum abscissa defined in table (= table[1,1]) */
+
+double ModelicaStandardTables_CombiTable1D_maximumAbscissa(void* tableID);
+  /* Return maximum abscissa defined in table (= table[end,1]) */
 
 double ModelicaStandardTables_CombiTable1D_getValue(void* tableID, int icol,
                                                     double u);
@@ -278,9 +290,9 @@ void* ModelicaStandardTables_CombiTable2D_init(_In_z_ const char* tableName,
      -> nRow: Number of rows of table
      -> nColumn: Number of columns of table
      -> smoothness: Interpolation type
-                    = 1: constant
-                    = 2: linear
-                    = 3: continuous first derivative
+                    = 1: bilinear
+                    = 2: continuous first derivative (by bivariate Akima splines)
+                    = 3: bivariate constant
      <- RETURN: Pointer to internal memory of table structure
   */
 
