@@ -63,7 +63,7 @@ endif(CYGWIN)
 target_link_libraries(jmutils c99snprintf)
 
 if(UNIX) 
-  target_link_libraries(jmutils ${CMAKE_DL_LIBS})
+	target_link_libraries(jmutils dl)
 endif(UNIX)
 if(WIN32)
 	target_link_libraries(jmutils Shlwapi)
