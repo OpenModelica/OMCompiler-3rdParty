@@ -36,16 +36,14 @@ static const char * module = "JMPRT";
 #define set_current_working_directory chdir
 #endif
 
-#define JM_PORTABILITY_DLL_ERROR_MESSAGE_SIZE 8192
+#define JM_PORTABILITY_DLL_ERROR_MESSAGE_SIZE 1000
 
 DLL_HANDLE jm_portability_load_dll_handle(const char* dll_file_path)
 {
 #ifdef WIN32
 	/* printf("Will try to load %s\n", dll_file_path); */
 	return LoadLibrary(dll_file_path);
-#elif defined(RTLD_DEEPBIND)
-	return dlopen(dll_file_path, RTLD_NOW|RTLD_LOCAL|RTLD_DEEPBIND);
-#else
+#else	
 	return dlopen(dll_file_path, RTLD_NOW|RTLD_LOCAL);
 #endif
 }
@@ -167,9 +165,9 @@ jm_status_enu_t jm_mkdir(jm_callbacks* cb, const char* dir) {
 
 jm_status_enu_t jm_rmdir(jm_callbacks* cb, const char* dir) {
 #ifdef WIN32
-	const char* fmt_cmd = "rmdir /s /q %s";
+	const char* fmt_cmd = "rmdir /s /q \"%s\"";
 #else
-    const char* fmt_cmd = "rm -rf %s";
+    const char* fmt_cmd = "rm -rf \"%s\"";
 #endif
     char * buf = (char*)cb->calloc(sizeof(char), strlen(dir)+strlen(fmt_cmd)+1);
 	if(!cb) {
@@ -333,17 +331,17 @@ char* jm_create_URL_from_abs_path(jm_callbacks* cb, const char* path) {
 	return url;
 }
 
- int rpl_vsnprintf(char *, size_t, const char *, va_list);
+int vsnprintf(char *, size_t, const char *, va_list);
 
- int jm_vsnprintf(char * str, size_t size, const char * fmt, va_list al) {
-     return rpl_vsnprintf(str, size, fmt, al);
- }
+int jm_vsnprintf(char * str, size_t size, const char * fmt, va_list al) {
+    return vsnprintf(str, size, fmt, al);
+}
 
- int jm_snprintf(char * str, size_t size, const char * fmt, ...) {
+int jm_snprintf(char * str, size_t size, const char * fmt, ...) {
     va_list args;
     int ret;
     va_start (args, fmt);
-    ret = rpl_vsnprintf(str, size, fmt, args);
+    ret = vsnprintf(str, size, fmt, args);
     va_end (args);
     return ret;
- }
+}
