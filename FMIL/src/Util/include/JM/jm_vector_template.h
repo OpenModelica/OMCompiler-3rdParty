@@ -108,7 +108,9 @@ size_t jm_vector_reserve(JM_TEMPLATE_INSTANCE_TYPE)(jm_vector(JM_TEMPLATE_INSTAN
 
 size_t jm_vector_copy(JM_TEMPLATE_INSTANCE_TYPE)(jm_vector(JM_TEMPLATE_INSTANCE_TYPE)* destination, jm_vector(JM_TEMPLATE_INSTANCE_TYPE)* source) {
         size_t destsize = jm_vector_resize(JM_TEMPLATE_INSTANCE_TYPE)(destination, source->size);
-        memcpy((void*)destination->items, (void*)source->items, sizeof(JM_TEMPLATE_INSTANCE_TYPE)*destsize);
+        if(destsize > 0) {
+            memcpy((void*)destination->items, (void*)source->items, sizeof(JM_TEMPLATE_INSTANCE_TYPE)*destsize);
+        }
         return destination->size;
 }
 
@@ -132,7 +134,7 @@ JM_TEMPLATE_INSTANCE_TYPE* jm_vector_insert(JM_TEMPLATE_INSTANCE_TYPE)(jm_vector
                 if( jm_vector_reserve(JM_TEMPLATE_INSTANCE_TYPE)(a, reserve) != reserve) return 0;
         }
         assert(a->size < a->capacity);
-        memmove((void*)(a->items+index+1),(void*)(a->items+index), a->size - index);
+        memmove((void*)(a->items+index+1),(void*)(a->items+index), (a->size - index)*sizeof(JM_TEMPLATE_INSTANCE_TYPE));
         a->items[index] = item;
         pitem = &(a->items[index]);
         a->size++;
