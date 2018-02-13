@@ -1,11 +1,22 @@
 # Boehm-Demers-Weiser Garbage Collector
 
-This is version 7.5.0 (next release development) of a conservative garbage
+[![Travis-CI build status](https://travis-ci.org/ivmai/bdwgc.svg?branch=master)](https://travis-ci.org/ivmai/bdwgc)
+[![AppVeyor CI build status](https://ci.appveyor.com/api/projects/status/github/ivmai/bdwgc?branch=master&svg=true)](https://ci.appveyor.com/project/ivmai/bdwgc)
+[![Coveralls test coverage status](https://coveralls.io/repos/github/ivmai/bdwgc/badge.png?branch=master)](https://coveralls.io/github/ivmai/bdwgc)
+[![Coverity Scan build status](https://scan.coverity.com/projects/10813/badge.svg)](https://scan.coverity.com/projects/ivmai-bdwgc)
+
+This is version 7.7.0 (next release development) of a conservative garbage
 collector for C and C++.
 
-You might find a more recent version
-[here](http://www.hboehm.info/gc/), or
-[here](https://github.com/ivmai/bdwgc).
+
+## Download
+
+You might find a more recent/stable version on the
+[Download](https://github.com/ivmai/bdwgc/wiki/Download) page, or
+[BDWGC site](http://www.hboehm.info/gc/).
+
+Also, the latest bug fixes and new features are available in the
+[development repository](https://github.com/ivmai/bdwgc).
 
 
 ## Overview
@@ -55,15 +66,15 @@ was part of version 8 UNIX (tm), but appears to not have received
 widespread use.
 
 Rudimentary tools for use of the collector as a
-[leak detector](http://www.hboehm.info/gc/leak.html) are included,
+[leak detector](doc/leak.md) are included,
 as is a fairly sophisticated string package "cord" that makes use of the
 collector.  (See doc/README.cords and H.-J. Boehm, R. Atkinson, and M. Plass,
 "Ropes: An Alternative to Strings", Software Practice and Experience 25, 12
 (December 1995), pp. 1315-1330.  This is very similar to the "rope" package
 in Xerox Cedar, or the "rope" package in the SGI STL or the g++ distribution.)
 
-Further collector documentation can be found
-[here](http://www.hboehm.info/gc/).
+Further collector documentation can be found in the
+[overview](doc/overview.md).
 
 
 ## General Description
@@ -103,7 +114,7 @@ large objects to be disregarded, greatly reducing the probability of
 accidental retention of large objects.  For most purposes it seems
 best to compile with `ALL_INTERIOR_POINTERS` and to use
 `GC_malloc_ignore_off_page` if you get collector warnings from
-allocations of very large objects.  See doc/debugging.html for details.
+allocations of very large objects.  See [here](doc/debugging.md) for details.
 
 _WARNING_: pointers inside memory allocated by the standard `malloc` are not
 seen by the garbage collector.  Thus objects pointed to only from such a
@@ -168,20 +179,25 @@ simplest case), or with a classic makefile by itself (type
 
 Please note that the collector source repository does not contain configure
 and similar auto-generated files, thus the full procedure of autoconf-based
-build of `master` branch of the collector (using `master` branch of
-libatomic_ops source repository as well) could look like:
+build of `master` branch of the collector could look like:
 
     git clone git://github.com/ivmai/bdwgc.git
     cd bdwgc
     git clone git://github.com/ivmai/libatomic_ops.git
-    autoreconf -vif
-    automake --add-missing
+    ./autogen.sh
     ./configure
-    make
+    make -j
     make check
 
+Cloning of `libatomic_ops` is now optional provided the compiler supports
+atomic intrinsics.
+
+If you are getting "syntax error near unexpected token ATOMIC_OPS" during
+configure execution, this means pkg.m4 cannot be found, most probably
+you should run `pkg-config` once before running `./autogen.sh` (autoreconf).
+
 Below we focus on the collector build using classic makefile.
-For the Makefile.direct-based process, typing `make test` instead of `make`
+For the Makefile.direct-based process, typing `make check` instead of `make`
 will automatically build the collector and then run `setjmp_test` and `gctest`.
 `Setjmp_test` will give you information about configuring the collector, which is
 useful primarily if you have a machine that's not already supported.  Gctest is
@@ -247,7 +263,7 @@ or 64 bit addresses will require a major effort.  A port to plain MSDOS
 or win16 is hard.
 
 For machines not already mentioned, or for nonstandard compilers,
-some porting suggestions are provided in doc/porting.html.
+some porting suggestions are provided [here](doc/porting.md).
 
 
 ## The C Interface to the Allocator
@@ -534,9 +550,30 @@ per MB of accessible memory that needs to be scanned and processor.
 Your mileage may vary.)  The incremental/generational collection facility
 may help in some cases.
 
-Please address bug reports [here](mailto:bdwgc@lists.opendylan.org).
-If you are contemplating a major addition, you might also send mail to ask
-whether it's already been done (or whether we tried and discarded it).
+
+## Feedback, Contribution, Questions and Notifications
+
+Please address bug reports and new feature ideas to
+[GitHub issues](https://github.com/ivmai/bdwgc/issues).  Before the
+submission please check that it has not been done yet by someone else.
+
+If you want to contribute, submit
+a [pull request](https://github.com/ivmai/bdwgc/pulls) to GitHub.
+
+If you need help, use
+[Stack Overflow](https://stackoverflow.com/questions/tagged/boehm-gc).
+Older technical discussions are available in `bdwgc` mailing list archive - it
+can be downloaded as a
+[compressed file](https://github.com/ivmai/bdwgc/files/1038163/bdwgc-mailing-list-archive-2017_04.tar.gz)
+or browsed at [Narkive](http://bdwgc.opendylan.narkive.com).
+
+To get new release announcements, subscribe to
+[RSS feed](https://github.com/ivmai/bdwgc/releases.atom).
+(To receive the notifications by email, a 3rd-party free service like
+[IFTTT RSS Feed](https://ifttt.com/feed) can be setup.)
+To be notified on all issues, please
+[watch](https://github.com/ivmai/bdwgc/watchers) the project on
+GitHub.
 
 
 ## Copyright & Warranty
