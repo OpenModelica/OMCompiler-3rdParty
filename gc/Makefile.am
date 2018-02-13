@@ -62,7 +62,7 @@ libomcgc_la_SOURCES = extra/gc.c
 
 if PTHREAD_START_STANDALONE
 AM_CPPFLAGS += -DGC_PTHREAD_START_STANDALONE
-libgc_la_SOURCES += pthread_start.c
+libomcgc_la_SOURCES += pthread_start.c
 endif
 
 else
@@ -92,7 +92,7 @@ endif
 endif
 
 if THREAD_LOCAL_ALLOC
-libgc_la_SOURCES += thread_local_alloc.c
+libomcgc_la_SOURCES += thread_local_alloc.c
 endif
 
 if MAKE_BACK_GRAPH
@@ -100,7 +100,7 @@ libomcgc_la_SOURCES += backgraph.c
 endif
 
 if CHECKSUMS
-libgc_la_SOURCES += checksums.c
+libomcgc_la_SOURCES += checksums.c
 endif
 
 if ENABLE_DISCLAIM

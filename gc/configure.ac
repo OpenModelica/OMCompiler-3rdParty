@@ -941,7 +941,7 @@ AC_SUBST([WERROR_CFLAGS])
 
 AC_ARG_ENABLE(single-obj-compilation,
    [AC_HELP_STRING([--enable-single-obj-compilation],
-                   [Compile all libgc source files into single .o
+                   [Compile all libomcgc source files into single .o
                     (default: yes if static libraries are disabled)])],
    [], [ AS_IF([test x"$enable_static" = xno],
                [enable_single_obj_compilation=yes]) ])
