@@ -31,19 +31,32 @@
 #include "gc.h"
 #include "gc_tiny_fl.h"
 
-#if __GNUC__ >= 3
+#if GC_GNUC_PREREQ(3, 0)
 # define GC_EXPECT(expr, outcome) __builtin_expect(expr,outcome)
   /* Equivalent to (expr), but predict that usually (expr)==outcome. */
 #else
 # define GC_EXPECT(expr, outcome) (expr)
-#endif /* __GNUC__ */
+#endif
 
 #ifndef GC_ASSERT
-# define GC_ASSERT(expr) /* empty */
+# ifdef NDEBUG
+#   define GC_ASSERT(expr) /* empty */
+# else
+#   include <assert.h>
+#   define GC_ASSERT(expr) assert(expr)
+# endif
+#endif
+
+#ifdef __cplusplus
+  extern "C" {
 #endif
 
 #ifndef GC_PREFETCH_FOR_WRITE
-# define GC_PREFETCH_FOR_WRITE(x) (void)0
+# if GC_GNUC_PREREQ(3, 0) && !defined(GC_NO_PREFETCH_FOR_WRITE)
+#   define GC_PREFETCH_FOR_WRITE(x) __builtin_prefetch((x), 1)
+# else
+#   define GC_PREFETCH_FOR_WRITE(x) (void)0
+# endif
 #endif
 
 /* Object kinds; must match PTRFREE, NORMAL in gc_priv.h.       */
@@ -78,10 +91,10 @@ GC_API GC_ATTR_MALLOC GC_ATTR_ALLOC_SIZE(1) void * GC_CALL
 /* GC_generic_malloc_many with the indicated kind.                      */
 /* Tiny_fl should be an array of GC_TINY_FREELISTS void * pointers.     */
 /* If num_direct is nonzero, and the individual free list pointers      */
-/* are initialized to (void *)1, then we allocate numdirect granules    */
-/* directly using gmalloc before putting multiple objects into the      */
-/* tiny_fl entry.  If num_direct is zero, then the free lists may also  */
-/* be initialized to (void *)0.                                         */
+/* are initialized to (void *)1, then we allocate num_direct granules   */
+/* directly using generic_malloc before putting multiple objects into   */
+/* the tiny_fl entry.  If num_direct is zero, then the free lists may   */
+/* also be initialized to (void *)0.                                    */
 /* Note that we use the zeroth free list to hold objects 1 granule in   */
 /* size that are used to satisfy size 0 allocation requests.            */
 /* We rely on much of this hopefully getting optimized away in the      */
@@ -112,7 +125,9 @@ GC_API GC_ATTR_MALLOC GC_ATTR_ALLOC_SIZE(1) void * GC_CALL
                 break; \
             } \
             /* Entry contains counter or NULL */ \
-            if ((GC_word)my_entry <= (num_direct) && my_entry != 0) { \
+            if ((GC_signed_word)my_entry - (GC_signed_word)(num_direct) <= 0 \
+                    /* (GC_word)my_entry <= (num_direct) */ \
+                    && my_entry != NULL) { \
                 /* Small counter value, not NULL */ \
                 *my_fl = (char *)my_entry + (granules) + 1; \
                 result = (default_expr); \
@@ -167,5 +182,12 @@ GC_API GC_ATTR_MALLOC GC_ATTR_ALLOC_SIZE(1) void * GC_CALL
                            *(void **)(result) = (void *)(first)); \
       ((void **)(result))[1] = (void *)(second); \
     } while (0)
+
+GC_API void GC_CALL GC_print_free_list(int /* kind */,
+                                       size_t /* sz_in_granules */);
+
+#ifdef __cplusplus
+  } /* extern "C" */
+#endif
 
 #endif /* !GC_INLINE_H */
