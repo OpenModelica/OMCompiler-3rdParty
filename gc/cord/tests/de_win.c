@@ -32,7 +32,7 @@ int COLS = 0;
 
 HWND        hwnd;
 
-void de_error(char *s)
+void de_error(const char *s)
 {
     (void)MessageBoxA(hwnd, s, "Demonstration Editor",
                       MB_ICONINFORMATION | MB_OK);
@@ -44,9 +44,12 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 {
    MSG         msg;
    WNDCLASS    wndclass;
-   HANDLE      hAccel;
+   HACCEL      hAccel;
 
    GC_INIT();
+#  if defined(CPPCHECK)
+     GC_noop1((GC_word)&WinMain);
+#  endif
 
    if (!hPrevInstance)
    {
@@ -57,16 +60,12 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
       wndclass.hInstance      = hInstance;
       wndclass.hIcon          = LoadIcon (hInstance, szAppName);
       wndclass.hCursor        = LoadCursor (NULL, IDC_ARROW);
-      wndclass.hbrBackground  = GetStockObject(WHITE_BRUSH);
+      wndclass.hbrBackground  = (HBRUSH)GetStockObject(WHITE_BRUSH);
       wndclass.lpszMenuName   = TEXT("DE");
       wndclass.lpszClassName  = szAppName;
 
       if (RegisterClass (&wndclass) == 0) {
-          char buf[50];
-
-          sprintf(buf, "RegisterClass: error code: 0x%X",
-                  (unsigned)GetLastError());
-          de_error(buf);
+          de_error("RegisterClass error");
           return(0);
       }
    }
@@ -99,11 +98,7 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
                         NULL,   /* Window class menu */
                         hInstance, NULL);
    if (hwnd == NULL) {
-        char buf[50];
-
-        sprintf(buf, "CreateWindow: error code: 0x%X",
-                (unsigned)GetLastError());
-        de_error(buf);
+        de_error("CreateWindow error");
         return(0);
    }
 
@@ -119,13 +114,13 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
          DispatchMessage (&msg);
       }
    }
-   return msg.wParam;
+   return (int)msg.wParam;
 }
 
 /* Return the argument with all control characters replaced by blanks.  */
 char * plain_chars(char * text, size_t len)
 {
-    char * result = GC_MALLOC_ATOMIC(len + 1);
+    char * result = (char *)GC_MALLOC_ATOMIC(len + 1);
     register size_t i;
 
     if (NULL == result) return NULL;
@@ -144,7 +139,7 @@ char * plain_chars(char * text, size_t len)
 /* blank, and all control characters c replaced by c + 32.              */
 char * control_chars(char * text, size_t len)
 {
-    char * result = GC_MALLOC_ATOMIC(len + 1);
+    char * result = (char *)GC_MALLOC_ATOMIC(len + 1);
     register size_t i;
 
     if (NULL == result) return NULL;
@@ -164,7 +159,7 @@ int char_height;
 
 void get_line_rect(int line, int win_width, RECT * rectp)
 {
-    rectp -> top = line * char_height;
+    rectp -> top = line * (LONG)char_height;
     rectp -> bottom = rectp->top + char_height;
     rectp -> left = 0;
     rectp -> right = win_width;
@@ -206,7 +201,7 @@ INT_PTR CALLBACK AboutBoxCallback( HWND hDlg, UINT message,
 LRESULT CALLBACK WndProc (HWND hwnd, UINT message,
                           WPARAM wParam, LPARAM lParam)
 {
-   static HANDLE  hInstance;
+   static HINSTANCE hInstance;
    HDC dc;
    PAINTSTRUCT ps;
    RECT client_area;

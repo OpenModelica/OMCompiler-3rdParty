@@ -10,6 +10,7 @@ cd OMCompiler/3rdParty
 > cd gc
 > sed -i s/libgc/libomcgc/g Makefile.am configure.ac cord/cord.am
 > commit the changes
+> cd ..
 
 # get the commits for libatomic_ops
 > git subtree pull --squash --prefix gc/libatomic_ops https://github.com/ivmai/libatomic_ops master
