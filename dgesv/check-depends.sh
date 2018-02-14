@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Check what files are actually needed to compile main.c (containing dgesv)
 
