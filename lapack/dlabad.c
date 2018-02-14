@@ -12,13 +12,10 @@
 
 #include "f2c.h"
 #include "blaswrap.h"
+#include <math.h>
 
 /* Subroutine */ int dlabad_(doublereal *small, doublereal *large)
 {
-    /* Builtin functions */
-    double d_lg10(doublereal *), sqrt(doublereal);
-
-
 /*  -- LAPACK auxiliary routine (version 3.2) -- */
 /*     Univ. of Tennessee, Univ. of California Berkeley and NAG Ltd.. */
 /*     November 2006 */
@@ -60,7 +57,7 @@
 /*     If it looks like we're on a Cray, take the square root of */
 /*     SMALL and LARGE to avoid overflow and underflow problems. */
 
-    if (d_lg10(large) > 2e3) {
+    if (log10(*large) > 2e3) {
 	*small = sqrt(*small);
 	*large = sqrt(*large);
     }
