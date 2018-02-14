@@ -113,10 +113,6 @@ SOURCE=..\..\blacklst.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\checksums.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\dbg_mlc.c
 # End Source File
 # Begin Source File
@@ -258,7 +254,7 @@ SOURCE=..\stdafx.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\version.h
+SOURCE=..\..\include\gc_version.h
 # End Source File
 # Begin Source File
 

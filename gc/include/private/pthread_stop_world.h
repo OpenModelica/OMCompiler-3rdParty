@@ -18,11 +18,16 @@
 #ifndef GC_PTHREAD_STOP_WORLD_H
 #define GC_PTHREAD_STOP_WORLD_H
 
+/* Note: never put extern "C" around an #include.                       */
+#ifdef __cplusplus
+  extern "C" {
+#endif
+
 struct thread_stop_info {
-#   ifndef GC_OPENBSD_UTHREADS
-      word last_stop_count;     /* GC_last_stop_count value when thread */
-                                /* last successfully handled a suspend  */
-                                /* signal.                              */
+#   if !defined(GC_OPENBSD_UTHREADS) && !defined(NACL)
+      volatile AO_t last_stop_count;
+                        /* The value of GC_stop_count when the thread   */
+                        /* last successfully handled a suspend signal.  */
 #   endif
 
     ptr_t stack_ptr;            /* Valid only when stopped.             */
@@ -45,5 +50,9 @@ struct thread_stop_info {
 };
 
 GC_INNER void GC_stop_init(void);
+
+#ifdef __cplusplus
+  } /* extern "C" */
+#endif
 
 #endif
