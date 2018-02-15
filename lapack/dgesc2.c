@@ -147,9 +147,9 @@ static integer c_n1 = -1;
 /*     Check for scaling */
 
     i__ = idamax_(n, &rhs[1], &c__1);
-    if (smlnum * 2. * (d__1 = rhs[i__], abs(d__1)) > (d__2 = a[*n + *n * 
-	    a_dim1], abs(d__2))) {
-	temp = .5 / (d__1 = rhs[i__], abs(d__1));
+    if (smlnum * 2. * (d__1 = rhs[i__], fabs(d__1)) > (d__2 = a[*n + *n * 
+	    a_dim1], fabs(d__2))) {
+	temp = .5 / (d__1 = rhs[i__], fabs(d__1));
 	dscal_(n, &temp, &rhs[1], &c__1);
 	*scale *= temp;
     }

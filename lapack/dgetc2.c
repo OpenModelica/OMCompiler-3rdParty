@@ -138,8 +138,8 @@ static doublereal c_b10 = -1.;
   for (ip = i__; ip <= i__2; ++ip) {
       i__3 = *n;
       for (jp = i__; jp <= i__3; ++jp) {
-    if ((d__1 = a[ip + jp * a_dim1], abs(d__1)) >= xmax) {
-        xmax = (d__1 = a[ip + jp * a_dim1], abs(d__1));
+    if ((d__1 = a[ip + jp * a_dim1], fabs(d__1)) >= xmax) {
+        xmax = (d__1 = a[ip + jp * a_dim1], fabs(d__1));
         ipv = ip;
         jpv = jp;
     }
@@ -170,7 +170,7 @@ static doublereal c_b10 = -1.;
 
 /*        Check for singularity */
 
-  if ((d__1 = a[i__ + i__ * a_dim1], abs(d__1)) < smin) {
+  if ((d__1 = a[i__ + i__ * a_dim1], fabs(d__1)) < smin) {
       *info = i__;
       a[i__ + i__ * a_dim1] = smin;
   }
@@ -187,7 +187,7 @@ static doublereal c_b10 = -1.;
 /* L40: */
     }
 
-    if ((d__1 = a[*n + *n * a_dim1], abs(d__1)) < smin) {
+    if ((d__1 = a[*n + *n * a_dim1], fabs(d__1)) < smin) {
   *info = *n;
   a[*n + *n * a_dim1] = smin;
     }
