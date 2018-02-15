@@ -333,7 +333,9 @@ char* jm_create_URL_from_abs_path(jm_callbacks* cb, const char* path) {
 	return url;
 }
 
+#if !defined(__APPLE_CC__)
 int vsnprintf(char *, size_t, const char *, va_list);
+#endif
 
 int jm_vsnprintf(char * str, size_t size, const char * fmt, va_list al) {
     return vsnprintf(str, size, fmt, al);
