@@ -166,7 +166,7 @@ namespace Ipopt
 
   Number IpRandom01()
   {
-#if defined(HAVE_DRAND48) || defined(__clang__)
+#if defined(HAVE_DRAND48) || (defined(__clang__) && !defined(_WIN32))
     return Number(drand48());
 #else
 # ifdef HAVE_RAND
@@ -188,7 +188,7 @@ namespace Ipopt
 
   void IpResetRandom01()
   {
-#if defined(HAVE_DRAND48) || defined(__clang__)
+#if defined(HAVE_DRAND48) || (defined(__clang__) && !defined(_WIN32))
     srand48(1);
 #else
 # ifdef HAVE_RAND

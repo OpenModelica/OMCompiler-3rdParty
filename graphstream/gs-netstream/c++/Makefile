@@ -16,7 +16,7 @@ CWARN = -W -Wall -Wshadow -Wimplicit -Wreturn-type -Wcomment -Wtrigraphs -Wforma
 CDBG = -g $(CWARN) -fno-inline
 DFLAGS = -I$(INCDIR) -g $(CWARN) -fno-inline -DDEBUG=1
 
-ifeq (mingw,$(findstring mingw,$(shell $(CC) -v 2>&1 | grep ^Target)))
+ifeq (MINGW,$(findstring MINGW,$(shell uname)))
 	SOCKET_LIB = -lwsock32
 else
 	SOCKET_LIB =
