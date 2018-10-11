@@ -180,9 +180,9 @@ jm_status_enu_t jm_mkdir(jm_callbacks* cb, const char* dir) {
 
 jm_status_enu_t jm_rmdir(jm_callbacks* cb, const char* dir) {
 #ifdef WIN32
-	const char* fmt_cmd = "rmdir /s /q %s";
+	const char* fmt_cmd = "rmdir /s /q \"%s\"";
 #else
-    const char* fmt_cmd = "rm -rf %s";
+    const char* fmt_cmd = "rm -rf \"%s\"";
 #endif
     char * buf = (char*)cb->calloc(sizeof(char), strlen(dir)+strlen(fmt_cmd)+1);
 	if(!cb) {
