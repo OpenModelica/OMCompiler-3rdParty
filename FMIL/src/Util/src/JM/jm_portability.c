@@ -43,9 +43,7 @@ DLL_HANDLE jm_portability_load_dll_handle(const char* dll_file_path)
 #ifdef WIN32
 	/* printf("Will try to load %s\n", dll_file_path); */
 	return LoadLibrary(dll_file_path);
-#elif defined(RTLD_DEEPBIND)
-	return dlopen(dll_file_path, RTLD_NOW|RTLD_LOCAL|RTLD_DEEPBIND);
-#else
+#else	
 	return dlopen(dll_file_path, RTLD_NOW|RTLD_LOCAL);
 #endif
 }
@@ -134,13 +132,26 @@ const char* jm_get_system_temp_dir() {
 
 #ifdef WIN32
 #include <io.h>
-#define mktemp _mktemp
 #else
-char* mktemp(char*);
+#include <stdlib.h>
 #endif
- 
-char* jm_mktemp(char* tmplt) {
-	return mktemp(tmplt);
+char *jm_mkdtemp(jm_callbacks *cb, char *tmplt)
+{
+#ifdef WIN32
+    /* Windows does not have mkdtemp, use mktemp + mkdir */
+
+    if(!_mktemp(tmplt)) {
+        jm_log_fatal(cb, module, "Could not create a unique temporary directory name");
+        return NULL;
+    }
+    if(jm_mkdir(cb, tmplt) != jm_status_success) {
+        return NULL;
+    }
+    return tmplt;
+
+#else
+    return mkdtemp(tmplt);
+#endif
 }
 
 #ifdef WIN32
@@ -167,9 +178,9 @@ jm_status_enu_t jm_mkdir(jm_callbacks* cb, const char* dir) {
 
 jm_status_enu_t jm_rmdir(jm_callbacks* cb, const char* dir) {
 #ifdef WIN32
-	const char* fmt_cmd = "rmdir /s /q \"%s\"";
+	const char* fmt_cmd = "rmdir /s /q %s";
 #else
-    const char* fmt_cmd = "rm -rf \"%s\"";
+    const char* fmt_cmd = "rm -rf %s";
 #endif
     char * buf = (char*)cb->calloc(sizeof(char), strlen(dir)+strlen(fmt_cmd)+1);
 	if(!cb) {
@@ -265,15 +276,10 @@ char* jm_mk_temp_dir(jm_callbacks* cb, const char* systemTempDir, const char* te
 	}
 	sprintf(tmpPath,"%s%sXXXXXX",tmpDir,tempPrefix);/*safe*/
 
-	if(!jm_mktemp(tmpPath)) {
-		jm_log_fatal(cb, module,"Could not create a unique temporary directory name");
-		cb->free(tmpPath);
-		return 0;
-	}
-	if(jm_mkdir(cb,tmpPath) != jm_status_success) {
-		cb->free(tmpPath);
-		return 0;
-	}
+    if (jm_mkdtemp(cb, tmpPath) == NULL) {
+        jm_log_fatal(cb, module,"Could not create a unique temporary directory");
+    }
+
 	return tmpPath;
 }
 
@@ -333,19 +339,19 @@ char* jm_create_URL_from_abs_path(jm_callbacks* cb, const char* path) {
 	return url;
 }
 
-#if !defined(__APPLE_CC__)
-int vsnprintf(char *, size_t, const char *, va_list);
+#ifndef HAVE_VSNPRINTF
+int jm_rpl_vsnprintf(char *, size_t, const char *, va_list);
 #endif
 
 int jm_vsnprintf(char * str, size_t size, const char * fmt, va_list al) {
-    return vsnprintf(str, size, fmt, al);
+    return jm_rpl_vsnprintf(str, size, fmt, al);
 }
 
 int jm_snprintf(char * str, size_t size, const char * fmt, ...) {
     va_list args;
     int ret;
     va_start (args, fmt);
-    ret = vsnprintf(str, size, fmt, args);
+    ret = jm_vsnprintf(str, size, fmt, args);
     va_end (args);
     return ret;
 }
