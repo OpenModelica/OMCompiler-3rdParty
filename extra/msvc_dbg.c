@@ -28,7 +28,10 @@
 #include "private/msvc_dbg.h"
 #include "gc.h"
 
-#define WIN32_LEAN_AND_MEAN
+#ifndef WIN32_LEAN_AND_MEAN
+# define WIN32_LEAN_AND_MEAN 1
+#endif
+#define NOSERVICE
 #include <windows.h>
 
 #pragma pack(push, 8)
@@ -47,7 +50,7 @@ typedef GC_word word;
         typedef ULONG        ULONG_ADDR;
 #endif
 
-static HANDLE GetSymHandle()
+static HANDLE GetSymHandle(void)
 {
   static HANDLE symHandle = NULL;
   if (!symHandle) {
@@ -158,8 +161,8 @@ size_t GetStackFramesFromContext(HANDLE hProcess, HANDLE hThread,
 #elif defined(_M_ALPHA64)
   machineType                 = IMAGE_FILE_MACHINE_ALPHA64;
   stackFrame.AddrPC.Offset    = context->Fir;
-#else
-#error Unknown CPU
+#elif !defined(CPPCHECK)
+# error Unknown CPU
 #endif
   for (frameIndex = 0; frameIndex < maxFrames; ) {
     BOOL bRet = StackWalk(machineType, hProcess, hThread, &stackFrame,
@@ -308,7 +311,6 @@ size_t GetDescriptionFromAddress(void* address, const char* format,
   char*const begin = buffer;
   char*const end = buffer + size;
   size_t line_number = 0;
-  char   str[128];
 
   if (size) {
     *buffer = 0;
@@ -317,7 +319,9 @@ size_t GetDescriptionFromAddress(void* address, const char* format,
   size = (GC_ULONG_PTR)end < (GC_ULONG_PTR)buffer ? 0 : end - buffer;
 
   if (line_number) {
-    wsprintf(str, "(%d) : ", line_number);
+    char str[128];
+
+    wsprintf(str, "(%d) : ", (int)line_number);
     if (size) {
       strncpy(buffer, str, size)[size - 1] = 0;
     }
@@ -341,8 +345,6 @@ size_t GetDescriptionFromAddress(void* address, const char* format,
   size = (GC_ULONG_PTR)end < (GC_ULONG_PTR)buffer ? 0 : end - buffer;
 
   buffer += GetModuleNameFromAddress(address, buffer, size);
-  size = (GC_ULONG_PTR)end < (GC_ULONG_PTR)buffer ? 0 : end - buffer;
-
   return buffer - begin;
 }
 
@@ -354,12 +356,15 @@ size_t GetDescriptionFromStack(void* const frames[], size_t count,
   char*const end = begin + size;
   char* buffer = begin + (count + 1) * sizeof(char*);
   size_t i;
+  (void)format;
   for (i = 0; i < count; ++i) {
-    if (description) description[i] = buffer;
+    if (size)
+      description[i] = buffer;
     size = (GC_ULONG_PTR)end < (GC_ULONG_PTR)buffer ? 0 : end - buffer;
     buffer += 1 + GetDescriptionFromAddress(frames[i], NULL, buffer, size);
   }
-  if (description) description[count] = NULL;
+  if (size)
+    description[count] = NULL;
   return buffer - begin;
 }
 
@@ -374,8 +379,14 @@ char** backtrace_symbols(void*const* addresses, int count)
 {
   size_t size = GetDescriptionFromStack(addresses, count, NULL, NULL, 0);
   char** symbols = (char**)malloc(size);
-  GetDescriptionFromStack(addresses, count, NULL, symbols, size);
+  if (symbols != NULL)
+    GetDescriptionFromStack(addresses, count, NULL, symbols, size);
   return symbols;
 }
 
-#endif /* !_M_AMD64 */
+#else
+
+  extern int GC_quiet;
+        /* ANSI C does not allow translation units to be empty. */
+
+#endif /* _M_AMD64 */
