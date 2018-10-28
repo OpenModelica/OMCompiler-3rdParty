@@ -32,6 +32,12 @@
 # include "thread_local_alloc.h"
 #endif
 
+#ifdef THREAD_SANITIZER
+# include "dbg_mlc.h" /* for oh type */
+#endif
+
+EXTERN_C_BEGIN
+
 /* We use the allocation lock to protect thread-related data structures. */
 
 /* The set of all known threads.  We intercept thread creation and      */
@@ -40,6 +46,14 @@
 /* Some of this should be declared volatile, but that's inconsistent    */
 /* with some library routine declarations.                              */
 typedef struct GC_Thread_Rep {
+#   ifdef THREAD_SANITIZER
+      char dummy[sizeof(oh)];     /* A dummy field to avoid TSan false  */
+                                  /* positive about the race between    */
+                                  /* GC_has_other_debug_info and        */
+                                  /* GC_suspend_handler_inner (which    */
+                                  /* sets store_stop.stack_ptr).        */
+#   endif
+
     struct GC_Thread_Rep * next;  /* More recently allocated threads    */
                                   /* with a given pthread id come       */
                                   /* first.  (All but the first are     */
@@ -52,6 +66,11 @@ typedef struct GC_Thread_Rep {
     /* Extra bookkeeping information the stopping code uses */
     struct thread_stop_info stop_info;
 
+#   if defined(GC_ENABLE_SUSPEND_THREAD) && !defined(GC_DARWIN_THREADS) \
+        && !defined(GC_OPENBSD_UTHREADS) && !defined(NACL)
+      volatile AO_t suspended_ext;  /* Thread was suspended externally. */
+#   endif
+
     unsigned char flags;
 #       define FINISHED 1       /* Thread has exited.                   */
 #       define DETACHED 2       /* Thread is treated as detached.       */
@@ -62,7 +81,6 @@ typedef struct GC_Thread_Rep {
                                 /* it unregisters itself, since it      */
                                 /* may not return a GC pointer.         */
 #       define MAIN_THREAD 4    /* True for the original thread only.   */
-#       define SUSPENDED_EXT 8  /* Thread was suspended externally.     */
 #       define DISABLED_GC 0x10 /* Collections are disabled while the   */
                                 /* thread is exiting.                   */
 
@@ -118,17 +136,27 @@ typedef struct GC_Thread_Rep {
 #   endif
 } * GC_thread;
 
-# define THREAD_TABLE_SZ 256    /* Must be power of 2   */
+#ifndef THREAD_TABLE_SZ
+# define THREAD_TABLE_SZ 256    /* Power of 2 (for speed). */
+#endif
+
+#if CPP_WORDSZ == 64
+# define THREAD_TABLE_INDEX(id) \
+    (int)(((((NUMERIC_THREAD_ID(id) >> 8) ^ NUMERIC_THREAD_ID(id)) >> 16) \
+          ^ ((NUMERIC_THREAD_ID(id) >> 8) ^ NUMERIC_THREAD_ID(id))) \
+         % THREAD_TABLE_SZ)
+#else
+# define THREAD_TABLE_INDEX(id) \
+                (int)(((NUMERIC_THREAD_ID(id) >> 16) \
+                       ^ (NUMERIC_THREAD_ID(id) >> 8) \
+                       ^ NUMERIC_THREAD_ID(id)) % THREAD_TABLE_SZ)
+#endif
+
 GC_EXTERN volatile GC_thread GC_threads[THREAD_TABLE_SZ];
 
 GC_EXTERN GC_bool GC_thr_initialized;
 
 GC_INNER GC_thread GC_lookup_thread(pthread_t id);
-
-GC_EXTERN GC_bool GC_in_thread_creation;
-        /* We may currently be in thread creation or destruction.       */
-        /* Only set to TRUE while allocation lock is held.              */
-        /* When set, it is OK to run GC from unknown thread.            */
 
 #ifdef NACL
   GC_EXTERN __thread GC_thread GC_nacl_gc_thread_self;
@@ -146,11 +174,16 @@ GC_EXTERN GC_bool GC_in_thread_creation;
 # define GC_INNER_PTHRSTART GC_INNER
 #endif
 
+GC_INNER_PTHRSTART void * GC_CALLBACK GC_inner_start_routine(
+                                        struct GC_stack_base *sb, void *arg);
+
 GC_INNER_PTHRSTART GC_thread GC_start_rtn_prepare_thread(
                                         void *(**pstart)(void *),
                                         void **pstart_arg,
                                         struct GC_stack_base *sb, void *arg);
 GC_INNER_PTHRSTART void GC_thread_exit_proc(void *);
+
+EXTERN_C_END
 
 #endif /* GC_PTHREADS && !GC_WIN32_THREADS */
 

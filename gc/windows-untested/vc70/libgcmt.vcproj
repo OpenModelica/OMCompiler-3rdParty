@@ -125,9 +125,6 @@
                 RelativePath="..\..\blacklst.c">
             </File>
             <File
-                RelativePath="..\..\checksums.c">
-            </File>
-            <File
                 RelativePath="..\..\dbg_mlc.c">
             </File>
             <File
@@ -197,9 +194,6 @@
                 </FileConfiguration>
             </File>
             <File
-                RelativePath="..\..\stubborn.c">
-            </File>
-            <File
                 RelativePath="..\..\typd_mlc.c">
             </File>
             <File
@@ -216,7 +210,7 @@
                 RelativePath="..\stdafx.h">
             </File>
             <File
-                RelativePath="..\..\version.h">
+                RelativePath="..\..\include\gc_version.h">
             </File>
         </Filter>
     </Files>
