@@ -225,7 +225,11 @@ IF(BUILD_SHARED_LIBS AND WIN32)
     "#ifdef BUILD_SUNDIALS_LIBRARY
 #define SUNDIALS_EXPORT __declspec(dllexport)
 #else
+#ifdef LINK_SUNDIALS_STATIC
+#define SUNDIALS_EXPORT
+#else
 #define SUNDIALS_EXPORT __declspec(dllimport)
+#endif
 #endif")
 ELSE(BUILD_SHARED_LIBS AND WIN32)
   SET(SUNDIALS_EXPORT "#define SUNDIALS_EXPORT")
