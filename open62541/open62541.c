@@ -19,6 +19,12 @@
 # define UA_DYNAMIC_LINKING_EXPORT
 #endif
 
+#if defined(__FreeBSD__)
+/* Otherwise the order of includes messes something up in FreeBSD.
+ * If Linux includes unistd.h at the top, it fails to compile though.
+ */
+#include <unistd.h>
+#endif
 #include "open62541.h"
 
 /*********************************** amalgamated original file "/home/marsj/dev/open62541/deps/queue.h" ***********************************/
