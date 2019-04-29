@@ -464,6 +464,61 @@ Change history:
   and made a bit more performant.
 - write_lp did not write all column data. For objective function and constraints.
 
+28/10/09 version 5.5.1.0
+- In some cases with a model with integer variables lp_solve did not find the most optimal solution. Fixed.
+- The reported relative gap for the optimal solution was not always ok.
+- Sensitivity on a zero upper bounded variable was not calculated. Now it is.
+
+08/03/10 version 5.5.1.2
+- When there are integer variables in the model then sensitivity is not correct.
+
+12/08/10 version 5.5.2.0
+- add_SOS did a wrong test when SOS type is bigger than 2 if this SOS is allowed in lp_solve. Fixed
+- new and improved MIP_stepOF function to find integer solutions.
+- fixes in set_row.
+- replaces code
+   w *= 2*lp->is_lower[i] - 1;
+  by
+   w = my_chsign(!lp->is_lower[i], w);
+  because the old failed on AIX
+  Also changed the definition of my_chsign in lp_types.h in the same way.
+- Added the option -BR in the lp_solve driver program to select branch rule NODE_PSEUDORATIOSELECT
+- lpsolve.pas updated for Delphi 2009.
+- Python driver updated to allow also to provide numpy arrays to the lpsolve driver.
+- xli_MathProg is now compiled against glpk 4.44 meaning that it now supports the MathProg Tables feature
+  as described in http://www.cs.unb.ca/~bremner/docs/glpk/tables.pdf
+  csv, ODBC and MySQL are supported on all platforms.
+- Added MSF support. MSF (Microsoft Solver Foundation) is a microsoft .NET library to access solvers via an OO way
+  MSF has a default lpsolve driver, but the one on the sourceforge site is enhanced in functionality and performance.
+  There is also documentation in the lpsolve reference guide.
+
+../../.. version 5.5.2.1
+- fixed a small error in new and improved MIP_stepOF function to find integer solutions.
+
+../../.. version 5.5.2.2
+- For integer models with semi-cont variables it happened sometimes that a message
+  "fillbranches_BB: Inconsistent equal-valued bounds for ..." occured and that the semi-cont condition
+  was not respected.
+- New functions added: get_accuracy to get the numeric accuracy after solve.
+- New functions added: set_break_numeric_accuracy, get_break_numeric_accuracy to let lp_solve return ACCURACYERROR
+  instead of FEASIBLE when numerical accuracy if worse then the provided values.
+  In the past, lp_solve only returned a non-optimal status in case of very severe numerical instability.
+  Now it will return already ACCURACYERROR when it finds a relative inaccuracy of 5e-7
+- When reading a model from the lp-format and important issues are detected such as already bounds on variables being overruled
+  later with for example a bin keyword, this is now reported in the default verbose level such that this is seen easier.
+
+08/05/16 version 5.5.2.3
+- For some models with integer variables, lp_solve did not find the most optimal solution.
+
+15/09/16 version 5.5.2.4
+- When using set_lowbo and set_upbo to set bounds on a variable and the new low/up bounds are very close to each other
+  but not equal then they are set equal for numerical stability.
+
+18/09/16 version 5.5.2.5
+- When all variables in the model are integer, but not all binary (in fact difference between upper and lower bound 1),
+  then it could happen that not the most optimal integer solution was found.
+- Updated/added scaling options to the lp_solve command line program
+
 We are thrilled to hear from you and your experiences with this new version. The good and the bad.
 Also we would be pleased to hear about your experiences with the different BFPs on your models.
 

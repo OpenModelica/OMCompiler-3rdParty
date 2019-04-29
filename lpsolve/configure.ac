@@ -1,5 +1,5 @@
 AC_PREREQ(2.52)
-AC_INIT([lpsolve],5.5.0.15,[], [])
+AC_INIT([lpsolve],5.5.0.14,[], [])
 AC_CONFIG_SRCDIR(lp_simplex.c)
 AC_CANONICAL_HOST
 
@@ -17,11 +17,7 @@ case $host_os in
       else CCSHARED="+z";
     fi;;
   CYGWIN*)
-    SO=.dll
-	SHARED_LIB=liblpsolve55.dll;;
-  mingw*)
-    SO=.dll
-	SHARED_LIB=liblpsolve55.dll;;
+    SO=.dll;;
   linux)
     CCSHARED="-fPIC";;
   apple-darwin)

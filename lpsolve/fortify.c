@@ -1639,22 +1639,24 @@ _Fortify_tempnam(char *dir,char *pfx,char *file,unsigned long line)
 void *FORTIFY_STORAGE
 _Fortify_memcpy(void *to,void *from,size_t size,char *file,unsigned long line)
 {
-	if((from == NULL) || (to == NULL)) {
-		sprintf(st_Buffer,
-			"\nFortify: %s.%ld\n         ", file, line);
-		if(from == NULL)
-			sprintf(st_Buffer + strlen(st_Buffer), "%s", "memcpy from pointer is NULL", file, line);
-		if(to == NULL)
-			sprintf(st_Buffer + strlen(st_Buffer), "%s%s", (from == NULL) ? "" : " and ", "memcpy to pointer is NULL", file, line);
-		strcat(st_Buffer, "\n");
-		st_Output(st_Buffer);
-		FORTIFY_UNLOCK();
-		WaitIfstdOutput();
-		return(NULL);
-	}
+    if (size) {
+	    if((from == NULL) || (to == NULL)) {
+		    sprintf(st_Buffer,
+			    "\nFortify: %s.%ld\n         ", file, line);
+		    if(from == NULL)
+			    sprintf(st_Buffer + strlen(st_Buffer), "%s", "memcpy from pointer is NULL", file, line);
+		    if(to == NULL)
+			    sprintf(st_Buffer + strlen(st_Buffer), "%s%s", (from == NULL) ? "" : " and ", "memcpy to pointer is NULL", file, line);
+		    strcat(st_Buffer, "\n");
+		    st_Output(st_Buffer);
+		    FORTIFY_UNLOCK();
+		    WaitIfstdOutput();
+		    return(NULL);
+	    }
 
-	__Fortify_CheckPointer(to,0,size,file,line);
-	__Fortify_CheckPointer(from,0,size,file,line);
+	    __Fortify_CheckPointer(to,0,size,file,line);
+	    __Fortify_CheckPointer(from,0,size,file,line);
+    }
 	return(memcpy(to,from,size));
 }
 

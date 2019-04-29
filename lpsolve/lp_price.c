@@ -1440,7 +1440,9 @@ STATIC int coldual(lprec *lp, int row_nr, REAL *prow, int *nzprow,
   for(ix = 1; ix <= iy; ix++) {
     i = nzprow[ix];
     w = prow[i] * g;            /* Change sign if upper bound of the leaving variable is violated   */
-    w *= 2*lp->is_lower[i] - 1; /* Change sign if the non-basic variable is currently upper-bounded */
+    /* Change sign if the non-basic variable is currently upper-bounded */
+    /* w *= 2*lp->is_lower[i] - 1; */ /* fails on AIX!!! */
+    w = my_chsign(!lp->is_lower[i], w);
 
     /* Check if the candidate is worth using for anything */
     if(w < -epsvalue) {

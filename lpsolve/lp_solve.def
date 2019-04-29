@@ -13,6 +13,7 @@ EXPORTS
    delete_lp
    dualize_lp
    free_lp
+   get_accuracy
    get_Lrows
    get_Ncolumns
    get_Norig_columns
@@ -27,6 +28,7 @@ EXPORTS
    get_bb_rule
    get_bounds_tighter
    get_break_at_value
+   get_break_numeric_accuracy
    get_col_name
    get_column
    get_columnex
@@ -174,6 +176,7 @@ EXPORTS
    set_bounds_tighter
    set_break_at_first
    set_break_at_value
+   set_break_numeric_accuracy
    set_col_name
    set_column
    set_columnex
