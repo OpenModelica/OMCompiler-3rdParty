@@ -248,7 +248,7 @@ STATIC int scan_lineFREE(lprec *lp, int section, char* line, char *field1, char 
                          double *field4, char *field5, double *field6)
 {
   int  items = 0, line_len, len;
-  char buf[256], *ptr1, *ptr2;
+  char buf[256], *ptr1 = NULL, *ptr2;
 
   line_len = (int) strlen(line);
   while ((line_len) && ((line[line_len-1] == '\n') || (line[line_len-1] == '\r') || (line[line_len-1] == ' ')))

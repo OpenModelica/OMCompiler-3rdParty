@@ -102,13 +102,18 @@ void print_help(char *argv[])
   printf("\t -s3: Scale to convergence using largest absolute value\n");
   printf("\t  -s:\n");
   printf("\t -s4: Numerical range-based scaling\n");
-  printf("\t -s5: Scale to convergence using logarithmic mean of all values\n");
+  printf("\t -s5: Same as -s4 -sl\n");
   printf("\t -s6: Scale based on the simple numerical range\n");
-  printf("\t -s7: Scale quadratic\n");
+  printf("\t -s7: Same as -s4 -sq\n");
   printf("These scaling rules can be combined with any of the following:\n");
-  printf("-sp\t\talso do power scaling.\n");
-  printf("-si\t\talso do Integer scaling (default).\n");
-  printf("-se\t\talso do equilibration to scale to the -1..1 range (default).\n");
+  printf("\t -sp: also do power scaling.\n");
+  printf("\t -si: also do integer scaling (default).\n");
+  printf("\t -se: also do equilibration to scale to the -1..1 range (default).\n");
+  printf("\t -sq: also do quadratic scaling.\n");
+  printf("\t -sl: Scale to convergence using logarithmic mean of all values.\n");
+  printf("\t -sd: Dynamic update.\n");
+  printf("\t -sr: Scale only rows.\n");
+  printf("\t -sc: Scale only columns.\n");
   printf("-presolve\tpresolve problem before start optimizing (rows+columns)\n");
   printf("-presolverow\tpresolve problem before start optimizing (rows only)\n");
   printf("-presolvecol\tpresolve problem before start optimizing (columns only)\n");
@@ -161,6 +166,7 @@ void print_help(char *argv[])
   printf("\t -improve4: Low-cost accuracy monitoring in the dual\n");
   printf("\t -improve8: check for primal/dual feasibility at the node level\n");
   printf("-timeout <sec>\tTimeout after sec seconds when not solution found.\n");
+  printf("-ac <accuracy>\tFail when accuracy is less then specified value.\n");
 /*
   printf("-timeoutok\tIf timeout, take the best yet found solution.\n");
 */
@@ -195,6 +201,7 @@ void print_help(char *argv[])
   printf("-Bb\t\tBranchReverse branch-and-bound\n");
   printf("-Bg\t\tGreedy branch-and-bound\n");
   printf("-Bp\t\tPseudoCost branch-and-bound\n");
+  printf("-BR\t\tExtended PseudoCost branch-and-bound\n");
   printf("-Bf\t\tDepthFirst branch-and-bound\n");
   printf("-Br\t\tRandomize branch-and-bound\n");
   printf("-BG\t\tGubMode branch-and-bound\n");
@@ -580,6 +587,7 @@ int main(int argc, char *argv[])
   REAL epsel = -1;
   MYBOOL do_set_break_at_value = FALSE;
   REAL break_at_value = 0;
+  REAL accuracy_error0, accuracy_error = -1;
   FILE *fpin = stdin;
   char *bfp = NULL;
   char *rxliname = NULL, *rxli = NULL, *rxlidata = NULL, *rxlioptions = NULL, *wxliname = NULL, *wxlisol = NULL, *wxli = NULL, *wxlioptions = NULL, *wxlisoloptions = NULL;
@@ -645,6 +653,8 @@ int main(int argc, char *argv[])
       or_value(&bb_rule2, NODE_GREEDYMODE);
     else if(strcmp(argv[i], "-Bp") == 0)
       or_value(&bb_rule2, NODE_PSEUDOCOSTMODE);
+    else if(strcmp(argv[i], "-BR") == 0)
+      or_value(&bb_rule2, NODE_PSEUDORATIOSELECT);
     else if(strcmp(argv[i], "-Bf") == 0)
       or_value(&bb_rule2, NODE_DEPTHFIRSTMODE);
     else if(strcmp(argv[i], "-Br") == 0)
@@ -721,6 +731,16 @@ int main(int argc, char *argv[])
       or_value(&scalemode2, SCALE_INTEGERS);
     else if(strcmp(argv[i], "-se") == 0)
       or_value(&scalemode2, SCALE_EQUILIBRATE);
+    else if(strcmp(argv[i], "-sq") == 0)
+      or_value(&scalemode2, SCALE_QUADRATIC);
+    else if(strcmp(argv[i], "-sl") == 0)
+      or_value(&scalemode2, SCALE_LOGARITHMIC);
+    else if(strcmp(argv[i], "-sd") == 0)
+      or_value(&scalemode2, SCALE_DYNUPDATE);
+    else if(strcmp(argv[i], "-sr") == 0)
+      or_value(&scalemode2, SCALE_ROWSONLY);
+    else if(strcmp(argv[i], "-sc") == 0)
+      or_value(&scalemode2, SCALE_COLSONLY);
     else if(strncmp(argv[i], "-s", 2) == 0) {
       set_value(&scalemode1, SCALE_NONE);
       scaling = SCALE_MEAN;
@@ -962,6 +982,8 @@ int main(int argc, char *argv[])
       obj_in_basis = FALSE;
     else if(strcmp(argv[i],"-o1") == 0)
       obj_in_basis = TRUE;
+    else if((strcmp(argv[i], "-ac") == 0) && (i + 1 < argc))
+      accuracy_error = atof(argv[++i]);
     else if(fpin == stdin) {
       filen = argv[i];
       if(*filen == '<')
@@ -1189,6 +1211,9 @@ int main(int argc, char *argv[])
     set_scalelimit(lp, scaleloop);
   }
 
+  if (accuracy_error != -1)
+    set_break_numeric_accuracy(lp, accuracy_error);
+
   if(guessbasis != NULL) {
     REAL *guessvector, a;
     int *basisvector;
@@ -1334,6 +1359,10 @@ int main(int argc, char *argv[])
   case USERABORT:
     if (PRINT_SOLUTION >= 1)
       printf("User aborted\n");
+    break;
+  case ACCURACYERROR:
+    if (PRINT_SOLUTION >= 1)
+      printf("Accuracy error\n");
     break;
   default:
     if (PRINT_SOLUTION >= 1)

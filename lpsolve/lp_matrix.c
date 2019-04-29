@@ -1053,13 +1053,13 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
 
   /* Optionally tally and map the new non-zero values */
   i  = mat->row_end[rowno-1];
-  ii = mat->row_end[rowno];     // ****** KE 20070106 - was "-1"
+  ii = mat->row_end[rowno];     /* ****** KE 20070106 - was "-1" */
   firstcol = mat->columns + 1;
   if(isNZ) {
     /* See if we can do fast in-place replacements of leading items */
     colnr = 1; /* initialise in case of an empty row */
     while((i < ii) /* && (count > 0) */ && ((colnr = ROW_MAT_COLNR(i)) == *colno) && (count > 0)) {
-      value = *row;             // ****** KE 20080111 - Added line
+      value = *row;             /* ****** KE 20080111 - Added line */
       if(mat->is_roworder) {
         if(isA && doscale)
           value = scaled_mat(lp, value, colnr, rowno);
@@ -1098,7 +1098,7 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
     else
       colnr = 0;
     for(k = 1; k <= kk; k++) {
-      value = row[k];           // ****** KE 20080111 - Added line
+      value = row[k];           /* ****** KE 20080111 - Added line */
       if(fabs(value) > mat->epsvalue) {
         /* See if we can do fast in-place replacements of leading items */
         if((addto == NULL) && (i < ii) && (colnr == k)) {
@@ -1386,7 +1386,7 @@ Done:
 STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *colno, MYBOOL doscale, MYBOOL checkrowmode)
 {
   lprec   *lp = mat->lp;
-  int     delta;
+  int     delta, delta1;
   int k, i, ii, j, jj_j, lendense,
           origidx = 0, newidx, orignz, newnz,
           rownr, colnr, colnr1;
@@ -1471,11 +1471,7 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
   /* Make sure we have enough matrix space */
   i  = mat->row_end[rowno-1];
   ii = mat->row_end[rowno];
-  delta = count - (ii-i);
-  if((delta > 0) && (mat_nz_unused(mat) <= delta) && !inc_mat_space(mat, delta)) {
-    newnz = 0;
-    goto Done;
-  }
+  delta1 = delta = count - (ii-i);
   colnr1 = (newnz > 0 ? colno[0] : lendense+1);
 
   /* Pack initial entries if existing row data has a lower column
@@ -1513,7 +1509,18 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
   /* Make sure we have sufficient space for any additional entries and move existing data down;
      this ensures that we only have to relocate matrix elements up in the next stage */
   jj_j = MAX(0, (int) newnz + delta);
-  if((jj_j > 0) && (orignz-origidx > 0)) {
+
+  j = !((orignz == lendense) && (newnz == orignz) && (delta1 == 0)) && (jj_j > 0) && (orignz > origidx);
+
+  if ((j) && (jj_j > delta1))
+    delta1 = jj_j;
+
+  if((delta1 > 0) && (mat_nz_unused(mat) <= delta1) && !inc_mat_space(mat, delta1)) {
+    newnz = 0;
+    goto Done;
+  }
+
+  if(j) {
     COL_MAT_MOVE(origidx+jj_j, origidx, orignz-origidx);
     origidx += jj_j;
     orignz += jj_j;

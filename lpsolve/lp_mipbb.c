@@ -605,9 +605,11 @@ Finish:
           BB->isfloor = FALSE;
         else if(fabs(BB->upbo[K]-BB->UPbound) < intmargin)
           BB->isfloor = TRUE;
-        else
+        else {
+          BB->isfloor = TRUE;
           report(BB->lp, IMPORTANT, "fillbranches_BB: Inconsistent equal-valued bounds for %s\n",
                                     get_col_name(BB->lp, k));
+        }
       }
       if((BB->nodesleft == 1) &&
          ((BB->isfloor && (BB->UPbound >= lp->infinite)) ||
