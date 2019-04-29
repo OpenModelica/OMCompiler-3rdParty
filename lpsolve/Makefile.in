@@ -101,7 +101,7 @@ liblpsolve55.a: $(SOURCES)
 
 liblpsolve55@SO@: $(SOURCES)
 	$(CC) $(CCSHARED) -s -c $(INCLUDES) $(CFLAGS) $(DEFINES) $(SOURCES)
-	$(CC) -shared -Wl,-Bsymbolic -Wl,-soname,$@ -o $@ `echo $(SOURCES)|sed s/[.]c/.o/g|sed 's/[^ ]*\///g'` $(LIBS)
+	$(CC) -shared `echo @SO@ | grep -q dylib || echo -Wl,-Bsymbolic -Wl,-soname,$@` -o $@ `echo $(SOURCES)|sed s/[.]c/.o/g|sed 's/[^ ]*\///g'` $(LIBS)
 
 install: install-HEADERS install-LIBRARIES
 
