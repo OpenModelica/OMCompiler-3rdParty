@@ -5,6 +5,7 @@ AC_CANONICAL_HOST
 
 SHARED_LIB=liblpsolve55.so
 SO=.so
+
 case $host_os in
   hp*|HP*)
     DEF=-ldld
@@ -21,7 +22,11 @@ case $host_os in
   linux)
     CCSHARED="-fPIC";;
   apple-darwin)
-    DEF=-ldl -idirafter /usr/include/sys -DINTEGERTIME -Wno-long-double
+    DEF="-ldl -idirafter /usr/include/sys -DINTEGERTIME -Wno-long-double"
+    ;;
+  *darwin*)
+    SO=.dylib
+    SHARED_LIB=liblpsolve55.dylib
     ;;
   OpenUNIX*|UnixWare*)
     DEF='-dy -DNOLONGLONG'
