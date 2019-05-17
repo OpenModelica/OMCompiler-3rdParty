@@ -18,7 +18,11 @@ case $host_os in
       else CCSHARED="+z";
     fi;;
   CYGWIN*)
-    SO=.dll;;
+    SO=.dll
+	SHARED_LIB=liblpsolve55.dll;;
+  mingw*)
+    SO=.dll
+	SHARED_LIB=liblpsolve55.dll;;
   linux)
     CCSHARED="-fPIC";;
   apple-darwin)
