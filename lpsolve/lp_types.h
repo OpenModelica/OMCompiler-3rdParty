@@ -183,7 +183,11 @@
   #if defined __cplusplus
     #define INLINE inline
   #elif (defined _WIN32) || (defined WIN32) || (defined _WIN64) || (defined WIN64)
+    #if defined(_MSC_VER)
     #define INLINE __inline
+	#else /* MINGW */
+    #define INLINE static
+	#endif
   #else
     #define INLINE static
   #endif
