@@ -157,7 +157,20 @@ antlr3readAscii(pANTLR3_INPUT_STREAM    input, pANTLR3_UINT8 fileName)
 ANTLR3_API ANTLR3_FDSC
 antlr3Fopen(pANTLR3_UINT8 filename, const char * mode)
 {
+#if defined(__MINGW32__) || defined(_MSC_VER)
+    const char *filename1 = (const char *)filename;
+    int len = MultiByteToWideChar(CP_UTF8, 0, filename1, -1, NULL, 0);
+    WCHAR unicodeFilename[len];
+    MultiByteToWideChar(CP_UTF8, 0, filename1, -1, unicodeFilename, len);
+
+    len = MultiByteToWideChar(CP_UTF8, 0, mode, -1, NULL, 0);
+    WCHAR unicodeMode[len];
+    MultiByteToWideChar(CP_UTF8, 0, mode, -1, unicodeMode, len);
+
+    return  (ANTLR3_FDSC)_wfopen(unicodeFilename, unicodeMode);
+#else
     return  (ANTLR3_FDSC)fopen((const char *)filename, mode);
+#endif
 }
 
 /** \brief Close an operating system file and free any handles
@@ -173,8 +186,15 @@ ANTLR3_API ANTLR3_UINT32
 antlr3Fsize(pANTLR3_UINT8 fileName)
 {   
     struct _stat	statbuf;
+#if defined(__MINGW32__) || defined(_MSC_VER)
+    int len = MultiByteToWideChar(CP_UTF8, 0, (const char *)fileName, -1, NULL, 0);
+    WCHAR unicodeFileName[len];
+    MultiByteToWideChar(CP_UTF8, 0, (const char *)fileName, -1, unicodeFileName, len);
 
+    _wstat(unicodeFileName, &statbuf);
+#else
     _stat((const char *)fileName, &statbuf);
+#endif
 
     return (ANTLR3_UINT32)statbuf.st_size;
 }
