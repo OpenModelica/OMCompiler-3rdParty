@@ -12,6 +12,7 @@
 
 #include "f2c.h"
 #include "blaswrap.h"
+#include <math.h>
 
 integer iparmq_(integer *ispec, char *name__, char *opts, integer *n, integer 
 	*ilo, integer *ihi, integer *lwork)
@@ -21,7 +22,6 @@ integer iparmq_(integer *ispec, char *name__, char *opts, integer *n, integer
     real r__1;
 
     /* Builtin functions */
-    double log(doublereal);
     integer i_nint(real *);
 
     /* Local variables */
