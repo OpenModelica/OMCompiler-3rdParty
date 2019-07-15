@@ -11,3 +11,5 @@ modified.
 Defines for min/max/abs/dabs have been replaced by fmin/fmax,labs,fabs.
 The type definitions use the same data types as OpenModelica (int on
 x86_64 instead of long).
+
+In iparmq.c builtin function log is removed and math.h is added
