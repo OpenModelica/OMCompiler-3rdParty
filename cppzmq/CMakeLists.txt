@@ -9,6 +9,7 @@ set(CPPZMQ_HEADERS
     zmq_addon.hpp
 )
 
+include(GNUInstallDirs)
 install(FILES ${CPPZMQ_HEADERS}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
     
