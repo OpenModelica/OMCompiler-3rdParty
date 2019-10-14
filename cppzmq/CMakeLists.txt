@@ -1,5 +1,19 @@
 cmake_minimum_required(VERSION 2.8.0)
 
+if(${CMAKE_VERSION} VERSION_LESS "3.0.0") 
+    
+message("Project doesn't work with CMake < 3.0.0, just installing the header")
+
+set(CPPZMQ_HEADERS
+    zmq.hpp
+    zmq_addon.hpp
+)
+
+install(FILES ${CPPZMQ_HEADERS}
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    
+else() # CMAKE >= 3.0.0
+
 if (POLICY CMP0048)
   cmake_policy(SET CMP0048 NEW)
 endif (POLICY CMP0048)
@@ -95,3 +109,5 @@ if (CPPZMQ_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
+
+endif() #  cmake version check
