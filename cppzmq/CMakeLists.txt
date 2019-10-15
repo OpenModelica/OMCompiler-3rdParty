@@ -11,7 +11,7 @@ set(CPPZMQ_HEADERS
 
 include(GNUInstallDirs)
 install(FILES ${CPPZMQ_HEADERS}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
     
 else() # CMAKE >= 3.0.0
 
