@@ -129,6 +129,11 @@
 #define ZMQ_CPP11_PARTIAL
 #endif
 
+/* clang 3.5 and less doesn't seem to support std::is_trivially_copyable<T>::value */
+#if !defined(ZMQ_CPP11_PARTIAL) && defined(__clang__) && ((__clang_major__ < 4) && (__clang_minor__ < 6))
+#define ZMQ_CPP11_PARTIAL
+#endif
+
 #ifdef ZMQ_CPP11
 #ifdef ZMQ_CPP11_PARTIAL
 #define ZMQ_IS_TRIVIALLY_COPYABLE(T) __has_trivial_copy(T)
