@@ -66,7 +66,13 @@ if(SS_DIR)
     get_target_property(FLAGS colamd_object_l COMPILE_DEFINITIONS)
     list(APPEND FLAGS "DLONG")
     set_target_properties(colamd_object_l PROPERTIES COMPILE_DEFINITIONS ${FLAGS})
+        
     add_library(colamd $<TARGET_OBJECTS:colamd_object> $<TARGET_OBJECTS:colamd_object_l>)
+    if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUXX)
+      target_link_libraries(colamd m)
+      message("--> add -lm to colamd linker")
+    endif (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUXX)
+
 
     install(TARGETS colamd DESTINATION ${LIB_OMC})
     install(FILES ${COLAMD_DIR}/Include/colamd.h DESTINATION Include)
@@ -162,6 +168,11 @@ if(SS_DIR)
   set_target_properties(colamd_object PROPERTIES COMPILE_DEFINITIONS "DINT")
   set_target_properties(colamd_object_l PROPERTIES COMPILE_DEFINITIONS "DLONG")
   add_library(colamd $<TARGET_OBJECTS:colamd_object> $<TARGET_OBJECTS:colamd_object_l>)
+  if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUXX)
+    target_link_libraries(colamd m)
+    message("--> add -lm to colamd linker")
+  endif (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUXX)
+  
   install(TARGETS colamd DESTINATION ${LIB_OMC})
   install(FILES ${COLAMD_DIR}/Include/colamd.h DESTINATION include/omc/c/suitesparse/Include)
 
