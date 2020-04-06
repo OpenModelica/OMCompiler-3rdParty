@@ -1,23 +1,18 @@
-/*
- * -----------------------------------------------------------------
- * $Revision: 4378 $
- * $Date: 2015-02-19 10:55:14 -0800 (Thu, 19 Feb 2015) $
- * ----------------------------------------------------------------- 
+/* -----------------------------------------------------------------
  * Programmer(s): Radu Serban @ LLNL
  * -----------------------------------------------------------------
- * LLNS Copyright Start
- * Copyright (c) 2014, Lawrence Livermore National Security
- * This work was performed under the auspices of the U.S. Department 
- * of Energy by Lawrence Livermore National Laboratory in part under 
- * Contract W-7405-Eng-48 and in part under Contract DE-AC52-07NA27344.
- * Produced at the Lawrence Livermore National Laboratory.
+ * SUNDIALS Copyright Start
+ * Copyright (c) 2002-2020, Lawrence Livermore National Security
+ * and Southern Methodist University.
  * All rights reserved.
- * For details, see the LICENSE file.
- * LLNS Copyright End
+ *
+ * See the top-level LICENSE and NOTICE files for details.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ * SUNDIALS Copyright End
  * -----------------------------------------------------------------
  * Implementation header file for the main CVODES integrator.
- * -----------------------------------------------------------------
- */
+ * -----------------------------------------------------------------*/
 
 #ifndef _CVODES_IMPL_H
 #define _CVODES_IMPL_H
@@ -32,7 +27,7 @@
 extern "C" {
 #endif
 
-/* 
+/*
  * =================================================================
  *   I N T E R N A L   C V O D E S   C O N S T A N T S
  * =================================================================
@@ -51,7 +46,23 @@ extern "C" {
 #define MXHNIL_DEFAULT   10             /* mxhnil default value   */
 #define MXSTEP_DEFAULT   500            /* mxstep default value   */
 
-/* 
+/* Return values for lower level routines used by CVode and functions
+   provided to the nonlinear solver */
+
+#define RHSFUNC_RECVR    +9
+#define SRHSFUNC_RECVR   +12
+
+/* nonlinear solver constants
+   NLS_MAXCOR  maximum no. of corrector iterations for the nonlinear solver
+   CRDOWN      constant used in the estimation of the convergence rate (crate)
+               of the iterates for the nonlinear equation
+   RDIV        declare divergence if ratio del/delp > RDIV
+*/
+#define NLS_MAXCOR 3
+#define CRDOWN     RCONST(0.3)
+#define RDIV       RCONST(2.0)
+
+/*
  * =================================================================
  *   F O R W A R D   P O I N T E R   R E F E R E N C E S
  * =================================================================
@@ -62,7 +73,7 @@ typedef struct CkpntMemRec  *CkpntMem;
 typedef struct DtpntMemRec  *DtpntMem;
 typedef struct CVodeBMemRec *CVodeBMem;
 
-/* 
+/*
  * =================================================================
  *   M A I N    I N T E G R A T O R    M E M O R Y    B L O C K
  * =================================================================
@@ -77,49 +88,53 @@ typedef struct CVodeBMemRec *CVodeBMem;
  * This structure contains fields to keep track of problem state.
  * -----------------------------------------------------------------
  */
-  
-typedef struct CVodeMemRec {
-    
-  realtype cv_uround;         /* machine unit roundoff                        */   
 
-  /*-------------------------- 
-    Problem Specification Data 
+typedef struct CVodeMemRec {
+
+  realtype cv_uround;         /* machine unit roundoff                         */
+
+  /*--------------------------
+    Problem Specification Data
     --------------------------*/
 
-  CVRhsFn cv_f;               /* y' = f(t,y(t))                               */
-  void *cv_user_data;         /* user pointer passed to f                     */
+  CVRhsFn cv_f;               /* y' = f(t,y(t))                                */
+  void *cv_user_data;         /* user pointer passed to f                      */
 
-  int cv_lmm;                 /* lmm = ADAMS or BDF                           */
-  int cv_iter;                /* iter = FUNCTIONAL or NEWTON                  */
+  int cv_lmm;                 /* lmm = ADAMS or BDF                            */
 
-  int cv_itol;                /* itol = CV_SS, CV_SV, or CV_WF, or CV_NN      */
-  realtype cv_reltol;         /* relative tolerance                           */
-  realtype cv_Sabstol;        /* scalar absolute tolerance                    */
-  N_Vector cv_Vabstol;        /* vector absolute tolerance                    */
-  booleantype cv_user_efun;   /* TRUE if user sets efun                       */
-  CVEwtFn cv_efun;            /* function to set ewt                          */
-  void *cv_e_data;            /* user pointer passed to efun                  */
+  int cv_itol;                /* itol = CV_SS, CV_SV, or CV_WF, or CV_NN       */
+  realtype cv_reltol;         /* relative tolerance                            */
+  realtype cv_Sabstol;        /* scalar absolute tolerance                     */
+  N_Vector cv_Vabstol;        /* vector absolute tolerance                     */
+  booleantype cv_atolmin0;    /* flag indicating that min(abstol) = 0          */
+  booleantype cv_user_efun;   /* SUNTRUE if user sets efun                     */
+  CVEwtFn cv_efun;            /* function to set ewt                           */
+  void *cv_e_data;            /* user pointer passed to efun                   */
+
+  booleantype cv_constraintsSet; /* constraints vector present:
+                                    do constraints calc                        */
 
   /*-----------------------
-    Quadrature Related Data 
+    Quadrature Related Data
     -----------------------*/
 
-  booleantype cv_quadr;       /* TRUE if integrating quadratures              */
+  booleantype cv_quadr;       /* SUNTRUE if integrating quadratures            */
 
-  CVQuadRhsFn cv_fQ;          /* q' = fQ(t, y(t))                             */
+  CVQuadRhsFn cv_fQ;          /* q' = fQ(t, y(t))                              */
 
-  booleantype cv_errconQ;     /* TRUE if quadrs. are included in error test   */
+  booleantype cv_errconQ;     /* SUNTRUE if quadrs. are included in error test */
 
-  int cv_itolQ;               /* itolQ = CV_SS or CV_SV                       */
-  realtype cv_reltolQ;        /* relative tolerance for quadratures           */
-  realtype cv_SabstolQ;       /* scalar absolute tolerance for quadratures    */
-  N_Vector cv_VabstolQ;       /* vector absolute tolerance for quadratures    */
+  int cv_itolQ;               /* itolQ = CV_SS or CV_SV                        */
+  realtype cv_reltolQ;        /* relative tolerance for quadratures            */
+  realtype cv_SabstolQ;       /* scalar absolute tolerance for quadratures     */
+  N_Vector cv_VabstolQ;       /* vector absolute tolerance for quadratures     */
+  booleantype cv_atolQmin0;   /* flag indicating that min(abstolQ) = 0         */
 
   /*------------------------
-    Sensitivity Related Data 
+    Sensitivity Related Data
     ------------------------*/
 
-  booleantype cv_sensi;       /* TRUE if computing sensitivities              */
+  booleantype cv_sensi;       /* SUNTRUE if computing sensitivities           */
 
   int cv_Ns;                  /* Number of sensitivities                      */
 
@@ -128,7 +143,7 @@ typedef struct CVodeMemRec {
   CVSensRhsFn cv_fS;          /* fS = (df/dy)*yS + (df/dp)                    */
   CVSensRhs1Fn cv_fS1;        /* fS1 = (df/dy)*yS_i + (df/dp)                 */
   void *cv_fS_data;           /* data pointer passed to fS                    */
-  booleantype cv_fSDQ;        /* TRUE if using internal DQ functions          */
+  booleantype cv_fSDQ;        /* SUNTRUE if using internal DQ functions       */
   int cv_ifS;                 /* ifS = ALLSENS or ONESENS                     */
 
   realtype *cv_p;             /* parameters in f(t,y,p)                       */
@@ -137,46 +152,48 @@ typedef struct CVodeMemRec {
   int cv_DQtype;              /* central/forward finite differences           */
   realtype cv_DQrhomax;       /* cut-off value for separate/simultaneous FD   */
 
-  booleantype cv_errconS;     /* TRUE if yS are considered in err. control    */
+  booleantype cv_errconS;     /* SUNTRUE if yS are considered in err. control */
 
   int cv_itolS;
   realtype cv_reltolS;        /* relative tolerance for sensitivities         */
   realtype *cv_SabstolS;      /* scalar absolute tolerances for sensi.        */
   N_Vector *cv_VabstolS;      /* vector absolute tolerances for sensi.        */
+  booleantype *cv_atolSmin0;  /* flags indicating that min(abstolS[i]) = 0    */
 
   /*-----------------------------------
-    Quadrature Sensitivity Related Data 
+    Quadrature Sensitivity Related Data
     -----------------------------------*/
 
-  booleantype cv_quadr_sensi; /* TRUE if computing sensitivties of quadrs.    */
+  booleantype cv_quadr_sensi; /* SUNTRUE if computing sensitivties of quadrs. */
 
   CVQuadSensRhsFn cv_fQS;     /* fQS = (dfQ/dy)*yS + (dfQ/dp)                 */
   void *cv_fQS_data;          /* data pointer passed to fQS                   */
-  booleantype cv_fQSDQ;       /* TRUE if using internal DQ functions          */
+  booleantype cv_fQSDQ;       /* SUNTRUE if using internal DQ functions       */
 
-  booleantype cv_errconQS;    /* TRUE if yQS are considered in err. con.      */
+  booleantype cv_errconQS;    /* SUNTRUE if yQS are considered in err. con.   */
 
   int cv_itolQS;
   realtype cv_reltolQS;       /* relative tolerance for yQS                   */
   realtype *cv_SabstolQS;     /* scalar absolute tolerances for yQS           */
   N_Vector *cv_VabstolQS;     /* vector absolute tolerances for yQS           */
+  booleantype *cv_atolQSmin0; /* flags indicating that min(abstolQS[i]) = 0   */
 
   /*-----------------------
-    Nordsieck History Array 
+    Nordsieck History Array
     -----------------------*/
 
   N_Vector cv_zn[L_MAX];      /* Nordsieck array, of size N x (q+1).
                                  zn[j] is a vector of length N (j=0,...,q)
-                                 zn[j] = [1/factorial(j)] * h^j * 
+                                 zn[j] = [1/factorial(j)] * h^j *
                                  (jth derivative of the interpolating poly.)  */
 
   /*-------------------
-    Vectors of length N 
+    Vectors of length N
     -------------------*/
 
   N_Vector cv_ewt;            /* error weight vector                          */
   N_Vector cv_y;              /* y is used as temporary storage by the solver.
-                                 The memory is provided by the user to CVode 
+                                 The memory is provided by the user to CVode
                                  where the vector is named yout.              */
   N_Vector cv_acor;           /* In the context of the solution of the
                                  nonlinear equation, acor = y_n(m) - y_n(0).
@@ -184,9 +201,14 @@ typedef struct CVodeMemRec {
                                  the estimated local error in y.              */
   N_Vector cv_tempv;          /* temporary storage vector                     */
   N_Vector cv_ftemp;          /* temporary storage vector                     */
-  
+  N_Vector cv_vtemp1;         /* temporary storage vector                     */
+  N_Vector cv_vtemp2;         /* temporary storage vector                     */
+  N_Vector cv_vtemp3;         /* temporary storage vector                     */
+
+  N_Vector cv_constraints;    /* vector of inequality constraint options      */
+
   /*--------------------------
-    Quadrature Related Vectors 
+    Quadrature Related Vectors
     --------------------------*/
 
   N_Vector cv_znQ[L_MAX];     /* Nordsieck arrays for quadratures             */
@@ -196,7 +218,7 @@ typedef struct CVodeMemRec {
   N_Vector cv_tempvQ;         /* temporary storage vector (~ tempv)           */
 
   /*---------------------------
-    Sensitivity Related Vectors 
+    Sensitivity Related Vectors
     ---------------------------*/
 
   N_Vector *cv_znS[L_MAX];    /* Nordsieck arrays for sensitivities           */
@@ -209,7 +231,7 @@ typedef struct CVodeMemRec {
   booleantype cv_stgr1alloc;  /* Did we allocate ncfS1, ncfnS1, and nniS1?    */
 
   /*--------------------------------------
-    Quadrature Sensitivity Related Vectors 
+    Quadrature Sensitivity Related Vectors
     --------------------------------------*/
 
   N_Vector *cv_znQS[L_MAX];   /* Nordsieck arrays for quadr. sensitivities    */
@@ -218,7 +240,7 @@ typedef struct CVodeMemRec {
   N_Vector *cv_acorQS;        /* acorQS = yQS_n(m) - yQS_n(0)                 */
   N_Vector *cv_tempvQS;       /* temporary storage vector (~ tempv)           */
   N_Vector cv_ftempQ;         /* temporary storage vector (~ ftemp)           */
-  
+
   /*-----------------
     Tstop information
     -----------------*/
@@ -227,7 +249,7 @@ typedef struct CVodeMemRec {
   realtype cv_tstop;
 
   /*---------
-    Step Data 
+    Step Data
     ---------*/
 
   int cv_q;                    /* current order                               */
@@ -240,8 +262,8 @@ typedef struct CVodeMemRec {
 
   realtype cv_hin;
   realtype cv_h;               /* current step size                           */
-  realtype cv_hprime;          /* step size to be used on the next step       */ 
-  realtype cv_next_h;          /* step size to be used on the next step       */ 
+  realtype cv_hprime;          /* step size to be used on the next step       */
+  realtype cv_next_h;          /* step size to be used on the next step       */
   realtype cv_eta;             /* eta = hprime / h                            */
   realtype cv_hscale;          /* value of h used in zn                       */
   realtype cv_tn;              /* current internal value of t                 */
@@ -260,25 +282,24 @@ typedef struct CVodeMemRec {
 
   realtype cv_crate;           /* est. corrector conv. rate in Nls            */
   realtype cv_crateS;          /* est. corrector conv. rate in NlsStgr        */
+  realtype cv_delp;            /* norm of previous nonlinear solver update    */
   realtype cv_acnrm;           /* | acor |                                    */
+  booleantype cv_acnrmcur;     /* is | acor | current?                        */
   realtype cv_acnrmQ;          /* | acorQ |                                   */
   realtype cv_acnrmS;          /* | acorS |                                   */
+  booleantype cv_acnrmScur;    /* is | acorS | current?                       */
   realtype cv_acnrmQS;         /* | acorQS |                                  */
   realtype cv_nlscoef;         /* coeficient in nonlinear convergence test    */
-  int  cv_mnewt;               /* Newton iteration counter                    */
-  int  *cv_ncfS1;              /* Array of Ns local counters for conv.  
+  int  *cv_ncfS1;              /* Array of Ns local counters for conv.
                                 * failures (used in CVStep for STAGGERED1)    */
 
   /*------
-    Limits 
+    Limits
     ------*/
 
   int cv_qmax;             /* q <= qmax                                       */
-  long int cv_mxstep;      /* maximum number of internal steps for one 
+  long int cv_mxstep;      /* maximum number of internal steps for one
 			      user call                                       */
-  int cv_maxcor;           /* maximum number of corrector iterations for 
-			      the solution of the nonlinear equation          */
-  int cv_maxcorS;
   int cv_mxhnil;           /* max. number of warning messages issued to the
 			      user that t + h == t for the next internal step */
   int cv_maxnef;           /* maximum number of error test failures           */
@@ -289,7 +310,7 @@ typedef struct CVodeMemRec {
   realtype cv_etamax;      /* eta <= etamax                                   */
 
   /*----------
-    Counters 
+    Counters
     ----------*/
 
   long int cv_nst;         /* number of internal steps taken                  */
@@ -322,15 +343,15 @@ typedef struct CVodeMemRec {
 			      t + h == t for the next iternal step            */
 
   /*-----------------------------
-    Space requirements for CVODES 
+    Space requirements for CVODES
     -----------------------------*/
 
-  long int cv_lrw1;        /* no. of realtype words in 1 N_Vector y           */ 
-  long int cv_liw1;        /* no. of integer words in 1 N_Vector y            */ 
-  long int cv_lrw1Q;       /* no. of realtype words in 1 N_Vector yQ          */ 
-  long int cv_liw1Q;       /* no. of integer words in 1 N_Vector yQ           */ 
-  long int cv_lrw;         /* no. of realtype words in CVODES work vectors    */
-  long int cv_liw;         /* no. of integer words in CVODES work vectors     */
+  sunindextype cv_lrw1;        /* no. of realtype words in 1 N_Vector y           */
+  sunindextype cv_liw1;        /* no. of integer words in 1 N_Vector y            */
+  sunindextype cv_lrw1Q;       /* no. of realtype words in 1 N_Vector yQ          */
+  sunindextype cv_liw1Q;       /* no. of integer words in 1 N_Vector yQ           */
+  long int cv_lrw;             /* no. of realtype words in CVODES work vectors    */
+  long int cv_liw;             /* no. of integer words in CVODES work vectors     */
 
   /*----------------
     Step size ratios
@@ -340,26 +361,69 @@ typedef struct CVodeMemRec {
   realtype cv_etaq;        /* ratio of new to old h for order q               */
   realtype cv_etaqp1;      /* ratio of new to old h for order q+1             */
 
+  /*---------------------
+    Nonlinear Solver Data
+    ---------------------*/
+
+  SUNNonlinearSolver NLS;      /* nonlinear solver object for ODE solves */
+  booleantype ownNLS;          /* flag indicating NLS ownership          */
+
+  SUNNonlinearSolver NLSsim;   /* NLS object for the simultaneous corrector */
+  booleantype ownNLSsim;       /* flag indicating NLS ownership             */
+
+  SUNNonlinearSolver NLSstg;   /* NLS object for the staggered corrector */
+  booleantype ownNLSstg;       /* flag indicating NLS ownership          */
+
+  SUNNonlinearSolver NLSstg1;  /* NLS object for the staggered1 corrector */
+  booleantype ownNLSstg1;      /* flag indicating NLS ownership           */
+  int sens_solve_idx;          /* index of the current staggered1 solve   */
+  long int nnip;               /* previous total number of iterations     */
+
+  booleantype sens_solve;      /* flag indicating if the current solve is a
+                                  staggered or staggered1 sensitivity solve */
+  int convfail;                /* flag to indicate when a Jacobian update may
+                                  be needed */
+
+  /* The following vectors are NVector wrappers for use with the simultaneous
+     and staggered corrector methods:
+
+       Simultaneous: zn0Sim  = [cv_zn[0], cv_znS[0]]
+                     ycorSim = [cv_acor,  cv_acorS]
+                     ewtSim  = [cv_ewt,   cv_ewtS]
+
+       Staggered: zn0Stg  = cv_znS[0]
+                  ycorStg = cv_acorS
+                  ewtStg  = cv_ewtS
+  */
+  N_Vector zn0Sim, ycorSim, ewtSim;
+  N_Vector zn0Stg, ycorStg, ewtStg;
+
+  /* flags indicating if vector wrappers for the simultaneous and staggered
+     correctors have been allocated */
+  booleantype simMallocDone;
+  booleantype stgMallocDone;
+
+
   /*------------------
-    Linear Solver Data 
+    Linear Solver Data
     ------------------*/
 
   /* Linear Solver functions to be called */
 
   int (*cv_linit)(struct CVodeMemRec *cv_mem);
 
-  int (*cv_lsetup)(struct CVodeMemRec *cv_mem, int convfail, 
-		   N_Vector ypred, N_Vector fpred, booleantype *jcurPtr, 
-		   N_Vector vtemp1, N_Vector vtemp2, N_Vector vtemp3); 
+  int (*cv_lsetup)(struct CVodeMemRec *cv_mem, int convfail,
+		   N_Vector ypred, N_Vector fpred, booleantype *jcurPtr,
+		   N_Vector vtemp1, N_Vector vtemp2, N_Vector vtemp3);
 
   int (*cv_lsolve)(struct CVodeMemRec *cv_mem, N_Vector b, N_Vector weight,
 		   N_Vector ycur, N_Vector fcur);
 
-  void (*cv_lfree)(struct CVodeMemRec *cv_mem);
+  int (*cv_lfree)(struct CVodeMemRec *cv_mem);
 
   /* Linear Solver specific memory */
 
-  void *cv_lmem;           
+  void *cv_lmem;
 
   /* Flag to request a call to the setup routine */
 
@@ -375,21 +439,22 @@ typedef struct CVodeMemRec {
   realtype cv_hu;              /* last successful h value used                */
   realtype cv_saved_tq5;       /* saved value of tq[5]                        */
   booleantype cv_jcur;         /* is Jacobian info for linear solver current? */
+  int cv_convfail;             /* flag storing previous solver failure mode   */
   realtype cv_tolsf;           /* tolerance scale factor                      */
   int cv_qmax_alloc;           /* qmax used when allocating mem               */
   int cv_qmax_allocQ;          /* qmax used when allocating quad. mem         */
   int cv_qmax_allocS;          /* qmax used when allocating sensi. mem        */
   int cv_qmax_allocQS;         /* qmax used when allocating quad. sensi. mem  */
   int cv_indx_acor;            /* index of zn vector in which acor is saved   */
-  booleantype cv_setupNonNull; /* Does setup do something?                    */
 
   /*--------------------------------------------------------------------
-    Flags turned ON by CVodeInit, CVodeSensMalloc, and CVodeQuadMalloc 
+    Flags turned ON by CVodeInit, CVodeSensMalloc, and CVodeQuadMalloc
     and read by CVodeReInit, CVodeSensReInit, and CVodeQuadReInit
     --------------------------------------------------------------------*/
 
   booleantype cv_VabstolMallocDone;
   booleantype cv_MallocDone;
+  booleantype cv_constraintsMallocDone;
 
   booleantype cv_VabstolQMallocDone;
   booleantype cv_QuadMallocDone;
@@ -403,12 +468,12 @@ typedef struct CVodeMemRec {
   booleantype cv_QuadSensMallocDone;
 
   /*-------------------------------------------
-    Error handler function and error ouput file 
+    Error handler function and error ouput file
     -------------------------------------------*/
 
   CVErrHandlerFn cv_ehfun;    /* Error messages are handled by ehfun          */
   void *cv_eh_data;           /* dats pointer passed to ehfun                 */
-  FILE *cv_errfp;             /* CVODES error messages are sent to errfp      */    
+  FILE *cv_errfp;             /* CVODES error messages are sent to errfp      */
 
   /*-------------------------
     Stability Limit Detection
@@ -441,11 +506,19 @@ typedef struct CVodeMemRec {
   booleantype *cv_gactive; /* array with active/inactive event functions      */
   int cv_mxgnull;          /* number of warning messages about possible g==0  */
 
+  /*-----------------------
+    Fused Vector Operations
+    -----------------------*/
+
+  realtype* cv_cvals; /* array of scalars */
+  N_Vector* cv_Xvecs; /* array of vectors */
+  N_Vector* cv_Zvecs; /* array of vectors */
+
   /*------------------------
     Adjoint sensitivity data
     ------------------------*/
 
-  booleantype cv_adj;             /* TRUE if performing ASA                   */
+  booleantype cv_adj;             /* SUNTRUE if performing ASA                */
 
   struct CVadjMemRec *cv_adj_mem; /* Pointer to adjoint memory structure      */
 
@@ -454,7 +527,7 @@ typedef struct CVodeMemRec {
 } *CVodeMem;
 
 
-/* 
+/*
  * =================================================================
  *   A D J O I N T   M O D U L E    M E M O R Y    B L O C K
  * =================================================================
@@ -475,16 +548,16 @@ struct CkpntMemRec {
   /* Integration limits */
   realtype ck_t0;
   realtype ck_t1;
-    
+
   /* Nordsieck History Array */
   N_Vector ck_zn[L_MAX];
-    
+
   /* Do we need to carry quadratures? */
   booleantype ck_quadr;
-    
+
   /* Nordsieck History Array for quadratures */
   N_Vector ck_znQ[L_MAX];
-    
+
   /* Do we need to carry sensitivities? */
   booleantype ck_sensi;
 
@@ -499,12 +572,12 @@ struct CkpntMemRec {
 
   /* Nordsieck History Array for quadrature sensitivities */
   N_Vector *ck_znQS[L_MAX];
-    
+
   /* Was ck_zn[qmax] allocated?
      ck_zqm = 0    - no
      ck_zqm = qmax - yes      */
   int ck_zqm;
-    
+
   /* Step data */
   long int ck_nst;
   realtype ck_tretlast;
@@ -521,15 +594,15 @@ struct CkpntMemRec {
   realtype ck_tau[L_MAX+1];
   realtype ck_tq[NUM_TESTS+1];
   realtype ck_l[L_MAX];
-    
+
   /* Saved values */
   realtype ck_saved_tq5;
-    
+
   /* Pointer to next structure in list */
   struct CkpntMemRec *ck_next;
-    
+
 };
-  
+
 /*
  * -----------------------------------------------------------------
  * Types for functions provided by an interpolation module
@@ -538,7 +611,7 @@ struct CkpntMemRec {
  *                field of the structures in the dt array
  * cvaIMFreeFn:   Type for a function that deallocates the content
  *                field of the structures in the dt array
- * cvaIMGetYFn:   Type for a function that returns the 
+ * cvaIMGetYFn:   Type for a function that returns the
  *                interpolated forward solution.
  * cvaIMStorePnt: Type for a function that stores a new
  *                point in the structure d
@@ -559,7 +632,7 @@ typedef int (*cvaIMStorePntFn)(CVodeMem cv_mem, DtpntMem d);
  * simulations. Its content field depends on IMtype.
  * -----------------------------------------------------------------
  */
-  
+
 struct DtpntMemRec {
   realtype t;    /* time */
   void *content; /* IMtype-dependent content */
@@ -598,7 +671,7 @@ struct CVodeBMemRec {
 
   /* Time at which the backward problem is initialized */
   realtype cv_t0;
-  
+
   /* CVODES memory for this backward problem */
   CVodeMem cv_mem;
 
@@ -617,22 +690,22 @@ struct CVodeBMemRec {
 
   /* User user_data */
   void *cv_user_data;
-    
+
   /* Memory block for a linear solver's interface to CVODEA */
   void *cv_lmem;
 
   /* Function to free any memory allocated by the linear solver */
-  void (*cv_lfree)(CVodeBMem cvB_mem);
+  int (*cv_lfree)(CVodeBMem cvB_mem);
 
-  /* Memory block for a preconditioner's module interface to CVODEA */ 
+  /* Memory block for a preconditioner's module interface to CVODEA */
   void *cv_pmem;
 
   /* Function to free any memory allocated by the preconditioner module */
-  void (*cv_pfree)(CVodeBMem cvB_mem);
+  int (*cv_pfree)(CVodeBMem cvB_mem);
 
   /* Time at which to extract solution / quadratures */
   realtype cv_tout;
-  
+
   /* Workspace Nvector */
   N_Vector cv_y;
 
@@ -652,7 +725,7 @@ struct CVodeBMemRec {
  */
 
 struct CVadjMemRec {
-    
+
   /* --------------------
    * Forward problem data
    * -------------------- */
@@ -666,7 +739,12 @@ struct CVadjMemRec {
   /* Flag if CVodeF was called with TSTOP */
   booleantype ca_tstopCVodeFcall;
   realtype ca_tstopCVodeF;
-    
+
+  /* Flag if CVodeF was called in CV_NORMAL_MODE and encountered a
+     root after tout */
+  booleantype ca_rootret;
+  realtype ca_troot;
+
   /* ----------------------
    * Backward problems data
    * ---------------------- */
@@ -682,7 +760,7 @@ struct CVadjMemRec {
 
   /* Flag for first call to CVodeB */
   booleantype ca_firstCVodeBcall;
-    
+
   /* ----------------
    * Check point data
    * ---------------- */
@@ -695,25 +773,28 @@ struct CVadjMemRec {
 
   /* address of the check point structure for which data is available */
   struct CkpntMemRec *ca_ckpntData;
-    
+
   /* ------------------
    * Interpolation data
    * ------------------ */
 
   /* Number of steps between 2 check points */
   long int ca_nsteps;
-  
+
+  /* Last index used in CVAfindIndex */
+  long int ca_ilast;
+
   /* Storage for data from forward runs */
   struct DtpntMemRec **dt_mem;
 
   /* Actual number of data points in dt_mem (typically np=nsteps+1) */
   long int ca_np;
-    
+
   /* Interpolation type */
   int ca_IMtype;
 
   /* Functions set by the interpolation module */
-  cvaIMMallocFn   ca_IMmalloc; 
+  cvaIMMallocFn   ca_IMmalloc;
   cvaIMFreeFn     ca_IMfree;
   cvaIMStorePntFn ca_IMstore; /* store a new interpolation point */
   cvaIMGetYFn     ca_IMget;   /* interpolate forward solution    */
@@ -736,9 +817,9 @@ struct CVadjMemRec {
   N_Vector ca_ytmp;
 
   N_Vector *ca_yStmp;
-    
+
 };
-  
+
 
 /*
  * =================================================================
@@ -754,24 +835,24 @@ struct CVadjMemRec {
  *
  * CV_NO_FAILURES : Either this is the first cv_setup call for this
  *                  step, or the local error test failed on the
- *                  previous attempt at this step (but the Newton
- *                  iteration converged).
+ *                  previous attempt at this step (but the nonlinear
+ *                  solver iteration converged).
  *
  * CV_FAIL_BAD_J  : This value is passed to cv_lsetup if
  *
- *                  (a) The previous Newton corrector iteration
+ *                  (a) The previous nonlinear solver corrector iteration
  *                      did not converge and the linear solver's
  *                      setup routine indicated that its Jacobian-
  *                      related data is not current
  *                                   or
- *                  (b) During the previous Newton corrector
+ *                  (b) During the previous nonlinear solver corrector
  *                      iteration, the linear solver's solve routine
  *                      failed in a recoverable manner and the
  *                      linear solver's setup routine indicated that
  *                      its Jacobian-related data is not current.
  *
  * CV_FAIL_OTHER  : During the current internal step try, the
- *                  previous Newton iteration failed to converge
+ *                  previous nonlinear solver iteration failed to converge
  *                  even though the linear solver was using current
  *                  Jacobian-related data.
  * -----------------------------------------------------------------
@@ -825,12 +906,12 @@ struct CVadjMemRec {
  * fpred - f(tn, ypred).
  *
  * jcurPtr - a pointer to a boolean to be filled in by cv_lsetup.
- *           The function should set *jcurPtr=TRUE if its Jacobian
+ *           The function should set *jcurPtr=SUNTRUE if its Jacobian
  *           data is current after the call and should set
- *           *jcurPtr=FALSE if its Jacobian data is not current.
+ *           *jcurPtr=SUNFALSE if its Jacobian data is not current.
  *           Note: If cv_lsetup calls for re-evaluation of
  *           Jacobian data (based on convfail and CVODE state
- *           data), it should return *jcurPtr=TRUE always;
+ *           data), it should return *jcurPtr=SUNTRUE always;
  *           otherwise an infinite loop can result.
  *
  * vtemp1 - temporary N_Vector provided for use by cv_lsetup.
@@ -863,11 +944,12 @@ struct CVadjMemRec {
 
 /*
  * -----------------------------------------------------------------
- * void (*cv_lfree)(CVodeMem cv_mem);
+ * int (*cv_lfree)(CVodeMem cv_mem);
  * -----------------------------------------------------------------
  * cv_lfree should free up any memory allocated by the linear
  * solver. This routine is called once a problem has been
- * completed and the linear solver is no longer needed.
+ * completed and the linear solver is no longer needed.  It should
+ * return 0 upon success, nonzero on failure.
  * -----------------------------------------------------------------
  */
 
@@ -876,49 +958,63 @@ struct CVadjMemRec {
  *   C V O D E S    I N T E R N A L   F U N C T I O N S
  * =================================================================
  */
-  
+
+/* Norm functions */
+
+realtype cvSensNorm(CVodeMem cv_mem, N_Vector *xS, N_Vector *wS);
+
+realtype cvSensUpdateNorm(CVodeMem cv_mem, realtype old_nrm,
+                          N_Vector *xS, N_Vector *wS);
+
+
 /* Prototype of internal ewtSet function */
 
 int cvEwtSet(N_Vector ycur, N_Vector weight, void *data);
 
 /* High level error handler */
 
-void cvProcessError(CVodeMem cv_mem, 
-		    int error_code, const char *module, const char *fname, 
+void cvProcessError(CVodeMem cv_mem,
+		    int error_code, const char *module, const char *fname,
 		    const char *msgfmt, ...);
 
 /* Prototype of internal errHandler function */
 
-void cvErrHandler(int error_code, const char *module, const char *function, 
+void cvErrHandler(int error_code, const char *module, const char *function,
 		  char *msg, void *data);
 
 /* Prototypes for internal sensitivity rhs wrappers */
 
-int cvSensRhsWrapper(CVodeMem cv_mem, realtype time, 
-                     N_Vector ycur, N_Vector fcur, 
+int cvSensRhsWrapper(CVodeMem cv_mem, realtype time,
+                     N_Vector ycur, N_Vector fcur,
                      N_Vector *yScur, N_Vector *fScur,
                      N_Vector temp1, N_Vector temp2);
 
-int cvSensRhs1Wrapper(CVodeMem cv_mem, realtype time, 
-                      N_Vector ycur, N_Vector fcur, 
+int cvSensRhs1Wrapper(CVodeMem cv_mem, realtype time,
+                      N_Vector ycur, N_Vector fcur,
                       int is, N_Vector yScur, N_Vector fScur,
                       N_Vector temp1, N_Vector temp2);
 
 /* Prototypes for internal sensitivity rhs DQ functions */
 
-int cvSensRhsInternalDQ(int Ns, realtype t, 
-                        N_Vector y, N_Vector ydot, 
-                        N_Vector *yS, N_Vector *ySdot, 
-                        void *fS_data,  
+int cvSensRhsInternalDQ(int Ns, realtype t,
+                        N_Vector y, N_Vector ydot,
+                        N_Vector *yS, N_Vector *ySdot,
+                        void *fS_data,
                         N_Vector tempv, N_Vector ftemp);
 
-int cvSensRhs1InternalDQ(int Ns, realtype t, 
-                         N_Vector y, N_Vector ydot, 
-                         int is, N_Vector yS, N_Vector ySdot, 
+int cvSensRhs1InternalDQ(int Ns, realtype t,
+                         N_Vector y, N_Vector ydot,
+                         int is, N_Vector yS, N_Vector ySdot,
                          void *fS_data,
                          N_Vector tempv, N_Vector ftemp);
 
-/* 
+/* Nonlinear solver functions */
+int cvNlsInit(CVodeMem cv_mem);
+int cvNlsInitSensSim(CVodeMem cv_mem);
+int cvNlsInitSensStg(CVodeMem cv_mem);
+int cvNlsInitSensStg1(CVodeMem cv_mem);
+
+/*
  * =================================================================
  *   C V O D E S    E R R O R    M E S S A G E S
  * =================================================================
@@ -957,7 +1053,6 @@ int cvSensRhs1InternalDQ(int Ns, realtype t,
 #define MSGCV_CVMEM_FAIL "Allocation of cvode_mem failed."
 #define MSGCV_MEM_FAIL "A memory request failed."
 #define MSGCV_BAD_LMM  "Illegal value for lmm. The legal values are CV_ADAMS and CV_BDF."
-#define MSGCV_BAD_ITER  "Illegal value for iter. The legal values are CV_FUNCTIONAL and CV_NEWTON."
 #define MSGCV_NO_MALLOC "Attempt to call before CVodeInit."
 #define MSGCV_NEG_MAXORD "maxord <= 0 illegal."
 #define MSGCV_BAD_MAXORD  "Illegal attempt to increase maximum method order."
@@ -969,26 +1064,30 @@ int cvSensRhs1InternalDQ(int Ns, realtype t,
 #define MSGCV_BAD_ABSTOL "abstol has negative component(s) (illegal)."
 #define MSGCV_NULL_ABSTOL "abstol = NULL illegal."
 #define MSGCV_NULL_Y0 "y0 = NULL illegal."
+#define MSGCV_Y0_FAIL_CONSTR "y0 fails to satisfy constraints."
+#define MSGCV_BAD_ISM_CONSTR "Constraints can not be enforced while forward sensitivity is used with simultaneous method"
 #define MSGCV_NULL_F "f = NULL illegal."
 #define MSGCV_NULL_G "g = NULL illegal."
 #define MSGCV_BAD_NVECTOR "A required vector operation is not implemented."
+#define MSGCV_BAD_CONSTR "Illegal values in constraints vector."
 #define MSGCV_BAD_K "Illegal value for k."
 #define MSGCV_NULL_DKY "dky = NULL illegal."
 #define MSGCV_BAD_T "Illegal value for t." MSG_TIME_INT
 #define MSGCV_NO_ROOT "Rootfinding was not initialized."
+#define MSGCV_NLS_INIT_FAIL "The nonlinear solver's init routine failed."
 
 #define MSGCV_NO_QUAD  "Quadrature integration not activated."
 #define MSGCV_BAD_ITOLQ "Illegal value for itolQ. The legal values are CV_SS and CV_SV."
 #define MSGCV_NULL_ABSTOLQ "abstolQ = NULL illegal."
 #define MSGCV_BAD_RELTOLQ "reltolQ < 0 illegal."
-#define MSGCV_BAD_ABSTOLQ "abstolQ has negative component(s) (illegal)."  
+#define MSGCV_BAD_ABSTOLQ "abstolQ has negative component(s) (illegal)."
 
 #define MSGCV_SENSINIT_2 "Sensitivity analysis already initialized."
 #define MSGCV_NO_SENSI  "Forward sensitivity analysis not activated."
 #define MSGCV_BAD_ITOLS "Illegal value for itolS. The legal values are CV_SS, CV_SV, and CV_EE."
 #define MSGCV_NULL_ABSTOLS "abstolS = NULL illegal."
 #define MSGCV_BAD_RELTOLS "reltolS < 0 illegal."
-#define MSGCV_BAD_ABSTOLS "abstolS has negative component(s) (illegal)."  
+#define MSGCV_BAD_ABSTOLS "abstolS has negative component(s) (illegal)."
 #define MSGCV_BAD_PBAR "pbar has zero component(s) (illegal)."
 #define MSGCV_BAD_PLIST "plist has negative component(s) (illegal)."
 #define MSGCV_BAD_NS "NS <= 0 illegal."
@@ -1004,7 +1103,7 @@ int cvSensRhs1InternalDQ(int Ns, realtype t,
 #define MSGCV_BAD_ITOLQS "Illegal value for itolQS. The legal values are CV_SS, CV_SV, and CV_EE."
 #define MSGCV_NULL_ABSTOLQS "abstolQS = NULL illegal."
 #define MSGCV_BAD_RELTOLQS "reltolQS < 0 illegal."
-#define MSGCV_BAD_ABSTOLQS "abstolQS has negative component(s) (illegal)."  
+#define MSGCV_BAD_ABSTOLQS "abstolQS has negative component(s) (illegal)."
 #define MSGCV_NO_QUADSENSI  "Forward sensitivity analysis for quadrature variables not activated."
 #define MSGCV_NULL_YQS0 "yQS0 = NULL illegal."
 
@@ -1031,6 +1130,7 @@ int cvSensRhs1InternalDQ(int Ns, realtype t,
 #define MSGCV_CONV_FAILS "At " MSG_TIME_H ", the corrector convergence test failed repeatedly or with |h| = hmin."
 #define MSGCV_SETUP_FAILED "At " MSG_TIME ", the setup routine failed in an unrecoverable manner."
 #define MSGCV_SOLVE_FAILED "At " MSG_TIME ", the solve routine failed in an unrecoverable manner."
+#define MSGCV_FAILED_CONSTR "At " MSG_TIME ", unable to satisfy inequality constraints."
 #define MSGCV_RHSFUNC_FAILED "At " MSG_TIME ", the right-hand side routine failed in an unrecoverable manner."
 #define MSGCV_RHSFUNC_UNREC "At " MSG_TIME ", the right-hand side failed in a recoverable manner, but no recovery is possible."
 #define MSGCV_RHSFUNC_REPTD "At " MSG_TIME " repeated recoverable right-hand side function errors."
@@ -1039,6 +1139,9 @@ int cvSensRhs1InternalDQ(int Ns, realtype t,
 #define MSGCV_CLOSE_ROOTS "Root found at and very near " MSG_TIME "."
 #define MSGCV_BAD_TSTOP "The value " MSG_TIME_TSTOP " is behind current " MSG_TIME " in the direction of integration."
 #define MSGCV_INACTIVE_ROOTS "At the end of the first step, there are still some root functions identically 0. This warning will not be issued again."
+#define MSGCV_NLS_SETUP_FAILED "At " MSG_TIME ", the nonlinear solver setup failed unrecoverably."
+#define MSGCV_NLS_INPUT_NULL "At " MSG_TIME ", the nonlinear solver was passed a NULL input."
+#define MSGCV_NLS_FAIL "At " MSG_TIME ", the nonlinear solver failed in an unrecoverable manner."
 
 #define MSGCV_NO_TOLQ "No integration tolerances for quadrature variables have been specified."
 #define MSGCV_BAD_EWTQ "Initial ewtQ has component(s) equal to zero (illegal)."
@@ -1066,7 +1169,7 @@ int cvSensRhs1InternalDQ(int Ns, realtype t,
 #define MSGCV_QSRHSFUNC_REPTD "At " MSG_TIME " repeated recoverable quadrature sensitivity right-hand side function errors."
 #define MSGCV_QSRHSFUNC_FIRST "The quadrature sensitivity right-hand side routine failed at the first call."
 
-/* 
+/*
  * =================================================================
  *   C V O D E A    E R R O R    M E S S A G E S
  * =================================================================
@@ -1082,7 +1185,7 @@ int cvSensRhs1InternalDQ(int Ns, realtype t,
 #define MSGCV_BAD_SENSI   "At least one backward problem requires sensitivities, but they were not stored for interpolation."
 #define MSGCV_BAD_ITASKB  "Illegal value for itaskB. Legal values are CV_NORMAL and CV_ONE_STEP."
 #define MSGCV_BAD_TBOUT   "The final time tBout is outside the interval over which the forward problem was solved."
-#define MSGCV_BACK_ERROR  "Error occured while integrating backward problem # %d" 
+#define MSGCV_BACK_ERROR  "Error occured while integrating backward problem # %d"
 #define MSGCV_BAD_TINTERP "Bad t = %g for interpolation."
 #define MSGCV_WRONG_INTERP "This function cannot be called for the specified interp type."
 

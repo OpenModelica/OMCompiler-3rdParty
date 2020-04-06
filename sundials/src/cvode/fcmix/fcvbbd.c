@@ -1,20 +1,17 @@
 /*
  * -----------------------------------------------------------------
- * $Revision: 4075 $
- * $Date: 2014-04-24 10:46:58 -0700 (Thu, 24 Apr 2014) $
- * ----------------------------------------------------------------- 
- * Programmer(s): Alan C. Hindmarsh, Radu Serban and
- *                Aaron Collier @ LLNL
+ * Programmer(s): Daniel R. Reynolds @ SMU
+ *     Alan C. Hindmarsh, Radu Serban and Aaron Collier @ LLNL
  * -----------------------------------------------------------------
- * LLNS Copyright Start
- * Copyright (c) 2014, Lawrence Livermore National Security
- * This work was performed under the auspices of the U.S. Department 
- * of Energy by Lawrence Livermore National Laboratory in part under 
- * Contract W-7405-Eng-48 and in part under Contract DE-AC52-07NA27344.
- * Produced at the Lawrence Livermore National Laboratory.
+ * SUNDIALS Copyright Start
+ * Copyright (c) 2002-2020, Lawrence Livermore National Security
+ * and Southern Methodist University.
  * All rights reserved.
- * For details, see the LICENSE file.
- * LLNS Copyright End
+ *
+ * See the top-level LICENSE and NOTICE files for details.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ * SUNDIALS Copyright End
  * -----------------------------------------------------------------
  * This module contains the routines necessary to interface with the
  * CVBBDPRE module and user-supplied Fortran routines.
@@ -30,9 +27,6 @@
 #include "fcvbbd.h"              /* prototypes of interfaces to CVBBDPRE           */
 
 #include <cvode/cvode_bbdpre.h>  /* prototypes of CVBBDPRE functions and macros    */
-#include <cvode/cvode_sptfqmr.h> /* prototypes of CVSPTFQMR interface routines     */
-#include <cvode/cvode_spbcgs.h>  /* prototypes of CVSPBCG interface routines       */
-#include <cvode/cvode_spgmr.h>   /* prototypes of CVSPGMR interface routines       */
 
 /***************************************************************************/
 
@@ -42,15 +36,14 @@
 extern "C" {
 #endif
 
-  extern void FCV_GLOCFN(long int*,                        /* NLOC          */
-                         realtype*, realtype*, realtype*,  /* T, YLOC, GLOC */
-                         long int*, realtype*,             /* IPAR, RPAR    */
-                         int *ier);                        /* IER           */
+  extern void FCV_GLOCFN(long int *NLOC, realtype *T,
+                         realtype *YLOC, realtype *GLOC,
+                         long int *IPAR, realtype *RPAR,
+                         int *ier);
 
-  extern void FCV_COMMFN(long int*,                        /* NLOC          */
-                         realtype*, realtype*,             /* T, Y          */
-                         long int*, realtype*,             /* IPAR, RPAR    */
-                         int *ier);                        /* IER           */
+  extern void FCV_COMMFN(long int *NLOC, realtype *T,
+                         realtype *Y, long int *IPAR,
+                         realtype *RPAR, int *ier);
 
 #ifdef __cplusplus
 }
@@ -58,47 +51,58 @@ extern "C" {
 
 /***************************************************************************/
 
-void FCV_BBDINIT(long int *Nloc, long int *mudq, long int *mldq, long int *mu, long int *ml, 
-                 realtype* dqrely, int *ier)
+void FCV_BBDINIT(long int *Nloc, long int *mudq, long int *mldq,
+                 long int *mu, long int *ml, realtype* dqrely, int *ier)
 {
 
-  /* 
+  /*
      First call CVBBDPrecInit to initialize CVBBDPRE module:
      Nloc       is the local vector size
      mudq,mldq  are the half-bandwidths for computing preconditioner blocks
      mu, ml     are the half-bandwidths of the retained preconditioner blocks
      dqrely     is the difference quotient relative increment factor
      FCVgloc    is a pointer to the CVLocalFn function
-     FCVcfn     is a pointer to the CVCommFn function 
+     FCVcfn     is a pointer to the CVCommFn function
   */
 
-  *ier = CVBBDPrecInit(CV_cvodemem, *Nloc, *mudq, *mldq, *mu, *ml, 
-                       *dqrely, FCVgloc, FCVcfn);
+  *ier = CVBBDPrecInit(CV_cvodemem,
+                       (sunindextype)(*Nloc),
+                       (sunindextype)(*mudq),
+                       (sunindextype)(*mldq),
+                       (sunindextype)(*mu),
+                       (sunindextype)(*ml),
+                       *dqrely,
+                       (CVLocalFn) FCVgloc, (CVCommFn) FCVcfn);
 
-  return; 
+  return;
 }
 
 /***************************************************************************/
 
-void FCV_BBDREINIT(long int *Nloc, long int *mudq, long int *mldq, realtype* dqrely, int *ier)
+void FCV_BBDREINIT(long int *mudq, long int *mldq,
+                   realtype* dqrely, int *ier)
 {
-  /* 
+  /*
      First call CVReInitBBD to re-initialize CVBBDPRE module:
      mudq,mldq   are the half-bandwidths for computing preconditioner blocks
      dqrely      is the difference quotient relative increment factor
      FCVgloc     is a pointer to the CVLocalFn function
-     FCVcfn      is a pointer to the CVCommFn function 
+     FCVcfn      is a pointer to the CVCommFn function
   */
 
-  *ier = CVBBDPrecReInit(CV_cvodemem, *mudq, *mldq, *dqrely);
+  *ier = CVBBDPrecReInit(CV_cvodemem,
+                         (sunindextype)(*mudq),
+                         (sunindextype)(*mldq),
+                         *dqrely);
 }
 
 /***************************************************************************/
 
-/* C function FCVgloc to interface between CVBBDPRE module and a Fortran 
+/* C function FCVgloc to interface between CVBBDPRE module and a Fortran
    subroutine FCVLOCFN. */
 
-int FCVgloc(long int Nloc, realtype t, N_Vector yloc, N_Vector gloc, void *user_data)
+int FCVgloc(long int Nloc, realtype t, N_Vector yloc, N_Vector gloc,
+            void *user_data)
 {
   int ier;
   realtype *yloc_data, *gloc_data;
@@ -109,15 +113,14 @@ int FCVgloc(long int Nloc, realtype t, N_Vector yloc, N_Vector gloc, void *user_
 
   CV_userdata = (FCVUserData) user_data;
 
-  FCV_GLOCFN(&Nloc, &t, yloc_data, gloc_data, 
-             CV_userdata->ipar, CV_userdata->rpar,
-             &ier);
+  FCV_GLOCFN(&Nloc, &t, yloc_data, gloc_data,
+             CV_userdata->ipar, CV_userdata->rpar, &ier);
   return(ier);
 }
 
 /***************************************************************************/
 
-/* C function FCVcfn to interface between CVBBDPRE module and a Fortran 
+/* C function FCVcfn to interface between CVBBDPRE module and a Fortran
    subroutine FCVCOMMF. */
 
 int FCVcfn(long int Nloc, realtype t, N_Vector y, void *user_data)
