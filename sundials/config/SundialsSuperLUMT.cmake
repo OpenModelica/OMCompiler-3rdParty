@@ -1,72 +1,100 @@
-# ---------------------------------------------------------------
-# $Revision: 4511 $
-# $Date: 2015-06-29 16:48:09 -0700 (Mon, 29 Jun 2015) $
-# ---------------------------------------------------------------
-# Programmer:  Eddy Banks @ LLNL
-# ---------------------------------------------------------------
-# Copyright (c) 2013, The Regents of the University of California.
-# Produced at the Lawrence Livermore National Laboratory.
+# ------------------------------------------------------------------------------
+# Programmer(s): Eddy Banks @ LLNL
+# ------------------------------------------------------------------------------
+# SUNDIALS Copyright Start
+# Copyright (c) 2002-2020, Lawrence Livermore National Security
+# and Southern Methodist University.
 # All rights reserved.
-# For details, see the LICENSE file.
-# ---------------------------------------------------------------
-# SUPERLUMT tests for SUNDIALS CMake-based configuration.
-#    - loosely based on SundialsLapack.cmake
-# 
+#
+# See the top-level LICENSE and NOTICE files for details.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+# SUNDIALS Copyright End
+# ------------------------------------------------------------------------------
+# Sundials module to find and configure SuperLU_MT correctly.
+# ------------------------------------------------------------------------------
 
-#print_warning("SundialsSUPERLUMT.cmake 1 SUPERLUMT_FOUND" "${SUPERLUMT_FOUND}")
-SET(SUPERLUMT_FOUND FALSE)
-#print_warning("SundialsSUPERLUMT.cmake 2 SUPERLUMT_FOUND" "${SUPERLUMT_FOUND}")
+### This is only set if running GUI - simply return first time enabled
+if(SUPERLUMT_DISABLED)
+  set(SUPERLUMT_DISABLED FALSE CACHE INTERNAL "GUI - SUPERLUMT now enabled" FORCE)
+  return()
+endif()
 
-# set SUPERLUMT_LIBRARIES
-include(FindSUPERLUMT)
-# If we have the SUPERLUMT libraries, test them
-#print_warning("SundialsSUPERLUMT.cmake 3: SUPERLUMT_LIBRARIES" "${SUPERLUMT_LIBRARIES}")
-#print_warning("SundialsSUPERLUMT.cmake 4: SUPERLUMT_BLAS_LIBRARIES" "${SUPERLUMT_BLAS_LIBRARIES}")
-if(SUPERLUMT_LIBRARIES)
-  #print_warning("SundialsSUPERLUMT.cmake 5 SUPERLUMT_FOUND" "${SUPERLUMT_FOUND}")
-  #print_WARNING("SundialsSUPERLUMT.cmake 6 SUPERLUMT_LIBRARIES" "${SUPERLUMT_LIBRARIES}")
-  message(STATUS "Looking for SUPERLUMT libraries... OK")
+# --- Check for dependencies --- #
+
+# SuperLU_MT does not support extended precision
+if(SUNDIALS_PRECISION MATCHES "EXTENDED")
+  print_error("SuperLU_MT is not compatible with ${SUNDIALS_PRECISION} precision")
+endif()
+
+# --- Find SuperLU_MT and test it --- #
+
+# Try to find SuperLU_MT
+find_package(SUPERLUMT REQUIRED)
+
+# If we have the SuperLU_MT libraries, test them
+if(SUPERLUMT_FOUND)
+
+  # >>>>>>> Need to add check for SuperLU_MT integer type <<<<<<<
+
   # Create the SUPERLUMT_TEST directory
   set(SUPERLUMT_TEST_DIR ${PROJECT_BINARY_DIR}/SUPERLUMT_TEST)
   file(MAKE_DIRECTORY ${SUPERLUMT_TEST_DIR})
-  # Create a CMakeLists.txt file 
+
+  # Create a CMakeLists.txt file
   file(WRITE ${SUPERLUMT_TEST_DIR}/CMakeLists.txt
-    "CMAKE_MINIMUM_REQUIRED(VERSION 2.4)\n"
+    "CMAKE_MINIMUM_REQUIRED(VERSION 3.1.3)\n"
     "PROJECT(ltest C)\n"
     "SET(CMAKE_VERBOSE_MAKEFILE ON)\n"
     "SET(CMAKE_BUILD_TYPE \"${CMAKE_BUILD_TYPE}\")\n"
+    "SET(CMAKE_C_COMPILER \"${CMAKE_C_COMPILER}\")\n"
     "SET(CMAKE_C_FLAGS \"${CMAKE_C_FLAGS}\")\n"
     "SET(CMAKE_C_FLAGS_RELEASE \"${CMAKE_C_FLAGS_RELEASE}\")\n"
     "SET(CMAKE_C_FLAGS_DEBUG \"${CMAKE_C_FLAGS_DEBUG}\")\n"
     "SET(CMAKE_C_FLAGS_RELWITHDEBUGINFO \"${CMAKE_C_FLAGS_RELWITHDEBUGINFO}\")\n"
     "SET(CMAKE_C_FLAGS_MINSIZE \"${CMAKE_C_FLAGS_MINSIZE}\")\n"
     "ADD_EXECUTABLE(ltest ltest.c)\n"
-    "TARGET_LINK_LIBRARIES(ltest ${SUPERLUMT_LIBRARIES})\n")    
-# TODO: Eddy - fix this test
-# Create a C source file which calls a SUPERLUMT function
+    "TARGET_INCLUDE_DIRECTORIES(ltest PRIVATE ${SUPERLUMT_INCLUDE_DIR})\n"
+    "TARGET_LINK_LIBRARIES(ltest ${SUPERLUMT_LIBRARIES})\n")
+
+  # Create a C source file which calls a SuperLU_MT function
   file(WRITE ${SUPERLUMT_TEST_DIR}/ltest.c
+    "\#include \"slu_mt_ddefs.h\"\n"
     "int main(){\n"
-    "int n=1;\n"
-    "double x, y;\n"
-    "return(0);\n"
+    "SuperMatrix *A;\n"
+    "NCformat *Astore;\n"
+    "A = NULL;\n"
+    "Astore = NULL;\n"
+    "if (A != NULL || Astore != NULL) return(1);\n"
+    "else return(0);\n"
     "}\n")
-  # Attempt to link the "ltest" executable
-  try_compile(LTEST_OK ${SUPERLUMT_TEST_DIR} ${SUPERLUMT_TEST_DIR} ltest OUTPUT_VARIABLE MY_OUTPUT)
-      
-  # To ensure we do not use stuff from the previous attempts, 
+
+  # Attempt to build and link the "ltest" executable
+  try_compile(COMPILE_OK ${SUPERLUMT_TEST_DIR} ${SUPERLUMT_TEST_DIR} ltest
+    OUTPUT_VARIABLE COMPILE_OUTPUT)
+
+  # To ensure we do not use stuff from the previous attempts,
   # we must remove the CMakeFiles directory.
   file(REMOVE_RECURSE ${SUPERLUMT_TEST_DIR}/CMakeFiles)
+
   # Process test result
-#PRINT_WARNING("LTEST_OK" "${LTEST_OK}")
-  if(LTEST_OK)
-#PRINT_WARNING("x SundialsSUPERLUMT.cmake SUPERLUMT_LIBRARIES" "${SUPERLUMT_LIBRARIES}")
-    message(STATUS "Checking if SUPERLUMT works... OK")
+  if(COMPILE_OK)
+    message(STATUS "Checking if SuperLU_MT works... OK")
     set(SUPERLUMT_FOUND TRUE)
-    #print_warning("SUPERLUMT_FOUND" "${SUPERLUMT_FOUND}")
-  else(LTEST_OK)
-    message(STATUS "Checking if SUPERLUMT works... FAILED")
-  endif(LTEST_OK)
-else(SUPERLUMT_LIBRARIES)
-#PRINT_WARNING("y SundialsSUPERLUMT.cmake SUPERLUMT_LIBRARIES" "${SUPERLUMT_LIBRARIES}")
-  message(STATUS "Looking for SUPERLUMT libraries... FAILED")
-endif(SUPERLUMT_LIBRARIES)
+  else()
+    message(STATUS "Checking if SuperLU_MT works... FAILED")
+    message(STATUS "Check output: ")
+    message("${COMPILE_OUTPUT}")
+    print_error("SuperLU_MT not functional - support will not be provided.")
+  endif()
+
+  # sundials_config.h symbols
+  set(SUNDIALS_SUPERLUMT TRUE)
+  set(SUNDIALS_SUPERLUMT_THREAD_TYPE ${SUPERLUMT_THREAD_TYPE})
+
+else()
+
+  # sundials_config.h symbols
+  set(SUNDIALS_SUPERLUMT FALSE)
+
+endif()
