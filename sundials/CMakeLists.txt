@@ -209,8 +209,8 @@ ENDIF(IS_DIRECTORY "${sundials_SOURCE_DIR}/src/kinsol")
 # Option that allows users to build static and/or shared libraries
 # ----------------------------------------------------------------
 
-OPTION(BUILD_STATIC_LIBS "Build static libraries" ON)
-OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
+OPTION(SUNDIALS_BUILD_STATIC_LIBS "Build static libraries" ON)
+OPTION(SUNDIALS_BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 # Prepare substitution variable SUNDIALS_EXPORT for sundials_config.h
 # When building shared SUNDIALS libraries under Windows, use
@@ -220,7 +220,7 @@ OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON)
 # In all other cases (other platforms or static libraries
 # under Windows), the SUNDIALS_EXPORT macro is empty
 
-IF(BUILD_SHARED_LIBS AND WIN32)
+IF(SUNDIALS_BUILD_SHARED_LIBS AND WIN32)
   SET(SUNDIALS_EXPORT
     "#ifdef BUILD_SUNDIALS_LIBRARY
 #define SUNDIALS_EXPORT __declspec(dllexport)
@@ -231,16 +231,16 @@ IF(BUILD_SHARED_LIBS AND WIN32)
 #define SUNDIALS_EXPORT __declspec(dllimport)
 #endif
 #endif")
-ELSE(BUILD_SHARED_LIBS AND WIN32)
+ELSE(SUNDIALS_BUILD_SHARED_LIBS AND WIN32)
   SET(SUNDIALS_EXPORT "#define SUNDIALS_EXPORT")
-ENDIF(BUILD_SHARED_LIBS AND WIN32)
+ENDIF(SUNDIALS_BUILD_SHARED_LIBS AND WIN32)
 
 # Make sure we build at least one type of libraries
-IF(NOT BUILD_STATIC_LIBS AND NOT BUILD_SHARED_LIBS)
+IF(NOT SUNDIALS_BUILD_STATIC_LIBS AND NOT SUNDIALS_BUILD_SHARED_LIBS)
   PRINT_WARNING("Both static and shared library generation were disabled"
     "Building static libraries was re-enabled")
-  SET(BUILD_STATIC_LIBS ON CACHE BOOL "Build static libraries" FORCE)
-ENDIF(NOT BUILD_STATIC_LIBS AND NOT BUILD_SHARED_LIBS)
+  SET(SUNDIALS_BUILD_STATIC_LIBS ON CACHE BOOL "Build static libraries" FORCE)
+ENDIF(NOT SUNDIALS_BUILD_STATIC_LIBS AND NOT SUNDIALS_BUILD_SHARED_LIBS)
 
 # Option to specify precision
 # ---------------------------
@@ -300,13 +300,13 @@ ENDIF(BUILD_ARKODE OR BUILD_CVODE OR BUILD_IDA OR BUILD_KINSOL)
 # F90 support is an option only if ARKode is built and 
 # examples are enabled
 
-IF(BUILD_ARKODE AND EXAMPLES_ENABLE AND FCMIX_ENABLE)
+IF(BUILD_ARKODE AND SUNDIALS_EXAMPLES_ENABLE AND FCMIX_ENABLE)
   SHOW_VARIABLE(F90_ENABLE BOOL "Enable Fortran90 ARKode examples" OFF)
-ELSE(BUILD_ARKODE AND EXAMPLES_ENABLE AND FCMIX_ENABLE)
+ELSE(BUILD_ARKODE AND SUNDIALS_EXAMPLES_ENABLE AND FCMIX_ENABLE)
   # set back to OFF (in case was ON)
   SET(F90_ENABLE OFF)
   HIDE_VARIABLE(F90_ENABLE AND FCMIX_ENABLE)
-ENDIF(BUILD_ARKODE AND EXAMPLES_ENABLE AND FCMIX_ENABLE)
+ENDIF(BUILD_ARKODE AND SUNDIALS_EXAMPLES_ENABLE AND FCMIX_ENABLE)
 
 # -------------------------------------------------------------
 # Enable C++ support?
@@ -315,54 +315,54 @@ ENDIF(BUILD_ARKODE AND EXAMPLES_ENABLE AND FCMIX_ENABLE)
 # C++ support is an option only if ARKode is built and 
 # examples are enabled
 
-IF(BUILD_ARKODE AND EXAMPLES_ENABLE)
+IF(BUILD_ARKODE AND SUNDIALS_EXAMPLES_ENABLE)
   SHOW_VARIABLE(CXX_ENABLE BOOL "Enable C++ ARKode examples" OFF)
-ELSE(BUILD_ARKODE AND EXAMPLES_ENABLE)
+ELSE(BUILD_ARKODE AND SUNDIALS_EXAMPLES_ENABLE)
   HIDE_VARIABLE(CXX_ENABLE)
-ENDIF(BUILD_ARKODE AND EXAMPLES_ENABLE)
+ENDIF(BUILD_ARKODE AND SUNDIALS_EXAMPLES_ENABLE)
 
 # -------------------------------------------------------------
 # Enable BLAS/LAPACK support?
 # -------------------------------------------------------------
 
-OPTION(LAPACK_ENABLE "Enable Lapack support" OFF)
+OPTION(SUNDIALS_LAPACK_ENABLE "Enable Lapack support" OFF)
 
-IF(NOT LAPACK_ENABLE)
+IF(NOT SUNDIALS_LAPACK_ENABLE)
   HIDE_VARIABLE(SUNDIALS_F77_FUNC_CASE)
   HIDE_VARIABLE(SUNDIALS_F77_FUNC_UNDERSCORES)
   HIDE_VARIABLE(LAPACK_LIBRARIES)
-ENDIF(NOT LAPACK_ENABLE)
+ENDIF(NOT SUNDIALS_LAPACK_ENABLE)
 
 # -------------------------------------------------------------
 # Enable SUPERLUMT support?
 # -------------------------------------------------------------
 
-OPTION(SUPERLUMT_ENABLE "Enable SUPERLUMT support" OFF)
+OPTION(SUNDIALS_SUPERLUMT_ENABLE "Enable SUPERLUMT support" OFF)
 
-IF(NOT SUPERLUMT_ENABLE)
+IF(NOT SUNDIALS_SUPERLUMT_ENABLE)
   HIDE_VARIABLE(SUPERLUMT_THREAD_TYPE)
   HIDE_VARIABLE(SUPERLUMT_LIBRARY_DIR)
   HIDE_VARIABLE(SUPERLUMT_INCLUDE_DIR)
-ENDIF(NOT SUPERLUMT_ENABLE)
+ENDIF(NOT SUNDIALS_SUPERLUMT_ENABLE)
 
 # -------------------------------------------------------------
 # Enable KLU support?
 # -------------------------------------------------------------
 
-OPTION(KLU_ENABLE "Enable KLU support" OFF)
+OPTION(SUNDIALS_KLU_ENABLE "Enable KLU support" OFF)
 
-IF(NOT KLU_ENABLE)
+IF(NOT SUNDIALS_KLU_ENABLE)
   HIDE_VARIABLE(KLU_LIBRARY_DIR)
   HIDE_VARIABLE(KLU_INCLUDE_DIR)
-ENDIF(NOT KLU_ENABLE)
+ENDIF(NOT SUNDIALS_KLU_ENABLE)
 
 # -------------------------------------------------------------
 # Enable MPI support?
 # -------------------------------------------------------------
 
-OPTION(MPI_ENABLE "Enable MPI support" OFF)
+OPTION(SUNDIALS_MPI_ENABLE "Enable MPI support" OFF)
 
-IF(NOT MPI_ENABLE)
+IF(NOT SUNDIALS_MPI_ENABLE)
   HIDE_VARIABLE(MPI_INCLUDE_PATH)
   HIDE_VARIABLE(MPI_LIBRARIES)
   HIDE_VARIABLE(MPI_EXTRA_LIBRARIES)
@@ -370,28 +370,28 @@ IF(NOT MPI_ENABLE)
   HIDE_VARIABLE(MPI_MPICXX)
   HIDE_VARIABLE(MPI_MPIF77)
   HIDE_VARIABLE(MPI_MPIF90)
-ENDIF(NOT MPI_ENABLE)
+ENDIF(NOT SUNDIALS_MPI_ENABLE)
 
 # -------------------------------------------------------------
 # Enable OpenMP support?
 # -------------------------------------------------------------
 
-OPTION(OPENMP_ENABLE "Enable OpenMP support" OFF)
+OPTION(SUNDIALS_OPENMP_ENABLE "Enable OpenMP support" OFF)
 
-IF(OPENMP_ENABLE)
+IF(SUNDIALS_OPENMP_ENABLE)
   FIND_PACKAGE(OpenMP)
   IF(NOT OPENMP_FOUND)
     message(STATUS "Disabling OpenMP support, could not determine compiler flags")
   ENDIF(NOT OPENMP_FOUND)
-ENDIF(OPENMP_ENABLE)
+ENDIF(SUNDIALS_OPENMP_ENABLE)
 
 # -------------------------------------------------------------
 # Enable Pthread support?
 # -------------------------------------------------------------
 
-OPTION(PTHREAD_ENABLE "Enable Pthreads support" OFF)
+OPTION(SUNDIALS_PTHREAD_ENABLE "Enable Pthreads support" OFF)
 
-IF(PTHREAD_ENABLE)
+IF(SUNDIALS_PTHREAD_ENABLE)
   FIND_PACKAGE(Threads)
   IF(CMAKE_USE_PTHREADS_INIT)
     message(STATUS "Using Pthreads")
@@ -400,25 +400,25 @@ IF(PTHREAD_ENABLE)
   ELSE()
     message(STATUS "Disabling Pthreads support, could not determine compiler flags")
   endif()
-ENDIF(PTHREAD_ENABLE)
+ENDIF(SUNDIALS_PTHREAD_ENABLE)
 
 # -------------------------------------------------------------
 # Enable examples?
 # -------------------------------------------------------------
 
-OPTION(EXAMPLES_ENABLE "Build the SUNDIALS examples" OFF)
+OPTION(SUNDIALS_EXAMPLES_ENABLE "Build the SUNDIALS examples" OFF)
 
-IF(EXAMPLES_ENABLE)
+IF(SUNDIALS_EXAMPLES_ENABLE)
 
   # If examples are enabled, set different options
 
   # The examples will be linked with the library corresponding to the build type.
   # Whenever building shared libraries, use them to link the examples.
-  IF(BUILD_SHARED_LIBS)
+  IF(SUNDIALS_BUILD_SHARED_LIBS)
     SET(LINK_LIBRARY_TYPE "shared")
-  ELSE(BUILD_SHARED_LIBS)
+  ELSE(SUNDIALS_BUILD_SHARED_LIBS)
     SET(LINK_LIBRARY_TYPE "static")
-  ENDIF(BUILD_SHARED_LIBS)
+  ENDIF(SUNDIALS_BUILD_SHARED_LIBS)
 
   # Check if example files are to be exported
   SHOW_VARIABLE(EXAMPLES_INSTALL BOOL "Install example files" ON)
@@ -442,7 +442,7 @@ IF(EXAMPLES_ENABLE)
 
   ENDIF(EXAMPLES_INSTALL)
 
-ELSE(EXAMPLES_ENABLE)
+ELSE(SUNDIALS_EXAMPLES_ENABLE)
 
   # If examples are disabled, hide all options related to
   # building and installing the SUNDIALS examples
@@ -450,7 +450,7 @@ ELSE(EXAMPLES_ENABLE)
   HIDE_VARIABLE(EXAMPLES_INSTALL)
   HIDE_VARIABLE(EXAMPLES_INSTALL_PATH)
   
-ENDIF(EXAMPLES_ENABLE)
+ENDIF(SUNDIALS_EXAMPLES_ENABLE)
 
 # -------------------------------------------------------------
 # Add any other necessary compiler flags & definitions
@@ -473,13 +473,13 @@ ENDIF(APPLE)
 # (b) LAPACK is enabled (for the name-mangling scheme)
 # -------------------------------------------------------------
 
-IF(FCMIX_ENABLE OR LAPACK_ENABLE)
+IF(FCMIX_ENABLE OR SUNDIALS_LAPACK_ENABLE)
   INCLUDE(SundialsFortran)
   IF(NOT F77_FOUND AND FCMIX_ENABLE)
     PRINT_WARNING("Fortran compiler not functional"
       "FCMIX support will not be provided")
   ENDIF(NOT F77_FOUND AND FCMIX_ENABLE)
-ENDIF(FCMIX_ENABLE OR LAPACK_ENABLE)
+ENDIF(FCMIX_ENABLE OR SUNDIALS_LAPACK_ENABLE)
 
 # -------------------------------------------------------------
 # A Fortran90 compiler is needed if:
@@ -520,7 +520,7 @@ ENDIF(CXX_ENABLE AND BUILD_ARKODE)
 # Note: the default scheme is lower case - one underscore
 # -------------------------------------------------------------
 
-IF(LAPACK_ENABLE AND NOT F77SCHEME_FOUND)
+IF(SUNDIALS_LAPACK_ENABLE AND NOT F77SCHEME_FOUND)
   # Specify the case for the Fortran name-mangling scheme
   SHOW_VARIABLE(SUNDIALS_F77_FUNC_CASE STRING
     "case of Fortran function names (lower/upper)"
@@ -558,7 +558,7 @@ IF(LAPACK_ENABLE AND NOT F77SCHEME_FOUND)
   SET(CMAKE_Fortran_SCHEME_WITH_UNDERSCORES "my_sub_")
   # We now "have" a scheme.
   SET(F77SCHEME_FOUND TRUE)
-ENDIF(LAPACK_ENABLE AND NOT F77SCHEME_FOUND)
+ENDIF(SUNDIALS_LAPACK_ENABLE AND NOT F77SCHEME_FOUND)
 
 # -------------------------------------------------------------
 # If we have a name-mangling scheme (either automatically
@@ -617,7 +617,7 @@ ENDIF(F77SCHEME_FOUND)
 # If LAPACK is needed, first try to find the appropriate
 # libraries and linker flags needed to link against them.
 
-IF(LAPACK_ENABLE)
+IF(SUNDIALS_LAPACK_ENABLE)
 
   # find BLAS and LAPACK Libraries
   INCLUDE(SundialsLapack)
@@ -633,11 +633,11 @@ IF(LAPACK_ENABLE)
   ENDIF(LAPACK_LIBRARIES AND NOT LAPACK_FOUND)
   
 
-ELSE(LAPACK_ENABLE)
+ELSE(SUNDIALS_LAPACK_ENABLE)
 
   HIDE_VARIABLE(LAPACK_LIBRARIES)
 
-ENDIF(LAPACK_ENABLE)
+ENDIF(SUNDIALS_LAPACK_ENABLE)
 
 # -------------------------------------------------------------
 # Find (and test) the SUPERLUMT libraries
@@ -860,7 +860,7 @@ ENDIF(BUILD_CPODES)
 
 INCLUDE(SundialsAddTest)
 HIDE_VARIABLE(TESTRUNNER)
-IF(EXAMPLES_ENABLE)
+IF(SUNDIALS_EXAMPLES_ENABLE)
   IF(TESTRUNNER)
     ENABLE_TESTING()
   ENDIF(TESTRUNNER)
@@ -1060,7 +1060,7 @@ IF(EXAMPLES_ENABLE)
       ADD_SUBDIRECTORY(examples/nvector/openmp)
   ENDIF(OPENMP_FOUND)
   
-ENDIF(EXAMPLES_ENABLE)
+ENDIF(SUNDIALS_EXAMPLES_ENABLE)
 
 #----------------------------------
 # Install configuration header file
