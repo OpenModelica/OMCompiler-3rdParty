@@ -10,6 +10,7 @@ add_library(omc::3rd::omantlr3 ALIAS omantlr3)
 
 # CMinpack
 omc_add_subdirectory(CMinpack)
+add_library(omc::3rd::cminpack ALIAS cminpack)
 
 
 
@@ -53,6 +54,7 @@ add_library(omc::3rd::lpsolve55 ALIAS lpsolve55)
 
 # metis
 omc_add_subdirectory(metis-5.1.0)
+add_library(omc::3rd::metis ALIAS metis)
 
 
 
@@ -62,6 +64,8 @@ set(TBB_BUILD_SHARED OFF CACHE BOOL "Build TBB shared library")
 set(TBB_BUILD_TBBMALLOC OFF CACHE BOOL "Build TBB malloc library")
 set(TBB_BUILD_TBBMALLOC_PROXY OFF CACHE BOOL "Build TBB malloc proxy library")
 omc_add_subdirectory(tbb_cmake)
+add_library(omc::3rd::tbb::static ALIAS tbb_static)
+# add_library(omc::3rd::tbb::shared ALIAS tbb)
 
 
 
