@@ -68,6 +68,29 @@ set(LP_SOURCES ${LP_SOURCES} ${GENERATED_DIRECTORY}/lp_rlp.h)
 
 add_library(lpsolve55 SHARED ${LP_SOURCES})
 # This is a bad way to include things. But we will not modify the lpsolve code yet.
+# For other targets that depend on lpsolve we use the custom target below to copy
+# tre needed headers to one place and we provide that as an interface include directory.
 target_include_directories(lpsolve55 PRIVATE ./ ./shared ./bfp ./bfp/bfp_LUSOL ./bfp/bfp_LUSOL/LUSOL ./colamd)
 
 target_compile_definitions(lpsolve55 PRIVATE YY_NEVER_INTERACTIVE PARSER_LP INVERSE_ACTIVE=INVERSE_LUSOL RoleIsExternalInvEngine)
+
+
+
+# Copy the "public" headers to one place and provide that for targets
+# that depend on lpsolve.
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/lpsolve/)
+add_custom_command(TARGET lpsolve55
+                   POST_BUILD
+				   COMMAND ${CMAKE_COMMAND} -E copy
+						${CMAKE_CURRENT_SOURCE_DIR}/lp_lib.h
+						${CMAKE_CURRENT_SOURCE_DIR}/lp_types.h
+						${CMAKE_CURRENT_SOURCE_DIR}/lp_utils.h
+						${CMAKE_CURRENT_SOURCE_DIR}/lp_Hash.h
+						${CMAKE_CURRENT_SOURCE_DIR}/lp_matrix.h
+						${CMAKE_CURRENT_SOURCE_DIR}/lp_mipbb.h
+						${CMAKE_CURRENT_SOURCE_DIR}/lp_SOS.h
+						${CMAKE_CURRENT_SOURCE_DIR}/include/lpsolve/
+				   COMMENT "Copying lpsolve header files to ${CMAKE_CURRENT_SOURCE_DIR}/include/"
+				   )
+target_include_directories(lpsolve55 INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include/)
+
