@@ -40,26 +40,26 @@ ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 #  - Add the build target for the NVECSERIAL library
 #  - Set the library name and make sure it is not deleted
 #  - Install the NVECSERIAL library
-IF(BUILD_STATIC_LIBS)
+IF(SUNDIALS_BUILD_STATIC_LIBS)
   ADD_LIBRARY(sundials_nvecserial_static STATIC ${nvecserial_SOURCES} ${shared_SOURCES})
   SET_TARGET_PROPERTIES(sundials_nvecserial_static
     PROPERTIES OUTPUT_NAME sundials_nvecserial CLEAN_DIRECT_OUTPUT 1)
   INSTALL(TARGETS sundials_nvecserial_static DESTINATION lib)
-ENDIF(BUILD_STATIC_LIBS)
+ENDIF(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the NVECSERIAL library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the NVECSERIAL library
-IF(BUILD_SHARED_LIBS)
+IF(SUNDIALS_BUILD_SHARED_LIBS)
   ADD_LIBRARY(sundials_nvecserial_shared SHARED ${nvecserial_SOURCES} ${shared_SOURCES})
   SET_TARGET_PROPERTIES(sundials_nvecserial_shared
     PROPERTIES OUTPUT_NAME sundials_nvecserial CLEAN_DIRECT_OUTPUT 1)
   SET_TARGET_PROPERTIES(sundials_nvecserial_shared
     PROPERTIES VERSION ${nveclib_VERSION} SOVERSION ${nveclib_SOVERSION})
   INSTALL(TARGETS sundials_nvecserial_shared DESTINATION lib)
-ENDIF(BUILD_SHARED_LIBS)
+ENDIF(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the NVECSERIAL header files
 INSTALL(FILES ${nvecserial_HEADERS} DESTINATION include/nvector)
@@ -67,20 +67,20 @@ INSTALL(FILES ${nvecserial_HEADERS} DESTINATION include/nvector)
 # If FCMIX is enabled, build and install the FNVECSERIAL library
 IF(FCMIX_ENABLE AND F77_FOUND)
   SET(fnvecserial_SOURCES fnvector_serial.c)
-  IF(BUILD_STATIC_LIBS)
+  IF(SUNDIALS_BUILD_STATIC_LIBS)
     ADD_LIBRARY(sundials_fnvecserial_static STATIC ${fnvecserial_SOURCES})
     SET_TARGET_PROPERTIES(sundials_fnvecserial_static
       PROPERTIES OUTPUT_NAME sundials_fnvecserial CLEAN_DIRECT_OUTPUT 1)
     INSTALL(TARGETS sundials_fnvecserial_static DESTINATION lib)
-  ENDIF(BUILD_STATIC_LIBS)
-  IF(BUILD_SHARED_LIBS)
+  ENDIF(SUNDIALS_BUILD_STATIC_LIBS)
+  IF(SUNDIALS_BUILD_SHARED_LIBS)
     ADD_LIBRARY(sundials_fnvecserial_shared ${fnvecserial_SOURCES})
     SET_TARGET_PROPERTIES(sundials_fnvecserial_shared
       PROPERTIES OUTPUT_NAME sundials_fnvecserial CLEAN_DIRECT_OUTPUT 1)
     SET_TARGET_PROPERTIES(sundials_fnvecserial_shared 
       PROPERTIES VERSION ${nveclib_VERSION} SOVERSION ${nveclib_SOVERSION})
     INSTALL(TARGETS sundials_fnvecserial_shared DESTINATION lib)
-  ENDIF(BUILD_SHARED_LIBS)
+  ENDIF(SUNDIALS_BUILD_SHARED_LIBS)
 ENDIF(FCMIX_ENABLE AND F77_FOUND)
 
 #

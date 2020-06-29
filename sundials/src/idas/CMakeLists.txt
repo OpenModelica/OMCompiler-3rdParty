@@ -115,7 +115,7 @@ INCLUDE_DIRECTORIES(../sundials)
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
 # Build the static library
-IF(BUILD_STATIC_LIBS)
+IF(SUNDIALS_BUILD_STATIC_LIBS)
 
   # Add the build target for the static IDAS library
   ADD_LIBRARY(sundials_idas_static STATIC 
@@ -130,10 +130,10 @@ IF(BUILD_STATIC_LIBS)
   # Install the IDA library
   INSTALL(TARGETS sundials_idas_static DESTINATION lib)
 
-ENDIF(BUILD_STATIC_LIBS)
+ENDIF(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Build the shared library
-IF(BUILD_SHARED_LIBS)
+IF(SUNDIALS_BUILD_SHARED_LIBS)
 
   # Add the build target for the IDAS library
   ADD_LIBRARY(sundials_idas_shared SHARED 
@@ -152,7 +152,7 @@ IF(BUILD_SHARED_LIBS)
   # Install the IDAS library
   INSTALL(TARGETS sundials_idas_shared DESTINATION lib)
 
-ENDIF(BUILD_SHARED_LIBS)
+ENDIF(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the IDAS header files
 INSTALL(FILES ${idas_HEADERS} ${idas_BL_HEADERS} ${idas_SLU_HEADERS} DESTINATION include/idas)

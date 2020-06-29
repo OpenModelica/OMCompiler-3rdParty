@@ -646,7 +646,7 @@ ENDIF(SUNDIALS_LAPACK_ENABLE)
 # If SUPERLUMT is needed, first try to find the appropriate
 # libraries to link against them.
 
-IF(SUPERLUMT_ENABLE)
+IF(SUNDIALS_SUPERLUMT_ENABLE)
 
   # get thread type for SUPERLUMT (OpenMP or Pthreads(default))
   SET(SUPERLUMT_THREAD_TYPE "Pthread" CACHE STRING "OpenMP or Pthread (leave blank for no threading)")
@@ -666,13 +666,13 @@ IF(SUPERLUMT_ENABLE)
       "Double check spelling specified libraries (search is case sensitive)")
   ENDIF(SUPERLUMT_LIBRARIES AND NOT SUPERLUMT_FOUND)
 
-ELSE(SUPERLUMT_ENABLE)
+ELSE(SUNDIALS_SUPERLUMT_ENABLE)
 
   HIDE_VARIABLE(SUPERLUMT_THREAD_TYPE)
   HIDE_VARIABLE(SUPERLUMT_INCLUDE_DIR)
   HIDE_VARIABLE(SUPERLUMT_LIBRARY_DIR)
 
-ENDIF(SUPERLUMT_ENABLE)
+ENDIF(SUNDIALS_SUPERLUMT_ENABLE)
 
 # -------------------------------------------------------------
 # Find (and test) the KLU libraries
@@ -681,7 +681,7 @@ ENDIF(SUPERLUMT_ENABLE)
 # If KLU is requested, first try to find the appropriate libraries to
 # link against them.
 
-IF(KLU_ENABLE)
+IF(SUNDIALS_KLU_ENABLE)
 
   SHOW_VARIABLE(KLU_INCLUDE_DIR STRING "KLU include directory"
     "${KLU_INCLUDE_DIR}") 
@@ -711,13 +711,13 @@ IF(KLU_ENABLE)
       "Double check spelling specified libraries (search is case sensitive)")
   ENDIF(KLU_LIBRARIES AND NOT KLU_FOUND)
 
-ENDIF(KLU_ENABLE)
+ENDIF(SUNDIALS_KLU_ENABLE)
 
 # -------------------------------------------------------------
 # Decide how to compile MPI codes.
 # -------------------------------------------------------------
 
-IF(MPI_ENABLE)
+IF(SUNDIALS_MPI_ENABLE)
   # get run command for mpi (openmpi or OpenMP or Pthreads(default))
   SET(MPI_RUN_COMMAND "mpirun" CACHE STRING "mpirun or srun")
   SHOW_VARIABLE(MPI_RUN_COMMAND STRING "MPI run command: mpirun or srun" "${MPI_RUN_COMMAND}")
@@ -740,7 +740,7 @@ IF(MPI_ENABLE)
   IF(MPIC_FOUND AND F90_ENABLE)
     INCLUDE(SundialsMPIF90)
   ENDIF(MPIC_FOUND AND F90_ENABLE)
-ENDIF(MPI_ENABLE)
+ENDIF(SUNDIALS_MPI_ENABLE)
 
 # -------------------------------------------------------------
 # If using MPI with C++, disable C++ extensions (for known wrappers)
