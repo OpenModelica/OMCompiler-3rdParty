@@ -23,7 +23,11 @@ add_library(omc::3rd::cminpack ALIAS cminpack)
 set (FMILIB_GENERATE_DOXYGEN_DOC OFF CACHE BOOL "Generate doxygen doc target")
 set (FMILIB_BUILD_TESTS OFF CACHE BOOL "Build tests")
 omc_add_subdirectory(FMIL)
-omc_add_to_report(FMILIB_FMI_PLATFORM)
+
+# For now we deal with FMIL's nonsensical structure here. They really need to 
+# fix up their cmake usage. It is their default build system and it is used in
+# very contrived and unusual ways.
+target_include_directories(fmilib_shared INTERFACE ${FMILibrary_SOURCE_DIR}/install/include)
 add_library(omc::3rd::fmilib::shared ALIAS fmilib_shared)
 add_library(omc::3rd::FMIL::minizip ALIAS minizip)
 
