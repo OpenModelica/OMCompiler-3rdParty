@@ -43,6 +43,12 @@ add_library(omc::3rd::gc ALIAS gc-lib)
 
 
 
+# graphstream
+omc_add_subdirectory(graphstream)
+add_library(omc::3rd::netstream ALIAS netstream)
+
+
+
 # libzmq
 set (ZMQ_BUILD_TESTS OFF CACHE BOOL "Build the tests for ZeroMQ")
 omc_add_subdirectory(libzmq)
