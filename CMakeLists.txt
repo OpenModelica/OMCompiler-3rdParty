@@ -67,6 +67,11 @@ omc_add_subdirectory(metis-5.1.0)
 add_library(omc::3rd::metis ALIAS metis)
 
 
+omc_add_subdirectory(ModelicaExternalC)
+add_library(omc::3rd::modelica_external_c ALIAS ModelicaExternalC)
+add_library(omc::3rd::modelica_mat_io ALIAS ModelicaMatIO)
+add_library(omc::3rd::modelica_io ALIAS ModelicaIO)
+
 
 # Intel TBB
 set(TBB_BUILD_TESTS OFF CACHE BOOL "Build TBB tests and enable testing infrastructure")
