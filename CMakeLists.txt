@@ -74,12 +74,12 @@ add_library(omc::3rd::modelica_io ALIAS ModelicaIO)
 
 
 # Intel TBB
-set(TBB_BUILD_TESTS OFF CACHE BOOL "Build TBB tests and enable testing infrastructure")
-set(TBB_BUILD_SHARED OFF CACHE BOOL "Build TBB shared library")
-set(TBB_BUILD_TBBMALLOC OFF CACHE BOOL "Build TBB malloc library")
-set(TBB_BUILD_TBBMALLOC_PROXY OFF CACHE BOOL "Build TBB malloc proxy library")
-omc_add_subdirectory(tbb_cmake)
-add_library(omc::3rd::tbb::static ALIAS tbb_static)
+# set(TBB_BUILD_TESTS OFF CACHE BOOL "Build TBB tests and enable testing infrastructure")
+# set(TBB_BUILD_SHARED OFF CACHE BOOL "Build TBB shared library")
+# set(TBB_BUILD_TBBMALLOC OFF CACHE BOOL "Build TBB malloc library")
+# set(TBB_BUILD_TBBMALLOC_PROXY OFF CACHE BOOL "Build TBB malloc proxy library")
+# omc_add_subdirectory(tbb_cmake)
+# add_library(omc::3rd::tbb::static ALIAS tbb_static)
 # add_library(omc::3rd::tbb::shared ALIAS tbb)
 
 
