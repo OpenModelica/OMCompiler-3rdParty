@@ -240,6 +240,7 @@ ENDIF(enable_checksums)
 ADD_LIBRARY(          gc-lib   STATIC      ${SRC})
 SET_TARGET_PROPERTIES(gc-lib   PROPERTIES
                       COMPILE_DEFINITIONS GC_NOT_DLL)
+target_include_directories(gc-lib INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 #TODO TARGET_LINK_LIBRARIES(...  ...  ${LIBS})
 
 ADD_LIBRARY(          gcmt-lib STATIC      ${SRC})
@@ -258,4 +259,4 @@ IF(WIN32)
   TARGET_LINK_LIBRARIES(cord gdi32)
 ENDIF(WIN32)
 
-ADD_SUBDIRECTORY(tests)
+# ADD_SUBDIRECTORY(tests)
