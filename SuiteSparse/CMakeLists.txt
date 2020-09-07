@@ -22,7 +22,7 @@ if(DOWNLOAD_SUITESPARSE)
 endif()
 
 find_file(SS_INSTALL README.txt DOC "README.txt in SuiteSparse folder"
-  HINT "${CMAKE_BINARY_DIR}/.." NO_DEFAULT_PATH)
+  HINT "${CMAKE_PROJECT_SRC_DIR}" NO_DEFAULT_PATH)
 if(SS_INSTALL)
   get_filename_component(SS_DIR ${SS_INSTALL} PATH)
   if(NOT EXISTS "${SS_DIR}/README.txt")
@@ -70,7 +70,7 @@ if(SS_DIR)
     add_library(colamd $<TARGET_OBJECTS:colamd_object> $<TARGET_OBJECTS:colamd_object_l>)
     if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUXX)
       target_link_libraries(colamd m)
-      message("--> add -lm to colamd linker")
+      message(STATUS "--> add -lm to colamd linker")
     endif (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUXX)
 
 
@@ -170,7 +170,7 @@ if(SS_DIR)
   add_library(colamd $<TARGET_OBJECTS:colamd_object> $<TARGET_OBJECTS:colamd_object_l>)
   if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUXX)
     target_link_libraries(colamd m)
-    message("--> add -lm to colamd linker")
+    message(STATUS "--> add -lm to colamd linker")
   endif (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUXX)
   
   install(TARGETS colamd DESTINATION ${LIB_OMC})
@@ -218,7 +218,7 @@ if(SS_DIR)
 
   prepandAll(umfpack_analyze_files "umf_" analyze apply_order colamd cholmod free fsize is_permutation malloc realloc report_perm singletons)
   set(umfpack_analyze_groups DINT DLONG)
-#  addToFlagGroup("umfpack_olib" "${umfpack_analyze_files}" "DINT;DLONG")
+  #  addToFlagGroup("umfpack_olib" "${umfpack_analyze_files}" "DINT;DLONG")
 
   set(umfpack_hsolve_files umf_ltsolve umf_utsolve)
   getAllGroups(umfpack_hsolve_groups flags_umfpack_olib "DINT;DLONG;ZINT;ZLONG" "-;CONJUGATE_SOLVE")
