@@ -65,6 +65,7 @@ add_library(omc::3rd::lpsolve55 ALIAS lpsolve55)
 # metis
 omc_add_subdirectory(metis-5.1.0)
 add_library(omc::3rd::metis ALIAS metis)
+target_include_directories(metis INTERFACE metis-5.1.0/include)
 
 
 omc_add_subdirectory(ModelicaExternalC)
