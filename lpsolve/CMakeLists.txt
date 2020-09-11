@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.14)
 project(lpsolve)
 
 
-find_package(bison REQUIRED)
-find_package(flex REQUIRED)
+find_package(BISON REQUIRED)
+find_package(FLEX REQUIRED)
 
 
 set(LP_SOURCES lp_MDO.c shared/commonlib.c shared/mmio.c
