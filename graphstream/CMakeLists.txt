@@ -10,7 +10,8 @@ set(OM_GRAPHSTREAM_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/gs-netstream/c++/src/nets
 
 
 add_library(netstream STATIC ${OM_GRAPHSTREAM_SOURCES})
-target_link_libraries(netstream INTERFACE wsock32)
+target_link_libraries(netstream INTERFACE $<$<PLATFORM_ID:Windows>:wsock32>)
+
 target_include_directories(netstream PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/gs-netstream/c++/src/)
 
 add_executable(netstream-main ${CMAKE_CURRENT_SOURCE_DIR}/gs-netstream/c++/src/netstream-main.cpp)
