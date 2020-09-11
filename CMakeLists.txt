@@ -35,11 +35,24 @@ add_library(omc::3rd::FMIL::minizip ALIAS minizip)
 
 # Boehm GC
 set(CMAKE_USE_WIN32_THREADS_INIT ON)
-set(enable_java_finalization OFF)
-set(enable_gcj_support OFF)
-set(enable_large_config ON)
+set(enable_java_finalization OFF CACHE BOOL "Support for java finalization")
+set(enable_gcj_support OFF CACHE BOOL "Support for gcj")
+set(enable_large_config ON CACHE BOOL "Optimize for large heap or root set")
 omc_add_subdirectory(gc)
 add_library(omc::3rd::gc ALIAS gc-lib)
+# make sure every target that links to gc-lib has its sources
+# compiled with -DGC_THREADS 
+target_compile_definitions(gc-lib INTERFACE GC_THREADS)
+
+# On Windows with MinGW OM uses pthreads-win32.
+# ideally this should made in gc's own cmakelists.txt.
+# but that file is rather messy. Until we either get a proper cmake
+# implementation from upstream or we make one ourselves, we do it
+# here. I also don't want to make it require recent cmake just for this line.
+if(MINGW)
+    target_compile_definitions(gc-lib PUBLIC GC_WIN32_PTHREADS)
+endif(MINGW)
+
 
 
 
@@ -68,6 +81,7 @@ add_library(omc::3rd::metis ALIAS metis)
 target_include_directories(metis INTERFACE metis-5.1.0/include)
 
 
+# ModelicaExternalC
 omc_add_subdirectory(ModelicaExternalC)
 add_library(omc::3rd::modelica_external_c ALIAS ModelicaExternalC)
 add_library(omc::3rd::modelica_mat_io ALIAS ModelicaMatIO)
