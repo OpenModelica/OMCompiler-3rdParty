@@ -66,7 +66,7 @@ set(LP_SOURCES ${LP_SOURCES} ${GENERATED_DIRECTORY}/lp_rlp.h)
 
 
 
-add_library(lpsolve55 SHARED ${LP_SOURCES})
+add_library(lpsolve55 STATIC ${LP_SOURCES})
 # This is a bad way to include things. But we will not modify the lpsolve code yet.
 # For other targets that depend on lpsolve we use the custom target below to copy
 # tre needed headers to one place and we provide that as an interface include directory.
