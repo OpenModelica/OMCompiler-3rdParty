@@ -27,8 +27,8 @@ omc_add_subdirectory(FMIL)
 # For now we deal with FMIL's nonsensical structure here. They really need to 
 # fix up their cmake usage. It is their default build system and it is used in
 # very contrived and unusual ways.
-target_include_directories(fmilib_shared INTERFACE ${FMILibrary_SOURCE_DIR}/install/include)
-add_library(omc::3rd::fmilib::shared ALIAS fmilib_shared)
+target_include_directories(fmilib INTERFACE ${FMILibrary_SOURCE_DIR}/install/include)
+add_library(omc::3rd::fmilib::static ALIAS fmilib)
 add_library(omc::3rd::FMIL::minizip ALIAS minizip)
 
 
