@@ -69,6 +69,12 @@ option(install_headers "Install header files" ON)
 
 add_definitions("-DALL_INTERIOR_POINTERS -DNO_EXECUTE_PERMISSION")
 
+if(GC_BUILD_SHARED_LIBS)
+    set(GC_LIBRARY_BUILD_TYPE SHARED)
+else(GC_BUILD_SHARED_LIBS)
+    set(GC_LIBRARY_BUILD_TYPE STATIC)
+endif(GC_BUILD_SHARED_LIBS)
+
 # Set struct packing alignment to word (instead of 1-byte).
 if (BORLAND)
   add_compile_options(/a4)
@@ -412,24 +418,24 @@ if (HAVE_DLADDR)
   add_definitions("-DHAVE_DLADDR")
 endif()
 
-add_library(gc STATIC ${SRC})
+add_library(gc ${GC_LIBRARY_BUILD_TYPE} ${SRC})
 if (enable_threads)
   target_link_libraries(gc PRIVATE ${THREADDLLIBS})
 endif()
 
 if (enable_cplusplus)
-  add_library(gccpp gc_badalc.cc gc_cpp.cc)
+  add_library(gccpp ${GC_LIBRARY_BUILD_TYPE} gc_badalc.cc gc_cpp.cc)
   target_link_libraries(gccpp PRIVATE gc)
   if (enable_throw_bad_alloc_library)
     # The same as gccpp but contains only gc_badalc.
-    add_library(gctba gc_badalc.cc)
+    add_library(gctba ${GC_LIBRARY_BUILD_TYPE} gc_badalc.cc)
     target_link_libraries(gctba PRIVATE gc)
   endif(enable_throw_bad_alloc_library)
 endif()
 
 if (build_cord)
   set(CORD_SRC cord/cordbscs.c cord/cordprnt.c cord/cordxtra.c)
-  add_library(cord ${CORD_SRC})
+  add_library(cord ${GC_LIBRARY_BUILD_TYPE} ${CORD_SRC})
   target_link_libraries(cord PRIVATE gc)
   install(TARGETS cord EXPORT cordExports
           LIBRARY DESTINATION lib
@@ -554,9 +560,9 @@ if (build_tests)
   add_test(NAME smashtest COMMAND smashtest)
 
   if (NOT (GC_BUILD_SHARED_LIBS AND WIN32))
-    add_library(staticrootslib_test tests/staticrootslib.c)
+    add_library(staticrootslib_test ${GC_LIBRARY_BUILD_TYPE} tests/staticrootslib.c)
     target_link_libraries(staticrootslib_test PRIVATE gc)
-    add_library(staticrootslib2_test tests/staticrootslib.c)
+    add_library(staticrootslib2_test ${GC_LIBRARY_BUILD_TYPE} tests/staticrootslib.c)
     target_compile_options(staticrootslib2_test PRIVATE "-DSTATICROOTSLIB2")
     target_link_libraries(staticrootslib2_test PRIVATE gc)
     add_executable(staticrootstest tests/staticrootstest.c)
