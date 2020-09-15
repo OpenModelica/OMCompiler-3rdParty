@@ -23,8 +23,7 @@ add_library(omc::3rd::cminpack ALIAS cminpack)
 set (FMILIB_GENERATE_DOXYGEN_DOC OFF CACHE BOOL "Generate doxygen doc target")
 set (FMILIB_BUILD_TESTS OFF CACHE BOOL "Build tests")
 omc_add_subdirectory(FMIL)
-
-# For now we deal with FMIL's nonsensical structure here. They really need to 
+# For now we deal with FMIL's nonsensical structure here. They really need to
 # fix up their cmake usage. It is their default build system and it is used in
 # very contrived and unusual ways.
 target_include_directories(fmilib INTERFACE ${FMILibrary_SOURCE_DIR}/install/include)
@@ -34,24 +33,26 @@ add_library(omc::3rd::FMIL::minizip ALIAS minizip)
 
 
 # Boehm GC
-set(CMAKE_USE_WIN32_THREADS_INIT ON)
+# We use pthreads API even on Windows
+set(CMAKE_USE_PTHREADS_INIT ON)
+
 set(enable_java_finalization OFF CACHE BOOL "Support for java finalization")
 set(enable_gcj_support OFF CACHE BOOL "Support for gcj")
 set(enable_large_config ON CACHE BOOL "Optimize for large heap or root set")
 omc_add_subdirectory(gc)
-add_library(omc::3rd::gc ALIAS gc-lib)
+target_include_directories(gc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/gc/include)
 # make sure every target that links to gc-lib has its sources
-# compiled with -DGC_THREADS 
-target_compile_definitions(gc-lib INTERFACE GC_THREADS)
-
-# On Windows with MinGW OM uses pthreads-win32.
-# ideally this should made in gc's own cmakelists.txt.
-# but that file is rather messy. Until we either get a proper cmake
-# implementation from upstream or we make one ourselves, we do it
-# here. I also don't want to make it require recent cmake just for this line.
+# compiled with -DGC_WIN32_PTHREADS (for pthreads on Windows, i.e., our MingW)
+# Or -DGC_THREADS (for auto detection on other systems.)
+# On Windows with MinGW OM uses pthreads-win32. GC_WIN32_PTHREADS is required
+# to be set explicitly for use of pthreads API on Windows.
 if(MINGW)
-    target_compile_definitions(gc-lib PUBLIC GC_WIN32_PTHREADS)
+    target_compile_definitions(gc PUBLIC GC_WIN32_PTHREADS)
+else(MINGW)
+    target_compile_definitions(gc PUBLIC GC_THREADS)
 endif(MINGW)
+add_library(omc::3rd::gc ALIAS gc)
+
 
 
 
