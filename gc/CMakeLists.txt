@@ -418,26 +418,26 @@ if (HAVE_DLADDR)
   add_definitions("-DHAVE_DLADDR")
 endif()
 
-add_library(gc ${GC_LIBRARY_BUILD_TYPE} ${SRC})
+add_library(omcgc ${GC_LIBRARY_BUILD_TYPE} ${SRC})
 if (enable_threads)
-  target_link_libraries(gc PRIVATE ${THREADDLLIBS})
+  target_link_libraries(omcgc PRIVATE ${THREADDLLIBS})
 endif()
 
 if (enable_cplusplus)
-  add_library(gccpp ${GC_LIBRARY_BUILD_TYPE} gc_badalc.cc gc_cpp.cc)
-  target_link_libraries(gccpp PRIVATE gc)
+  add_library(omcgccpp ${GC_LIBRARY_BUILD_TYPE} gc_badalc.cc gc_cpp.cc)
+  target_link_libraries(omcgccpp PRIVATE omcgc)
   if (enable_throw_bad_alloc_library)
     # The same as gccpp but contains only gc_badalc.
-    add_library(gctba ${GC_LIBRARY_BUILD_TYPE} gc_badalc.cc)
-    target_link_libraries(gctba PRIVATE gc)
+    add_library(omcgctba ${GC_LIBRARY_BUILD_TYPE} gc_badalc.cc)
+    target_link_libraries(omcgctba PRIVATE omcgc)
   endif(enable_throw_bad_alloc_library)
 endif()
 
 if (build_cord)
   set(CORD_SRC cord/cordbscs.c cord/cordprnt.c cord/cordxtra.c)
-  add_library(cord ${GC_LIBRARY_BUILD_TYPE} ${CORD_SRC})
-  target_link_libraries(cord PRIVATE gc)
-  install(TARGETS cord EXPORT cordExports
+  add_library(omccord ${GC_LIBRARY_BUILD_TYPE} ${CORD_SRC})
+  target_link_libraries(omccord PRIVATE omcgc)
+  install(TARGETS omccord EXPORT cordExports
           LIBRARY DESTINATION lib
           ARCHIVE DESTINATION lib
           RUNTIME DESTINATION bin
@@ -447,26 +447,26 @@ endif()
 if (GC_BUILD_SHARED_LIBS AND HAVE_FLAG_WL_NO_UNDEFINED)
   # Declare that the libraries do not refer to external symbols.
   # TODO: use add_link_options() when cmake_minimum_required > 3.13
-  target_link_libraries(gc PRIVATE -Wl,--no-undefined)
+  target_link_libraries(omcgc PRIVATE -Wl,--no-undefined)
   if (enable_cplusplus)
-    target_link_libraries(gccpp PRIVATE -Wl,--no-undefined)
+    target_link_libraries(omcgccpp PRIVATE -Wl,--no-undefined)
     if (enable_throw_bad_alloc_library)
-      target_link_libraries(gctba PRIVATE -Wl,--no-undefined)
+      target_link_libraries(omcgctba PRIVATE -Wl,--no-undefined)
     endif(enable_throw_bad_alloc_library)
   endif(enable_cplusplus)
   if (build_cord)
-    target_link_libraries(cord PRIVATE -Wl,--no-undefined)
+    target_link_libraries(omccord PRIVATE -Wl,--no-undefined)
   endif(build_cord)
 endif()
 
-install(TARGETS gc EXPORT gcExports
+install(TARGETS omcgc EXPORT gcExports
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin
         INCLUDES DESTINATION include)
 
 if (enable_cplusplus)
-  install(TARGETS gccpp EXPORT gccppExports
+  install(TARGETS omcgccpp EXPORT gccppExports
           LIBRARY DESTINATION lib
           ARCHIVE DESTINATION lib
           RUNTIME DESTINATION bin
@@ -508,14 +508,14 @@ endif(install_headers)
 if (build_tests)
   if (build_cord)
     add_executable(cordtest cord/tests/cordtest.c)
-    target_link_libraries(cordtest PRIVATE cord gc)
+    target_link_libraries(cordtest PRIVATE omccord omcgc)
     add_test(NAME cordtest COMMAND cordtest)
 
     if (WIN32 AND NOT CYGWIN)
       add_executable(de cord/tests/de.c cord/tests/de_win.c
                      cord/tests/de_win.rc)
       set_target_properties(de PROPERTIES WIN32_EXECUTABLE TRUE)
-      target_link_libraries(de PRIVATE cord gc gdi32)
+      target_link_libraries(de PRIVATE omccord omcgc omcgdi32)
     endif()
   endif(build_cord)
 
@@ -530,7 +530,7 @@ if (build_tests)
   endif(enable_cplusplus)
 
   add_executable(gctest WIN32 tests/test.c)
-  target_link_libraries(gctest PRIVATE gc ${THREADDLLIBS})
+  target_link_libraries(gctest PRIVATE omcgc ${THREADDLLIBS})
   add_test(NAME gctest COMMAND gctest)
   if (WATCOM)
     # Suppress "conditional expression in if statement is always true/false"
@@ -540,85 +540,85 @@ if (build_tests)
   endif()
 
   add_executable(hugetest tests/huge_test.c)
-  target_link_libraries(hugetest PRIVATE gc)
+  target_link_libraries(hugetest PRIVATE omcgc)
   add_test(NAME hugetest COMMAND hugetest)
 
   add_executable(leaktest tests/leak_test.c)
-  target_link_libraries(leaktest PRIVATE gc)
+  target_link_libraries(leaktest PRIVATE omcgc)
   add_test(NAME leaktest COMMAND leaktest)
 
   add_executable(middletest tests/middle.c)
-  target_link_libraries(middletest PRIVATE gc)
+  target_link_libraries(middletest PRIVATE omcgc)
   add_test(NAME middletest COMMAND middletest)
 
   add_executable(realloc_test tests/realloc_test.c)
-  target_link_libraries(realloc_test PRIVATE gc)
+  target_link_libraries(realloc_test PRIVATE omcgc)
   add_test(NAME realloc_test COMMAND realloc_test)
 
   add_executable(smashtest tests/smash_test.c)
-  target_link_libraries(smashtest PRIVATE gc)
+  target_link_libraries(smashtest PRIVATE omcgc)
   add_test(NAME smashtest COMMAND smashtest)
 
   if (NOT (GC_BUILD_SHARED_LIBS AND WIN32))
     add_library(staticrootslib_test ${GC_LIBRARY_BUILD_TYPE} tests/staticrootslib.c)
-    target_link_libraries(staticrootslib_test PRIVATE gc)
+    target_link_libraries(staticrootslib_test PRIVATE omcgc)
     add_library(staticrootslib2_test ${GC_LIBRARY_BUILD_TYPE} tests/staticrootslib.c)
     target_compile_options(staticrootslib2_test PRIVATE "-DSTATICROOTSLIB2")
-    target_link_libraries(staticrootslib2_test PRIVATE gc)
+    target_link_libraries(staticrootslib2_test PRIVATE omcgc)
     add_executable(staticrootstest tests/staticrootstest.c)
     target_compile_options(staticrootstest PRIVATE "-DSTATICROOTSLIB2")
     target_link_libraries(staticrootstest PRIVATE
-                          gc staticrootslib_test staticrootslib2_test)
+                          omcgc staticrootslib_test staticrootslib2_test)
     add_test(NAME staticrootstest COMMAND staticrootstest)
   endif()
 
   if (enable_gc_debug)
     add_executable(tracetest tests/trace_test.c)
-    target_link_libraries(tracetest PRIVATE gc)
+    target_link_libraries(tracetest PRIVATE omcgc)
     add_test(NAME tracetest COMMAND tracetest)
   endif()
 
   if (enable_threads)
     add_executable(test_atomic_ops tests/test_atomic_ops.c)
-    target_link_libraries(test_atomic_ops PRIVATE gc)
+    target_link_libraries(test_atomic_ops PRIVATE omcgc)
     add_test(NAME test_atomic_ops COMMAND test_atomic_ops)
 
     add_executable(threadleaktest tests/thread_leak_test.c)
-    target_link_libraries(threadleaktest PRIVATE gc ${THREADDLLIBS})
+    target_link_libraries(threadleaktest PRIVATE omcgc ${THREADDLLIBS})
     add_test(NAME threadleaktest COMMAND threadleaktest)
 
     if (NOT WIN32)
       add_executable(threadkey_test tests/threadkey_test.c)
-      target_link_libraries(threadkey_test PRIVATE gc ${THREADDLLIBS})
+      target_link_libraries(threadkey_test PRIVATE omcgc ${THREADDLLIBS})
       add_test(NAME threadkey_test COMMAND threadkey_test)
     endif()
 
     add_executable(subthreadcreate_test tests/subthread_create.c)
-    target_link_libraries(subthreadcreate_test PRIVATE gc ${THREADDLLIBS})
+    target_link_libraries(subthreadcreate_test PRIVATE omcgc ${THREADDLLIBS})
     add_test(NAME subthreadcreate_test COMMAND subthreadcreate_test)
 
     add_executable(initsecondarythread_test tests/initsecondarythread.c)
-    target_link_libraries(initsecondarythread_test PRIVATE gc ${THREADDLLIBS})
+    target_link_libraries(initsecondarythread_test PRIVATE omcgc ${THREADDLLIBS})
     add_test(NAME initsecondarythread_test COMMAND initsecondarythread_test)
   endif(enable_threads)
 
   if (enable_cplusplus)
     add_executable(test_cpp WIN32 tests/test_cpp.cc)
-    target_link_libraries(test_cpp PRIVATE gc gccpp)
+    target_link_libraries(test_cpp PRIVATE omcgc gccpp)
     add_test(NAME test_cpp COMMAND test_cpp)
   endif()
 
   if (enable_disclaim)
     add_executable(disclaim_bench tests/disclaim_bench.c)
-    target_link_libraries(disclaim_bench PRIVATE gc)
+    target_link_libraries(disclaim_bench PRIVATE omcgc)
     add_test(NAME disclaim_bench COMMAND disclaim_bench)
 
     add_executable(disclaim_test tests/disclaim_test.c)
-    target_link_libraries(disclaim_test PRIVATE gc ${THREADDLLIBS})
+    target_link_libraries(disclaim_test PRIVATE omcgc ${THREADDLLIBS})
     add_test(NAME disclaim_test COMMAND disclaim_test)
 
     add_executable(disclaim_weakmap_test tests/disclaim_weakmap_test.c)
-    target_link_libraries(disclaim_weakmap_test PRIVATE gc ${THREADDLLIBS})
+    target_link_libraries(disclaim_weakmap_test PRIVATE omcgc ${THREADDLLIBS})
     add_test(NAME disclaim_weakmap_test COMMAND disclaim_weakmap_test)
   endif()
 endif(build_tests)
