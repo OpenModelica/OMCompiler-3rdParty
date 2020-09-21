@@ -218,7 +218,8 @@ set(BUILD_tests OFF CACHE BOOL "build the tests for expat library")
 set(BUILD_shared OFF CACHE BOOL "build a shared expat library")
 add_subdirectory(ThirdParty/Expat/expat-2.1.0)
 
-include_directories("${FMILIB_THIRDPARTYLIBS}/FMI/" "${FMIXMLGENDIR}/FMI1" "${FMIXMLGENDIR}/FMI2")
+set(EXPAT_INCLUDE_DIRS ThirdParty/Expat/expat-2.1.0/lib)
+include_directories("${EXPAT_INCLUDE_DIRS}" "${FMILIB_THIRDPARTYLIBS}/FMI/" "${FMIXMLGENDIR}/FMI1" "${FMIXMLGENDIR}/FMI2")
 
 PREFIXLIST(FMIXMLSOURCE  ${FMIXMLDIR}/)
 PREFIXLIST(FMIXMLHEADERS ${FMIXMLDIR}/)
