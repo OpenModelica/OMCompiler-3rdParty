@@ -37,7 +37,8 @@ endif(BUILD_tests)
 
 include(ConfigureChecks.cmake)
 
-include_directories(${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/lib)
+# expat_config.h is generated in the build folder of expat ITSELF!. So we add ${CMAKE_CURRENT_BINARY_DIR}
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR}/lib)
 if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -wd4996)
 endif(MSVC)
