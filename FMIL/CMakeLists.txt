@@ -84,7 +84,7 @@ IF(NOT CMAKE_BUILD_TYPE)
 	SET(CMAKE_BUILD_TYPE ${FMILIB_DEFAULT_BUILD_TYPE})
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
-SET(CMAKE_INSTALL_PREFIX ${FMILIB_INSTALL_PREFIX} CACHE INTERNAL "Prefix prepended to install directories" FORCE)
+# SET(CMAKE_INSTALL_PREFIX ${FMILIB_INSTALL_PREFIX} CACHE INTERNAL "Prefix prepended to install directories" FORCE)
 
 # debug_message is used to trace the build script
 function(debug_message)
