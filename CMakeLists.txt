@@ -51,6 +51,19 @@ if(MINGW)
 else(MINGW)
     target_compile_definitions(omcgc PUBLIC GC_THREADS)
 endif(MINGW)
+
+# We build GC as a shared library for now just to avoid surprises. Being linked
+# to two dlls and ending up with two instances of GC on Windows for example. We do
+# not have many shared libs, if any, as of now for building omc. But simulation
+# executables might. So if you change the build to static, remember to not link GC
+# to two dlls (or 1 dll and the final exe) simultaneously. GC uses global variables
+# a bit and this will be problematic.
+
+# So we can keep it as shared lib for now. This means it needs to be installed
+# alongside omc. So we add it to installation component "compiler"
+install(TARGETS omcgc COMPONENT compiler)
+
+# Finally add an alias for clarity purposes.
 add_library(omc::3rd::omcgc ALIAS omcgc)
 
 
