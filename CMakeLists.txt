@@ -65,8 +65,10 @@ add_library(omc::3rd::netstream ALIAS netstream)
 
 # libzmq
 set (ZMQ_BUILD_TESTS OFF CACHE BOOL "Build the tests for ZeroMQ")
+set (ZMQ_BUILD_STATIC ON CACHE BOOL "Whether or not to build the static object")
+set (ZMQ_BUILD_SHARED OFF CACHE BOOL "Whether or not to build the shared object")
 omc_add_subdirectory(libzmq)
-add_library(omc::3rd::libzmq ALIAS libzmq)
+add_library(omc::3rd::libzmq ALIAS libzmq-static)
 
 
 
