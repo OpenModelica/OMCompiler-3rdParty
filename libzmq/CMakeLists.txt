@@ -812,8 +812,35 @@ foreach (target ${target_outputs})
   )
 endforeach()
 
+# The static version also needed these for transitive dependencies for those
+# libs/exes that link to it.
 if (ZMQ_BUILD_STATIC)
+  # This is needed by dependents when linking to the static version of libzmq.
+  target_compile_definitions(libzmq-static PUBLIC ZMQ_STATIC)
+
   target_link_libraries (libzmq-static PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+
+  if (SODIUM_FOUND)
+    target_link_libraries (libzmq-static PUBLIC ${SODIUM_LIBRARIES})
+  endif ()
+
+  if (HAVE_WS2_32)
+    target_link_libraries (libzmq-static PUBLIC ws2_32)
+  elseif (HAVE_WS2)
+    target_link_libraries (libzmq-static PUBLIC ws2)
+  endif ()
+
+  if (HAVE_RPCRT4)
+    target_link_libraries (libzmq-static PUBLIC rpcrt4)
+  endif ()
+
+  if (HAVE_IPHLAPI)
+    target_link_libraries (libzmq-static PUBLIC iphlpapi)
+  endif ()
+
+  if (RT_LIBRARY)
+    target_link_libraries (libzmq-static PUBLIC ${RT_LIBRARY})
+  endif ()
 endif()
 
 if (ZMQ_BUILD_SHARED)
