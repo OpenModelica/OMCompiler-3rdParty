@@ -77,19 +77,19 @@ foreach(example_tuple ${CVODE_examples})
   endif()
 
   # install example
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.c ${example}.out
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/parhyp)
-    #INSTALL(FILES vis.c DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/parhyp)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/parhyp)
+    #INSTALL(FILES vis.c DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/parhyp)
   endif()
 
 endforeach(example_tuple ${CVODE_examples})
 
 
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES README DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/parhyp)
+  install(FILES README DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/parhyp)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER "CVODE")
@@ -114,7 +114,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/cvode/parhyp/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/parhyp
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/parhyp
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -131,7 +131,7 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/cvode/parhyp/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/parhyp
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/parhyp
       RENAME Makefile
       )
   endif(UNIX)
@@ -139,4 +139,4 @@ if(EXAMPLES_INSTALL)
   # add test_install target
   sundials_add_test_install(cvode parhyp)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

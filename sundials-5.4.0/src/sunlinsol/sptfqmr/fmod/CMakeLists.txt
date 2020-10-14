@@ -16,7 +16,7 @@
 
 set(sunlinsolsptfqmr_SOURCES fsunlinsol_sptfqmr_mod.f90 fsunlinsol_sptfqmr_mod.c)
 
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   sundials_add_f2003_interface_library(sundials_fsunlinsolsptfqmr_mod_static STATIC_OBJECT
     ${sunlinsolsptfqmr_SOURCES}
   )
@@ -24,9 +24,9 @@ if(BUILD_STATIC_LIBS)
   set_target_properties(sundials_fsunlinsolsptfqmr_mod_static
     PROPERTIES OUTPUT_NAME sundials_fsunlinsolsptfqmr_mod CLEAN_DIRECT_OUTPUT 1)
   install(TARGETS sundials_fsunlinsolsptfqmr_mod_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   sundials_add_f2003_interface_library(sundials_fsunlinsolsptfqmr_mod_shared SHARED_OBJECT
     ${sunlinsolsptfqmr_SOURCES}
   )
@@ -36,6 +36,6 @@ if(BUILD_SHARED_LIBS)
   set_target_properties(sundials_fsunlinsolsptfqmr_mod_shared
     PROPERTIES VERSION ${nveclib_VERSION} SOVERSION ${nveclib_SOVERSION})
   install(TARGETS sundials_fsunlinsolsptfqmr_mod_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 message(STATUS "Added SUNLINSOL_SPTFQMR F2003 interface")

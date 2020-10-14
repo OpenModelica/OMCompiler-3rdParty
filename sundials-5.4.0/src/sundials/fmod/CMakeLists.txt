@@ -28,7 +28,7 @@ set(sundials_SOURCES
   fsundials_types_mod.f90
   fsundials_types_mod.c)
 
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_fgeneric_static_obj OBJECT ${sundials_SOURCES})
   set_target_properties(sundials_fgeneric_static_obj PROPERTIES
     Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}_STATIC)
@@ -36,7 +36,7 @@ if(BUILD_STATIC_LIBS)
     ${CMAKE_Fortran_MODULE_DIRECTORY}_STATIC)
 endif()
 
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_fgeneric_shared_obj OBJECT ${sundials_SOURCES})
   set_target_properties(sundials_fgeneric_shared_obj PROPERTIES
     POSITION_INDEPENDENT_CODE TRUE

@@ -38,7 +38,7 @@ endif()
 
 # Using PETSc requires building with MPI enabled
 #if(NOT ENABLE_MPI)
-if(NOT MPI_ENABLE)
+if(NOT SUNDIALS_MPI_ENABLE)
   message(FATAL_ERROR
     "MPI is required for XBraid support. Set ENABLE_MPI to ON.")
 endif()

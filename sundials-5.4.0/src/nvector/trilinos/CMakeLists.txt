@@ -49,7 +49,7 @@ add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 #  - Add the build target for the NVECTRILINOS library
 #  - Set the library name and make sure it is not deleted
 #  - Install the NVECTRILINOS library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_nvectrilinos_static STATIC ${nvectrilinos_SOURCES} ${shared_SOURCES})
 
   target_link_libraries(sundials_nvectrilinos_static PUBLIC Trilinos::Trilinos)
@@ -59,14 +59,14 @@ if(BUILD_STATIC_LIBS)
                         CLEAN_DIRECT_OUTPUT 1)
 
   install(TARGETS sundials_nvectrilinos_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the NVECTRILINOS library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the NVECTRILINOS library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_nvectrilinos_shared SHARED ${nvectrilinos_SOURCES} ${shared_SOURCES})
 
   if(UNIX)
@@ -82,7 +82,7 @@ if(BUILD_SHARED_LIBS)
                         SOVERSION ${nveclib_SOVERSION})
 
   install(TARGETS sundials_nvectrilinos_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the NVECTRILINOS header files
 install(FILES ${nvectrilinos_HEADERS} DESTINATION include/nvector)

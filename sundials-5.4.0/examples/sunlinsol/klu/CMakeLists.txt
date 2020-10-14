@@ -117,14 +117,14 @@ foreach(example_tuple ${sunlinsol_klu_examples})
     NODIFF)
 
   # install example source files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.c
       ../test_sunlinsol.h
       ../test_sunlinsol.c
       ../../../src/sundials/sundials_matrix.c
       ../../../src/sundials/sundials_linearsolver.c
       ../../../src/sundials/sundials_nvector.c
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunlinsol/klu)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunlinsol/klu)
   endif()
 
 endforeach(example_tuple ${sunlinsol_klu_examples})
@@ -180,10 +180,10 @@ foreach(example_tuple ${sunlinsol_klu_fortran_examples})
 
 endforeach(example_tuple ${sunlinsol_klu_fortran_examples})
 
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES DESTINATION ${EXAMPLES_INSTALL_PATH}/sunlinsol/klu)
+  install(FILES DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunlinsol/klu)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER_LIB "sundials_sunlinsolklu")
@@ -210,7 +210,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/sunlinsol/klu/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/sunlinsol/klu
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunlinsol/klu
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -227,9 +227,9 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/sunlinsol/klu/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunlinsol/klu
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunlinsol/klu
       RENAME Makefile
       )
   endif(UNIX)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

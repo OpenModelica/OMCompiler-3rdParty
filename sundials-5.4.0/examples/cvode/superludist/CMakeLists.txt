@@ -83,19 +83,19 @@ foreach(example_tuple ${CVODE_examples})
   endif()
 
   # install example source and out files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.cpp ${example}_${SUNDIALS_INDEX_SIZE}.out
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/superludist)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/superludist)
   endif()
 
 endforeach(example_tuple ${CVODE_examples})
 
 
 # create Makfile and CMakeLists.txt for examples
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES README DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/superludist)
+  install(FILES README DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/superludist)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER "CVODE")
@@ -123,7 +123,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/cvode/superludist/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/superludist
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/superludist
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -140,7 +140,7 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/cvode/superludist/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/superludist
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/superludist
       RENAME Makefile
       )
   endif(UNIX)
@@ -148,4 +148,4 @@ if(EXAMPLES_INSTALL)
   # add test_install target
   sundials_add_test_install(cvode superludist)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

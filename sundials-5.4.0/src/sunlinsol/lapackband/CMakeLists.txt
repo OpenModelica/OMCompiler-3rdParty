@@ -31,7 +31,7 @@ set(sunlinsollapackband_HEADERS
 #  - Add the build target for the library
 #  - Set the library name and make sure it is not deleted
 #  - Install the library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
 
   add_library(sundials_sunlinsollapackband_static
     STATIC ${sunlinsollapackband_SOURCES} ${shared_SOURCES})
@@ -51,14 +51,14 @@ if(BUILD_STATIC_LIBS)
   install(TARGETS sundials_sunlinsollapackband_static
     DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
 
   add_library(sundials_sunlinsollapackband_shared
     SHARED ${sunlinsollapackband_SOURCES} ${shared_SOURCES})
@@ -77,10 +77,13 @@ if(BUILD_SHARED_LIBS)
   target_compile_definitions(sundials_sunlinsollapackband_shared
     PUBLIC -DBUILD_SUNDIALS_LIBRARY)
 
+  target_compile_definitions(sundials_sunlinsollapackband_shared
+    PUBLIC -DBUILD_SUNDIALS_LIBRARY)
+
   install(TARGETS sundials_sunlinsollapackband_shared
     DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the header files
 install(FILES ${sunlinsollapackband_HEADERS} DESTINATION include/sunlinsol)
@@ -93,7 +96,7 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
 
   set(fsunlinsollapackband_SOURCES fsunlinsol_lapackband.c)
 
-  if(BUILD_STATIC_LIBS)
+  if(SUNDIALS_BUILD_STATIC_LIBS)
     add_library(sundials_fsunlinsollapackband_static
       STATIC ${fsunlinsollapackband_SOURCES})
     set_target_properties(sundials_fsunlinsollapackband_static
@@ -108,9 +111,9 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
       sundials_sunlinsollapackband_static)
     install(TARGETS sundials_fsunlinsollapackband_static
       DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_STATIC_LIBS)
+  endif(SUNDIALS_BUILD_STATIC_LIBS)
 
-  if(BUILD_SHARED_LIBS)
+  if(SUNDIALS_BUILD_SHARED_LIBS)
     add_library(sundials_fsunlinsollapackband_shared
       SHARED ${fsunlinsollapackband_SOURCES})
     set_target_properties(sundials_fsunlinsollapackband_shared
@@ -127,7 +130,7 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
       sundials_sunlinsollapackband_shared)
     install(TARGETS sundials_fsunlinsollapackband_shared
       DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_SHARED_LIBS)
+  endif(SUNDIALS_BUILD_SHARED_LIBS)
 
   #
   message(STATUS "Added SUNLINSOL_LAPACKBAND F77 interface")

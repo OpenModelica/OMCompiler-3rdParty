@@ -103,12 +103,12 @@ foreach(example_tuple ${nvector_pthreads_examples})
     NODIFF)
 
   # install example source files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.c
       ../test_nvector.c
       ../test_nvector.h
       ${sundials_SOURCE_DIR}/src/sundials/sundials_nvector.c
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/pthreads)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/pthreads)
   endif()
 
 endforeach(example_tuple ${nvector_pthreads_examples})
@@ -162,10 +162,10 @@ foreach(example_tuple ${nvector_pthreads_fortran_examples})
 
 endforeach(example_tuple ${nvector_pthreads_fortran_examples})
 
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/pthreads)
+  install(FILES DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/pthreads)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER_LIB "sundials_nvecpthreads")
@@ -187,7 +187,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/nvector/pthreads/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/pthreads
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/pthreads
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -204,9 +204,9 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/nvector/pthreads/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/pthreads
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/pthreads
       RENAME Makefile
       )
   endif(UNIX)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

@@ -97,9 +97,9 @@ foreach(example_tuple ${examples})
     EXAMPLE_TYPE ${example_type}
     NODIFF)
 
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.c
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunnonlinsol/fixedpoint)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunnonlinsol/fixedpoint)
   endif()
 
 endforeach(example_tuple ${examples})
@@ -148,10 +148,10 @@ foreach(example_tuple ${fortran_examples})
 endforeach(example_tuple ${fortran_examples})
 
 
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES DESTINATION ${EXAMPLES_INSTALL_PATH}/sunnonlinsol/fixedpoint)
+  install(FILES DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunnonlinsol/fixedpoint)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER_LIB "sundials_sunnonlinsolfixedpoint")
@@ -177,7 +177,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/sunnonlinsol/fixedpoint/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/sunnonlinsol/fixedpoint
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunnonlinsol/fixedpoint
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -194,9 +194,9 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/sunnonlinsol/fixedpoint/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunnonlinsol/fixedpoint
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunnonlinsol/fixedpoint
       RENAME Makefile
       )
   endif(UNIX)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

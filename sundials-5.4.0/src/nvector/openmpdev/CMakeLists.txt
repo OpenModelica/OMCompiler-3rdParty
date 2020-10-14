@@ -46,7 +46,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_C_FLAGS}")
 #  - Add the build target for the NVECOPENMPDEV library
 #  - Set the library name and make sure it is not deleted
 #  - Install the NVECOPENMPDEV library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_nvecopenmpdev_static STATIC ${nvecopenmpdev_SOURCES} ${shared_SOURCES})
   set_target_properties(sundials_nvecopenmpdev_static
     PROPERTIES OUTPUT_NAME sundials_nvecopenmpdev CLEAN_DIRECT_OUTPUT 1)
@@ -58,7 +58,7 @@ endif()
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the NVECOPENMPDEV library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_nvecopenmpdev_shared SHARED ${nvecopenmpdev_SOURCES} ${shared_SOURCES})
 
   if(UNIX)

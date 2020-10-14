@@ -16,15 +16,15 @@
 # ---------------------------------------------------------------
 
 # C examples
-if(EXAMPLES_ENABLE_C)
+if(SUNDIALS_EXAMPLES_ENABLE_C)
   add_subdirectory(serial)
-  if(OPENMP_ENABLE AND OPENMP_FOUND)
+  if(SUNDIALS_OPENMP_ENABLE AND OPENMP_FOUND)
     add_subdirectory(C_openmp)
   endif()
   if(OPENMP_DEVICE_ENABLE AND OPENMP_FOUND AND OPENMP_SUPPORTS_DEVICE_OFFLOADING)
     add_subdirectory(C_openmpdev)
   endif()
-  if(MPI_ENABLE AND MPI_C_FOUND)
+  if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND)
     add_subdirectory(parallel)
     add_subdirectory(C_mpimanyvector)
   endif()
@@ -37,8 +37,8 @@ if(EXAMPLES_ENABLE_C)
 endif()
 
 # CXX examples
-if(EXAMPLES_ENABLE_CXX)
-  if(MPI_ENABLE AND MPI_CXX_FOUND AND SUNDIALS_SUPERLUDIST)
+if(SUNDIALS_EXAMPLES_ENABLE_CXX)
+  if(SUNDIALS_MPI_ENABLE AND MPI_CXX_FOUND AND SUNDIALS_SUPERLUDIST)
     add_subdirectory(superludist)
   endif()
 endif()
@@ -46,7 +46,7 @@ endif()
 # Fortran examples
 if(F77_INTERFACE_ENABLE AND EXAMPLES_ENABLE_F77 AND F77_FOUND)
   add_subdirectory(fcmix_serial)
-  if(MPI_ENABLE AND MPI_Fortran_FOUND)
+  if(SUNDIALS_MPI_ENABLE AND MPI_Fortran_FOUND)
     add_subdirectory(fcmix_parallel)
   endif()
 endif()

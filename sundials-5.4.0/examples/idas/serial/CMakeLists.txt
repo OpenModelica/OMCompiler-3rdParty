@@ -106,9 +106,9 @@ foreach(example_tuple ${IDAS_examples})
   file(GLOB example_out ${example}*.out)
 
   # install example source and .out files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.c ${example_out}
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/idas/serial)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/idas/serial)
   endif()
 
 endforeach(example_tuple ${IDAS_examples})
@@ -174,9 +174,9 @@ if(LAPACK_FOUND)
     file(GLOB example_out ${example}*.out)
 
     # install example source and .out files
-    if(EXAMPLES_INSTALL)
+    if(SUNDIALS_EXAMPLES_INSTALL)
       install(FILES ${example}.c ${example_out}
-        DESTINATION ${EXAMPLES_INSTALL_PATH}/idas/serial)
+        DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/idas/serial)
     endif()
 
   endforeach(example_tuple ${IDAS_examples_BL})
@@ -235,9 +235,9 @@ if(KLU_FOUND)
     file(GLOB example_out ${example}*.out)
 
     # install example source and .out files
-    if(EXAMPLES_INSTALL)
+    if(SUNDIALS_EXAMPLES_INSTALL)
       install(FILES ${example}.c ${example_out}
-        DESTINATION ${EXAMPLES_INSTALL_PATH}/idas/serial)
+        DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/idas/serial)
     endif()
 
   endforeach(example_tuple ${IDAS_examples_KLU})
@@ -307,9 +307,9 @@ if(SUPERLUMT_FOUND)
     file(GLOB example_out ${example}*.out)
 
     # install example source and .out files
-    if(EXAMPLES_INSTALL)
+    if(SUNDIALS_EXAMPLES_INSTALL)
       install(FILES ${example}.c ${example_out}
-        DESTINATION ${EXAMPLES_INSTALL_PATH}/idas/serial)
+        DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/idas/serial)
     endif()
 
   endforeach(example_tuple ${IDAS_examples_SUPERLUMT})
@@ -318,10 +318,10 @@ endif(SUPERLUMT_FOUND)
 
 
 # create Makfile and CMakeLists.txt for examples
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES README DESTINATION ${EXAMPLES_INSTALL_PATH}/idas/serial)
+  install(FILES README DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/idas/serial)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER "IDAS")
@@ -367,7 +367,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/idas/serial/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/idas/serial
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/idas/serial
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -384,7 +384,7 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/idas/serial/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/idas/serial
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/idas/serial
       RENAME Makefile
       )
   endif(UNIX)
@@ -392,4 +392,4 @@ if(EXAMPLES_INSTALL)
   # add test_install target
   sundials_add_test_install(idas serial EXECUTABLE idasRoberts_dns)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

@@ -18,7 +18,7 @@
 # Always add the nvector serial examples
 add_subdirectory(serial)
 
-if(MPI_ENABLE AND MPI_C_FOUND)
+if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND)
   add_subdirectory(parallel)
   add_subdirectory(mpimanyvector)
   add_subdirectory(mpiplusx)
@@ -29,11 +29,11 @@ if(HYPRE_ENABLE AND HYPRE_FOUND)
   add_subdirectory(parhyp)
 endif()
 
-if(PTHREAD_ENABLE AND PTHREADS_FOUND)
+if(SUNDIALS_PTHREAD_ENABLE AND PTHREADS_FOUND)
   add_subdirectory(pthreads)
 endif()
 
-if(OPENMP_ENABLE AND OPENMP_FOUND)
+if(SUNDIALS_OPENMP_ENABLE AND OPENMP_FOUND)
   add_subdirectory(C_openmp)
 endif()
 
@@ -47,14 +47,14 @@ endif()
 
 if(CUDA_ENABLE AND CMAKE_CUDA_COMPILER)
   add_subdirectory(cuda)
-  if(MPI_ENABLE AND MPI_C_FOUND)
+  if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND)
     add_subdirectory(mpicuda)
   endif()
 endif()
 
 if(RAJA_ENABLE AND RAJA_FOUND)
   add_subdirectory(raja)
-  if(MPI_ENABLE AND MPI_C_FOUND)
+  if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND)
     add_subdirectory(mpiraja)
   endif()
 endif()

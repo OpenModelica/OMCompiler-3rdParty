@@ -46,7 +46,7 @@ add_prefix(${sundials_SOURCE_DIR}/include/arkode/ arkode_HEADERS)
 add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 
 # Rules for building and installing the static library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_arkode_xbraid_static STATIC ${arkode_SOURCES} ${shared_SOURCES})
   target_include_directories(sundials_arkode_xbraid_static PRIVATE ${CMAKE_SOURCE_DIR}/include)
   target_include_directories(sundials_arkode_xbraid_static PRIVATE ${CMAKE_SOURCE_DIR}/src)
@@ -58,7 +58,7 @@ if(BUILD_STATIC_LIBS)
   install(TARGETS sundials_arkode_xbraid_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_arkode_xbraid_shared SHARED ${arkode_SOURCES} ${shared_SOURCES})
   target_include_directories(sundials_arkode_xbraid_shared PRIVATE ${CMAKE_SOURCE_DIR}/include)
   target_include_directories(sundials_arkode_xbraid_shared PRIVATE ${CMAKE_SOURCE_DIR}/src)

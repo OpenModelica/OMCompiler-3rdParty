@@ -34,7 +34,7 @@ set(sunlinsolspbcgs_HEADERS
 #  - Add the build target for the library
 #  - Set the library name and make sure it is not deleted
 #  - Install the library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
 
   add_library(sundials_sunlinsolspbcgs_static
     STATIC ${sunlinsolspbcgs_SOURCES} ${shared_SOURCES})
@@ -58,14 +58,14 @@ if(BUILD_STATIC_LIBS)
   install(TARGETS sundials_sunlinsolspbcgs_static
     DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
 
   add_library(sundials_sunlinsolspbcgs_shared
     SHARED ${sunlinsolspbcgs_SOURCES} ${shared_SOURCES})
@@ -91,7 +91,7 @@ if(BUILD_SHARED_LIBS)
   install(TARGETS sundials_sunlinsolspbcgs_shared
     DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the header files
 install(FILES ${sunlinsolspbcgs_HEADERS} DESTINATION include/sunlinsol)
@@ -104,7 +104,7 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
 
   set(fsunlinsolspbcgs_SOURCES fsunlinsol_spbcgs.c)
 
-  if(BUILD_STATIC_LIBS)
+  if(SUNDIALS_BUILD_STATIC_LIBS)
     add_library(sundials_fsunlinsolspbcgs_static
       STATIC ${fsunlinsolspbcgs_SOURCES})
     set_target_properties(sundials_fsunlinsolspbcgs_static
@@ -118,9 +118,9 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
       sundials_sunlinsolspbcgs_static)
     install(TARGETS sundials_fsunlinsolspbcgs_static
       DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_STATIC_LIBS)
+  endif(SUNDIALS_BUILD_STATIC_LIBS)
 
-  if(BUILD_SHARED_LIBS)
+  if(SUNDIALS_BUILD_SHARED_LIBS)
     add_library(sundials_fsunlinsolspbcgs_shared
       SHARED ${fsunlinsolspbcgs_SOURCES})
     set_target_properties(sundials_fsunlinsolspbcgs_shared
@@ -136,7 +136,7 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
       sundials_sunlinsolspbcgs_shared)
     install(TARGETS sundials_fsunlinsolspbcgs_shared
       DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_SHARED_LIBS)
+  endif(SUNDIALS_BUILD_SHARED_LIBS)
 
   #
   message(STATUS "Added SUNLINSOL_SPBCGS F77 interface")

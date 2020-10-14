@@ -76,7 +76,7 @@ endif()
 
 
 # If examples are installed, create post install smoke test targets
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Directories for installation testing
   set(TEST_INSTALL_DIR ${PROJECT_BINARY_DIR}/Testing_Install)

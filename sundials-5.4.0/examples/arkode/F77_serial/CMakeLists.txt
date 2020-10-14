@@ -87,9 +87,9 @@ foreach(example_tuple ${FARKODE_examples})
   target_link_libraries(${example} ${SUNDIALS_LIBS})
 
    # install example source and out files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.f ${example}.out
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/F77_serial)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/F77_serial)
   endif()
 
 endforeach(example_tuple ${FARKODE_examples})
@@ -142,9 +142,9 @@ if(LAPACK_FOUND)
     target_link_libraries(${example} ${SUNDIALS_LIBS} ${SUNLINSOLLAPACK_LIBS})
 
      # install example source and out files
-    if(EXAMPLES_INSTALL)
+    if(SUNDIALS_EXAMPLES_INSTALL)
       install(FILES ${example}.f ${example}.out
-        DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/F77_serial)
+        DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/F77_serial)
     endif()
 
   endforeach(example_tuple ${FARKODE_examples_BL})
@@ -190,9 +190,9 @@ if(KLU_FOUND)
     target_link_libraries(${example} ${SUNDIALS_LIBS} ${SUNLINSOLKLU_LIBS})
 
      # install example source and out files
-    if(EXAMPLES_INSTALL)
+    if(SUNDIALS_EXAMPLES_INSTALL)
       install(FILES ${example}.f ${example}.out
-        DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/F77_serial)
+        DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/F77_serial)
     endif()
 
   endforeach(example_tuple ${FARKODE_examples_KLU})
@@ -243,9 +243,9 @@ if(SUPERLUMT_FOUND)
     target_link_libraries(${example} ${SUNDIALS_LIBS} ${SUNLINSOLSLUMT_LIBS})
 
      # install example source and out files
-    if(EXAMPLES_INSTALL)
+    if(SUNDIALS_EXAMPLES_INSTALL)
       install(FILES ${example}.f ${example}.out
-        DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/F77_serial)
+        DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/F77_serial)
     endif()
 
   endforeach(example_tuple ${FARKODE_examples_SUPERLUMT})
@@ -254,14 +254,14 @@ endif(SUPERLUMT_FOUND)
 
 
 # create Makfile and CMakeLists.txt for examples
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES README DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/F77_serial)
+  install(FILES README DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/F77_serial)
 
   # Install the extra files
   foreach(extrafile ${ARKODE_extras})
-    install(FILES ${extrafile} DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/F77_serial)
+    install(FILES ${extrafile} DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/F77_serial)
   endforeach()
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
@@ -303,7 +303,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/arkode/F77_serial/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/F77_serial
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/F77_serial
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -320,7 +320,7 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/arkode/F77_serial/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/F77_serial
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/F77_serial
       RENAME Makefile
       )
   endif(UNIX)
@@ -328,4 +328,4 @@ if(EXAMPLES_INSTALL)
   # add test_install target
   sundials_add_test_install(arkode F77_serial)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

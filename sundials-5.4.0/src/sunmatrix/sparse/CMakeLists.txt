@@ -47,19 +47,19 @@ add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 #  - Add the build target for the SUNMATRIXSPARSE library
 #  - Set the library name and make sure it is not deleted
 #  - Install the SUNMATRIXSPARSE library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_sunmatrixsparse_static STATIC ${sunmatrixsparse_SOURCES} ${shared_SOURCES})
   set_target_properties(sundials_sunmatrixsparse_static
     PROPERTIES OUTPUT_NAME sundials_sunmatrixsparse CLEAN_DIRECT_OUTPUT 1)
   install(TARGETS sundials_sunmatrixsparse_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the SUNMATRIXSPARSE library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the SUNMATRIXSPARSE library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_sunmatrixsparse_shared SHARED ${sunmatrixsparse_SOURCES} ${shared_SOURCES})
 
   if(UNIX)
@@ -71,7 +71,7 @@ if(BUILD_SHARED_LIBS)
   set_target_properties(sundials_sunmatrixsparse_shared
     PROPERTIES VERSION ${sunmatrixlib_VERSION} SOVERSION ${sunmatrixlib_SOVERSION})
   install(TARGETS sundials_sunmatrixsparse_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the SUNMATRIXSPARSE header files
 install(FILES ${sunmatrixsparse_HEADERS} DESTINATION include/sunmatrix)
@@ -80,14 +80,14 @@ install(FILES ${sunmatrixsparse_HEADERS} DESTINATION include/sunmatrix)
 if(F77_INTERFACE_ENABLE AND F77_FOUND)
   set(fsunmatrixsparse_SOURCES fsunmatrix_sparse.c)
 
-  if(BUILD_STATIC_LIBS)
+  if(SUNDIALS_BUILD_STATIC_LIBS)
     add_library(sundials_fsunmatrixsparse_static STATIC ${fsunmatrixsparse_SOURCES})
     set_target_properties(sundials_fsunmatrixsparse_static
       PROPERTIES OUTPUT_NAME sundials_fsunmatrixsparse CLEAN_DIRECT_OUTPUT 1)
     install(TARGETS sundials_fsunmatrixsparse_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_STATIC_LIBS)
+  endif(SUNDIALS_BUILD_STATIC_LIBS)
 
-  if(BUILD_SHARED_LIBS)
+  if(SUNDIALS_BUILD_SHARED_LIBS)
     add_library(sundials_fsunmatrixsparse_shared ${fsunmatrixsparse_SOURCES})
 
     # fsunmatrixsparse depends on sunmatrixsparse
@@ -98,7 +98,7 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
     set_target_properties(sundials_fsunmatrixsparse_shared
       PROPERTIES VERSION ${sunmatrixlib_VERSION} SOVERSION ${sunmatrixlib_SOVERSION})
     install(TARGETS sundials_fsunmatrixsparse_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_SHARED_LIBS)
+  endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 endif(F77_INTERFACE_ENABLE AND F77_FOUND)
 

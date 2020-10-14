@@ -103,18 +103,18 @@ foreach(example_tuple ${all_examples})
     EXAMPLE_TYPE ${example_type})
 
   # install example source and out files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.cu ${test_name}.out
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/cuda)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/cuda)
   endif()
 endforeach(example_tuple ${CVODE_examples})
 
 
 # create Makfile and CMakeLists.txt for examples
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES README DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/cuda)
+  install(FILES README DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/cuda)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER "CVODE")
@@ -146,7 +146,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/cvode/cuda/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/cuda
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/cuda
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -163,7 +163,7 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/cvode/cuda/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/cuda
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/cuda
       RENAME Makefile
       )
   endif(UNIX)
@@ -171,4 +171,4 @@ if(EXAMPLES_INSTALL)
   # add test_install target
   sundials_add_test_install(cvode cuda)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

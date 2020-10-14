@@ -47,19 +47,19 @@ add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 #  - Add the build target for the SUNMATRIXBAND library
 #  - Set the library name and make sure it is not deleted
 #  - Install the SUNMATRIXBAND library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_sunmatrixband_static STATIC ${sunmatrixband_SOURCES} ${shared_SOURCES})
   set_target_properties(sundials_sunmatrixband_static
     PROPERTIES OUTPUT_NAME sundials_sunmatrixband CLEAN_DIRECT_OUTPUT 1)
   install(TARGETS sundials_sunmatrixband_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the SUNMATRIXBAND library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the SUNMATRIXBAND library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_sunmatrixband_shared SHARED ${sunmatrixband_SOURCES} ${shared_SOURCES})
 
   if(UNIX)
@@ -71,7 +71,7 @@ if(BUILD_SHARED_LIBS)
   set_target_properties(sundials_sunmatrixband_shared
     PROPERTIES VERSION ${sunmatrixlib_VERSION} SOVERSION ${sunmatrixlib_SOVERSION})
   install(TARGETS sundials_sunmatrixband_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the SUNMATRIXBAND header files
 install(FILES ${sunmatrixband_HEADERS} DESTINATION include/sunmatrix)
@@ -80,14 +80,14 @@ install(FILES ${sunmatrixband_HEADERS} DESTINATION include/sunmatrix)
 if(F77_INTERFACE_ENABLE AND F77_FOUND)
   set(fsunmatrixband_SOURCES fsunmatrix_band.c)
 
-  if(BUILD_STATIC_LIBS)
+  if(SUNDIALS_BUILD_STATIC_LIBS)
     add_library(sundials_fsunmatrixband_static STATIC ${fsunmatrixband_SOURCES})
     set_target_properties(sundials_fsunmatrixband_static
       PROPERTIES OUTPUT_NAME sundials_fsunmatrixband CLEAN_DIRECT_OUTPUT 1)
     install(TARGETS sundials_fsunmatrixband_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_STATIC_LIBS)
+  endif(SUNDIALS_BUILD_STATIC_LIBS)
 
-  if(BUILD_SHARED_LIBS)
+  if(SUNDIALS_BUILD_SHARED_LIBS)
     add_library(sundials_fsunmatrixband_shared ${fsunmatrixband_SOURCES})
 
     # fsunmatrixband depends on sunmatrixband
@@ -98,7 +98,7 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
     set_target_properties(sundials_fsunmatrixband_shared
       PROPERTIES VERSION ${sunmatrixlib_VERSION} SOVERSION ${sunmatrixlib_SOVERSION})
     install(TARGETS sundials_fsunmatrixband_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_SHARED_LIBS)
+  endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 endif(F77_INTERFACE_ENABLE AND F77_FOUND)
 

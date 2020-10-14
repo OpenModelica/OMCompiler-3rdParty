@@ -46,19 +46,19 @@ add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 #  - Add the build target for the NVECSERIAL library
 #  - Set the library name and make sure it is not deleted
 #  - Install the NVECSERIAL library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_nvecserial_static STATIC ${nvecserial_SOURCES} ${shared_SOURCES})
   set_target_properties(sundials_nvecserial_static
     PROPERTIES OUTPUT_NAME sundials_nvecserial CLEAN_DIRECT_OUTPUT 1)
   install(TARGETS sundials_nvecserial_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the NVECSERIAL library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the NVECSERIAL library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_nvecserial_shared SHARED ${nvecserial_SOURCES} ${shared_SOURCES})
 
   if(UNIX)
@@ -70,7 +70,7 @@ if(BUILD_SHARED_LIBS)
   set_target_properties(sundials_nvecserial_shared
     PROPERTIES VERSION ${nveclib_VERSION} SOVERSION ${nveclib_SOVERSION})
   install(TARGETS sundials_nvecserial_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the NVECSERIAL header files
 install(FILES ${nvecserial_HEADERS} DESTINATION include/nvector)
@@ -79,14 +79,14 @@ install(FILES ${nvecserial_HEADERS} DESTINATION include/nvector)
 if(F77_INTERFACE_ENABLE AND F77_FOUND)
   set(fnvecserial_SOURCES fnvector_serial.c)
 
-  if(BUILD_STATIC_LIBS)
+  if(SUNDIALS_BUILD_STATIC_LIBS)
     add_library(sundials_fnvecserial_static STATIC ${fnvecserial_SOURCES})
     set_target_properties(sundials_fnvecserial_static
       PROPERTIES OUTPUT_NAME sundials_fnvecserial CLEAN_DIRECT_OUTPUT 1)
     install(TARGETS sundials_fnvecserial_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_STATIC_LIBS)
+  endif(SUNDIALS_BUILD_STATIC_LIBS)
 
-  if(BUILD_SHARED_LIBS)
+  if(SUNDIALS_BUILD_SHARED_LIBS)
     add_library(sundials_fnvecserial_shared ${fnvecserial_SOURCES})
 
     # fnvecserial depends on nvecserial
@@ -97,7 +97,7 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
     set_target_properties(sundials_fnvecserial_shared
       PROPERTIES VERSION ${nveclib_VERSION} SOVERSION ${nveclib_SOVERSION})
     install(TARGETS sundials_fnvecserial_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_SHARED_LIBS)
+  endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 endif(F77_INTERFACE_ENABLE AND F77_FOUND)
 

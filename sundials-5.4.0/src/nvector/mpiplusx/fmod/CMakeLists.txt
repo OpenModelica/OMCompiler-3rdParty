@@ -16,7 +16,7 @@
 
 set(nvecmpiplusx_SOURCES fnvector_mpiplusx_mod.f90 fnvector_mpiplusx_mod.c)
 
-if(MPI_ENABLE AND MPI_C_FOUND)
+if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND)
   if(MPI_C_COMPILER)
     # use MPI wrapper as the compiler
     set(CMAKE_C_COMPILER ${MPI_C_COMPILER})
@@ -30,8 +30,8 @@ if(MPI_ENABLE AND MPI_C_FOUND)
   endif()
 endif()
 
-if(BUILD_STATIC_LIBS)
-  if(MPI_ENABLE AND MPI_C_FOUND)
+if(SUNDIALS_BUILD_STATIC_LIBS)
+  if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND)
     sundials_add_f2003_interface_library(sundials_fnvecmpiplusx_mod_static STATIC_OBJECT
                                          ${nvecmpiplusx_SOURCES})
     add_dependencies(sundials_fnvecmpiplusx_mod_static_obj sundials_fgeneric_static_obj)
@@ -40,10 +40,10 @@ if(BUILD_STATIC_LIBS)
                           CLEAN_DIRECT_OUTPUT 1)
     install(TARGETS sundials_fnvecmpiplusx_mod_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
   endif()
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
-if(BUILD_SHARED_LIBS)
-  if(MPI_ENABLE AND MPI_C_FOUND)
+if(SUNDIALS_BUILD_SHARED_LIBS)
+  if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND)
     sundials_add_f2003_interface_library(sundials_fnvecmpiplusx_mod_shared SHARED_OBJECT
                                          ${nvecmpiplusx_SOURCES})
     add_dependencies(sundials_fnvecmpiplusx_mod_shared_obj sundials_fgeneric_shared_obj)
@@ -52,6 +52,6 @@ if(BUILD_SHARED_LIBS)
                           CLEAN_DIRECT_OUTPUT 1)
     install(TARGETS sundials_fnvecmpiplusx_mod_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
   endif()
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 message(STATUS "Added NVECTOR_MPIPLUSX F2003 interface")

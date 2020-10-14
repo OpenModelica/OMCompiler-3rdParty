@@ -71,22 +71,22 @@ foreach(example_tuple ${ARKODE_examples})
   target_link_libraries(${example} ${SUNDIALS_LIBS})
 
   # install example source and out files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.c ${example}.out
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/C_manyvector)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/C_manyvector)
   endif()
 
 endforeach(example_tuple ${ARKODE_examples})
 
 # create Makfile and CMakeLists.txt for examples
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES README DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/C_manyvector)
+  install(FILES README DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/C_manyvector)
 
   # Install the extra files
   foreach(extrafile ${ARKODE_extras})
-    install(FILES ${extrafile} DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/C_manyvector)
+    install(FILES ${extrafile} DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/C_manyvector)
   endforeach(extrafile ${ARKODE_extras})
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
@@ -109,7 +109,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/arkode/C_manyvector/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/C_manyvector
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/C_manyvector
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -126,7 +126,7 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/arkode/C_manyvector/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/C_manyvector
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/C_manyvector
       RENAME Makefile
       )
   endif(UNIX)
@@ -134,4 +134,4 @@ if(EXAMPLES_INSTALL)
   # add test_install target
   sundials_add_test_install(arkode C_manyvector)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

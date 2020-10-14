@@ -15,9 +15,9 @@
 # ---------------------------------------------------------------
 
 # Set library prefixes for Windows
-if(WIN32)
-  set(CMAKE_FIND_LIBRARY_PREFIXES lib ${CMAKE_FIND_LIBRARY_PREFIXES})
-endif()
+if(IS_MINGW32 OR IS_MINGW64)
+    set(CMAKE_FIND_LIBRARY_PREFIXES lib ${CMAKE_FIND_LIBRARY_PREFIXES})
+endif(IS_MINGW32 OR IS_MINGW64)
 
 ### Find include dir
 find_path(temp_KLU_INCLUDE_DIR klu.h ${KLU_INCLUDE_DIR})
@@ -28,44 +28,47 @@ unset(temp_KLU_INCLUDE_DIR CACHE)
 
 if (KLU_LIBRARY)
     # We have (or were given) KLU_LIBRARY - get path to use for other Suitesparse libs
-    get_filename_component(KLU_LIBRARY_DIR ${KLU_LIBRARY} PATH)
+    get_filename_component(SUNDIALS_KLU_LIBRARY_DIR ${KLU_LIBRARY} PATH)
 
     # force CACHE update to show user DIR that will be used
-    set(KLU_LIBRARY_DIR ${KLU_LIBRARY_DIR} CACHE PATH "" FORCE)
+    set(SUNDIALS_KLU_LIBRARY_DIR ${SUNDIALS_KLU_LIBRARY_DIR} CACHE PATH "" FORCE)
 
 else ()
     # find library with user provided directory path
     set(KLU_LIBRARY_NAME klu)
-    find_library(KLU_LIBRARY ${KLU_LIBRARY_NAME} ${KLU_LIBRARY_DIR} NO_DEFAULT_PATH)
+    find_library(KLU_LIBRARY ${KLU_LIBRARY_NAME} ${SUNDIALS_KLU_LIBRARY_DIR} NO_DEFAULT_PATH)
 endif ()
 mark_as_advanced(KLU_LIBRARY)
 
 if (NOT AMD_LIBRARY)
     set(AMD_LIBRARY_NAME amd)
-    find_library(AMD_LIBRARY ${AMD_LIBRARY_NAME} ${KLU_LIBRARY_DIR} NO_DEFAULT_PATH)
+    find_library(AMD_LIBRARY ${AMD_LIBRARY_NAME} ${SUNDIALS_KLU_LIBRARY_DIR} NO_DEFAULT_PATH)
     mark_as_advanced(AMD_LIBRARY)
 endif ()
 
 if (NOT COLAMD_LIBRARY)
     set(COLAMD_LIBRARY_NAME colamd)
-    find_library(COLAMD_LIBRARY ${COLAMD_LIBRARY_NAME} ${KLU_LIBRARY_DIR} NO_DEFAULT_PATH)
+    find_library(COLAMD_LIBRARY ${COLAMD_LIBRARY_NAME} ${SUNDIALS_KLU_LIBRARY_DIR} NO_DEFAULT_PATH)
     mark_as_advanced(COLAMD_LIBRARY)
 endif ()
 
 if (NOT BTF_LIBRARY)
     set(BTF_LIBRARY_NAME btf)
-    find_library( BTF_LIBRARY ${BTF_LIBRARY_NAME} ${KLU_LIBRARY_DIR} NO_DEFAULT_PATH)
+    find_library( BTF_LIBRARY ${BTF_LIBRARY_NAME} ${SUNDIALS_KLU_LIBRARY_DIR} NO_DEFAULT_PATH)
     mark_as_advanced(BTF_LIBRARY)
 endif ()
 
-if (NOT SUITESPARSECONFIG_LIBRARY)
-    set(SUITESPARSECONFIG_LIBRARY_NAME suitesparseconfig)
-    # NOTE: no prefix for this library on windows
-    if(WIN32 AND NOT MSYS)
-        set(CMAKE_FIND_LIBRARY_PREFIXES "")
-    endif()
-    find_library( SUITESPARSECONFIG_LIBRARY ${SUITESPARSECONFIG_LIBRARY_NAME} ${KLU_LIBRARY_DIR} NO_DEFAULT_PATH)
-    mark_as_advanced(SUITESPARSECONFIG_LIBRARY)
-endif ()
+# Whe don't have SUITESPARSECONFIG_LIBRARY and don't need it
+#if (NOT SUITESPARSECONFIG_LIBRARY)
+#    set(SUITESPARSECONFIG_LIBRARY_NAME suitesparseconfig)
+#    # NOTE: no prefix for this library on windows
+#    if(WIN32 AND NOT MSYS)
+#        set(CMAKE_FIND_LIBRARY_PREFIXES "")
+#    endif()
+#    find_library( SUITESPARSECONFIG_LIBRARY ${SUITESPARSECONFIG_LIBRARY_NAME} ${SUNDIALS_KLU_LIBRARY_DIR} NO_DEFAULT_PATH)
+#    mark_as_advanced(SUITESPARSECONFIG_LIBRARY)
+#endif ()
+
+MESSAGE("KLU LIBS: " ${KLU_LIBRARY} ${AMD_LIBRARY} ${COLAMD_LIBRARY} ${BTF_LIBRARY} ${SUITESPARSECONFIG_LIBRARY})
 
 set(KLU_LIBRARIES ${KLU_LIBRARY} ${AMD_LIBRARY} ${COLAMD_LIBRARY} ${BTF_LIBRARY} ${SUITESPARSECONFIG_LIBRARY})

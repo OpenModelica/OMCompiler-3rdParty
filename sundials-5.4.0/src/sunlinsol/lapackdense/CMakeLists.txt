@@ -31,7 +31,7 @@ set(sunlinsollapackdense_HEADERS
 #  - Add the build target for the library
 #  - Set the library name and make sure it is not deleted
 #  - Install the library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
 
   add_library(sundials_sunlinsollapackdense_static
     STATIC ${sunlinsollapackdense_SOURCES} ${shared_SOURCES})
@@ -51,14 +51,14 @@ if(BUILD_STATIC_LIBS)
   install(TARGETS sundials_sunlinsollapackdense_static
     DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
 
   add_library(sundials_sunlinsollapackdense_shared
     SHARED ${sunlinsollapackdense_SOURCES} ${shared_SOURCES})
@@ -80,7 +80,7 @@ if(BUILD_SHARED_LIBS)
   install(TARGETS sundials_sunlinsollapackdense_shared
     DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the header files
 install(FILES ${sunlinsollapackdense_HEADERS} DESTINATION include/sunlinsol)
@@ -93,7 +93,7 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
 
   set(fsunlinsollapackdense_SOURCES fsunlinsol_lapackdense.c)
 
-  if(BUILD_STATIC_LIBS)
+  if(SUNDIALS_BUILD_STATIC_LIBS)
     add_library(sundials_fsunlinsollapackdense_static
       STATIC ${fsunlinsollapackdense_SOURCES})
     set_target_properties(sundials_fsunlinsollapackdense_static
@@ -108,9 +108,9 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
       sundials_sunlinsollapackdense_static)
     install(TARGETS sundials_fsunlinsollapackdense_static
       DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_STATIC_LIBS)
+  endif(SUNDIALS_BUILD_STATIC_LIBS)
 
-  if(BUILD_SHARED_LIBS)
+  if(SUNDIALS_BUILD_SHARED_LIBS)
     add_library(sundials_fsunlinsollapackdense_shared
       SHARED ${fsunlinsollapackdense_SOURCES})
     set_target_properties(sundials_fsunlinsollapackdense_shared
@@ -127,7 +127,7 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
       sundials_sunlinsollapackdense_shared)
     install(TARGETS sundials_fsunlinsollapackdense_shared
       DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_SHARED_LIBS)
+  endif(SUNDIALS_BUILD_SHARED_LIBS)
 
   #
   message(STATUS "Added SUNLINSOL_LAPACKDENSE F77 interface")

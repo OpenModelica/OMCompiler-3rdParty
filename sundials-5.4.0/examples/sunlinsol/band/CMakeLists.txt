@@ -110,14 +110,14 @@ foreach(example_tuple ${sunlinsol_band_examples})
     NODIFF)
 
   # install example source files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.c
       ../test_sunlinsol.h
       ../test_sunlinsol.c
       ../../../src/sundials/sundials_matrix.c
       ../../../src/sundials/sundials_linearsolver.c
       ../../../src/sundials/sundials_nvector.c
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunlinsol/band)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunlinsol/band)
   endif()
 
 endforeach(example_tuple ${sunlinsol_band_examples})
@@ -174,10 +174,10 @@ foreach(example_tuple ${sunlinsol_band_fortran_examples})
 endforeach(example_tuple ${sunlinsol_band_fortran_examples})
 
 
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES DESTINATION ${EXAMPLES_INSTALL_PATH}/sunlinsol/band)
+  install(FILES DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunlinsol/band)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER_LIB "sundials_sunlinsolband")
@@ -204,7 +204,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/sunlinsol/band/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/sunlinsol/band
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunlinsol/band
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -221,9 +221,9 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/sunlinsol/band/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunlinsol/band
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunlinsol/band
       RENAME Makefile
       )
   endif(UNIX)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

@@ -112,6 +112,6 @@ add_library(omc::3rd::modelica_io ALIAS ModelicaIO)
 omc_add_subdirectory(SuiteSparse)
 
 # sundials
-omc_add_subdirectory(sundials)
+omc_add_subdirectory(sundials-5.4.0)
 
 

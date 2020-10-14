@@ -79,18 +79,18 @@ foreach(example_tuple ${CVODE_examples})
   endif()
 
   # install example
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.c ${example}.out
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/petsc)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/petsc)
   endif()
 
 endforeach(example_tuple ${CVODE_examples})
 
 
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES README DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/petsc)
+  install(FILES README DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/petsc)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER "CVODE")
@@ -115,7 +115,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/cvode/petsc/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/petsc
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/petsc
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -132,11 +132,11 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/cvode/petsc/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/petsc
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/petsc
       RENAME Makefile
       )
   endif(UNIX)
 
   sundials_add_test_install(cvode petsc)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

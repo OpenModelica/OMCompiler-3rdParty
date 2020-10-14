@@ -127,13 +127,13 @@ foreach(example_tuple ${nvector_parallel_examples})
     NODIFF)
 
   # install example source files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.c
       ../test_nvector.c
       ../test_mpinvector.c
       ../test_nvector.h
       ${sundials_SOURCE_DIR}/src/sundials/sundials_nvector.c
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/parallel)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/parallel)
   endif()
 
 endforeach(example_tuple ${nvector_parallel_examples})
@@ -195,10 +195,10 @@ foreach(example_tuple ${nvector_parallel_fortran_examples})
 endforeach(example_tuple ${nvector_parallel_fortran_examples})
 
 
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/parallel)
+  install(FILES DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/parallel)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER_LIB "sundials_nvecparallel")
@@ -220,7 +220,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/nvector/parallel/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/parallel
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/parallel
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -237,9 +237,9 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/nvector/parallel/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/parallel
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/parallel
       RENAME Makefile
       )
   endif(UNIX)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

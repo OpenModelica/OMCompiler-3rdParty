@@ -115,21 +115,21 @@ foreach(example_tuple ${sunmatrix_slunrloc_examples})
     NODIFF)
 
   # install example source files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.cpp
       ${PROJECT_SOURCE_DIR}/examples/sunmatrix/test_sunmatrix.h
       ${PROJECT_SOURCE_DIR}/examples/sunmatrix/test_sunmatrix.c
       ${PROJECT_SOURCE_DIR}/src/sundials/sundials_matrix.c
       ${PROJECT_SOURCE_DIR}/src/sundials/sundials_nvector.c
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunmatrix/slunrloc)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunmatrix/slunrloc)
   endif()
 
 endforeach(example_tuple ${sunmatrix_slunrloc_examples})
 
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES DESTINATION ${EXAMPLES_INSTALL_PATH}/sunmatrix/slunrloc)
+  install(FILES DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunmatrix/slunrloc)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER "SUNMatrix_SLUNRloc")
@@ -154,7 +154,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/sunmatrix/slunrloc/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/sunmatrix/slunrloc/
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunmatrix/slunrloc/
   )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -171,9 +171,9 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/sunmatrix/slunrloc/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunmatrix/slunrloc/
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunmatrix/slunrloc/
       RENAME Makefile
     )
   endif(UNIX)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

@@ -102,9 +102,9 @@ foreach(example_tuple ${examples})
     EXAMPLE_TYPE ${example_type}
     NODIFF)
 
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.c
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunnonlinsol/newton)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunnonlinsol/newton)
   endif()
 
 endforeach(example_tuple ${examples})
@@ -153,10 +153,10 @@ foreach(example_tuple ${fortran_examples})
 endforeach(example_tuple ${fortran_examples})
 
 
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES DESTINATION ${EXAMPLES_INSTALL_PATH}/sunnonlinsol/newton)
+  install(FILES DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunnonlinsol/newton)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER_LIB "sundials_sunnonlinsolnewton")
@@ -182,7 +182,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/sunnonlinsol/newton/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/sunnonlinsol/newton
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunnonlinsol/newton
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -199,9 +199,9 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/sunnonlinsol/newton/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunnonlinsol/newton
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunnonlinsol/newton
       RENAME Makefile
       )
   endif(UNIX)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

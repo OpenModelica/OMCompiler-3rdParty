@@ -44,7 +44,7 @@ set(shared_SOURCES
 
 # Add variable nvecmpiplusx_HEADERS with the exported NVECMPIPLUSX header files
 set(nvecmpiplusx_HEADERS ${sundials_SOURCE_DIR}/include/nvector/nvector_manyvector.h)
-if(MPI_ENABLE AND MPI_C_FOUND)
+if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND)
   list(APPEND nvecmpiplusx_HEADERS
       ${sundials_SOURCE_DIR}/include/nvector/nvector_mpimanyvector.h
       ${sundials_SOURCE_DIR}/include/nvector/nvector_mpiplusx.h)
@@ -60,7 +60,7 @@ add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 #  - Add the build target for the NVECMPIPLUSX library
 #  - Set the library name and make sure it is not deleted
 #  - Install the NVECMPIPLUSX library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_nvecmpiplusx_static STATIC ${nvecmpiplusx_SOURCES} ${shared_SOURCES})
 
   set_target_properties(sundials_nvecmpiplusx_static PROPERTIES
@@ -68,14 +68,14 @@ if(BUILD_STATIC_LIBS)
                         CLEAN_DIRECT_OUTPUT 1)
 
   install(TARGETS sundials_nvecmpiplusx_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the NVECMPIPLUSX library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the NVECMPIPLUSX library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_nvecmpiplusx_shared SHARED ${nvecmpiplusx_SOURCES} ${shared_SOURCES})
 
   if(UNIX)
@@ -89,7 +89,7 @@ if(BUILD_SHARED_LIBS)
                         CLEAN_DIRECT_OUTPUT 1)
 
   install(TARGETS sundials_nvecmpiplusx_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the NVECMPIPLUSX header files
 install(FILES ${nvecmpiplusx_HEADERS} DESTINATION include/nvector)

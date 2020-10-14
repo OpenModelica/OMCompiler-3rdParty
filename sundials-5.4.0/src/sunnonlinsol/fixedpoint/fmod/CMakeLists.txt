@@ -17,7 +17,7 @@
 
 set(sunnonlinsolfixedpoint_SOURCES fsunnonlinsol_fixedpoint_mod.f90 fsunnonlinsol_fixedpoint_mod.c)
 
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   sundials_add_f2003_interface_library(sundials_fsunnonlinsolfixedpoint_mod_static STATIC_OBJECT
     ${sunnonlinsolfixedpoint_SOURCES}
   )
@@ -25,9 +25,9 @@ if(BUILD_STATIC_LIBS)
   set_target_properties(sundials_fsunnonlinsolfixedpoint_mod_static
     PROPERTIES OUTPUT_NAME sundials_fsunnonlinsolfixedpoint_mod CLEAN_DIRECT_OUTPUT 1)
   install(TARGETS sundials_fsunnonlinsolfixedpoint_mod_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   sundials_add_f2003_interface_library(sundials_fsunnonlinsolfixedpoint_mod_shared SHARED_OBJECT
     ${sunnonlinsolfixedpoint_SOURCES}
   )
@@ -37,6 +37,6 @@ if(BUILD_SHARED_LIBS)
   set_target_properties(sundials_fsunnonlinsolfixedpoint_mod_shared
     PROPERTIES VERSION ${nveclib_VERSION} SOVERSION ${nveclib_SOVERSION})
   install(TARGETS sundials_fsunnonlinsolfixedpoint_mod_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 message(STATUS "Added SUNNONLINSOL_FIXEDPOINT F2003 interface")

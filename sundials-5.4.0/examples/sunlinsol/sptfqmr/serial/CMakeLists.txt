@@ -116,13 +116,13 @@ foreach(example_tuple ${sunlinsol_sptfqmr_examples})
     NODIFF)
 
   # install example source files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.c
       ../../test_sunlinsol.h
       ../../test_sunlinsol.c
       ${sundials_SOURCE_DIR}/src/sundials/sundials_linearsolver.c
       ${sundials_SOURCE_DIR}/src/sundials/sundials_nvector.c
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunlinsol/sptfqmr/serial)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunlinsol/sptfqmr/serial)
   endif()
 
 endforeach(example_tuple ${sunlinsol_sptfqmr_examples})
@@ -178,10 +178,10 @@ foreach(example_tuple ${sunlinsol_sptfqmr_fortran_examples})
 
 endforeach(example_tuple ${sunlinsol_sptfqmr_fortran_examples})
 
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES DESTINATION ${EXAMPLES_INSTALL_PATH}/sunlinsol/sptfqmr/serial)
+  install(FILES DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunlinsol/sptfqmr/serial)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER_LIB "sundials_sunlinsolsptfqmr")
@@ -203,7 +203,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/sunlinsol/sptfqmr/serial/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/sunlinsol/sptfqmr/serial
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunlinsol/sptfqmr/serial
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -220,9 +220,9 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/sunlinsol/sptfqmr/serial/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunlinsol/sptfqmr/serial
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunlinsol/sptfqmr/serial
       RENAME Makefile
       )
   endif(UNIX)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

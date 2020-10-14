@@ -70,18 +70,18 @@ foreach(example_tuple ${FIDA_examples})
   target_link_libraries(${example} ${SUNDIALS_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 
    # install example source and out files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.f ${example}.out
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/ida/fcmix_pthreads)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/ida/fcmix_pthreads)
   endif()
 
 endforeach(example_tuple ${FIDA_examples})
 
 # create Makfile and CMakeLists.txt for examples
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES README DESTINATION ${EXAMPLES_INSTALL_PATH}/ida/fcmix_pthreads)
+  install(FILES README DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/ida/fcmix_pthreads)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER "IDA")
@@ -104,7 +104,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/ida/fcmix_pthreads/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/ida/fcmix_pthreads
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/ida/fcmix_pthreads
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -121,7 +121,7 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/ida/fcmix_pthreads/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/ida/fcmix_pthreads
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/ida/fcmix_pthreads
       RENAME Makefile
       )
   endif(UNIX)
@@ -129,4 +129,4 @@ if(EXAMPLES_INSTALL)
   # add test_install target
   sundials_add_test_install(ida fcmix_pthreads)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

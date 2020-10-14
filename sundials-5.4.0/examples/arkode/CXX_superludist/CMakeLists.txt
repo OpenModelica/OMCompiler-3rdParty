@@ -82,23 +82,23 @@ foreach(example_tuple ${ARKODE_examples})
   endif()
 
   # install example source and out files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.cpp ${example}.out
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/CXX_superludist)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/CXX_superludist)
   endif()
 
 endforeach(example_tuple ${ARKODE_examples})
 
 
 # create Makfile and CMakeLists.txt for examples
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES README DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/CXX_superludist)
+  install(FILES README DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/CXX_superludist)
 
   # Install the extra files
   foreach(extrafile ${ARKODE_extras})
-    install(FILES ${extrafile} DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/CXX_superludist)
+    install(FILES ${extrafile} DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/CXX_superludist)
   endforeach()
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
@@ -124,7 +124,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/arkode/CXX_superludist/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/CXX_superludist
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/CXX_superludist
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -141,7 +141,7 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/arkode/CXX_superludist/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/CXX_superludist
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/CXX_superludist
       RENAME Makefile
       )
   endif(UNIX)
@@ -149,4 +149,4 @@ if(EXAMPLES_INSTALL)
   # add test_install target
   sundials_add_test_install(arkode CXX_superludist)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)
