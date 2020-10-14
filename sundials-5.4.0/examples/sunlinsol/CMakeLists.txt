@@ -18,22 +18,22 @@
 add_subdirectory(band)
 add_subdirectory(dense)
 
-if(KLU_ENABLE AND KLU_FOUND)
+if(SUNDIALS_KLU_ENABLE AND KLU_FOUND)
   add_subdirectory(klu)
-endif(KLU_ENABLE AND KLU_FOUND)
+endif(SUNDIALS_KLU_ENABLE AND KLU_FOUND)
 
-if(SUPERLUMT_ENABLE AND SUPERLUMT_FOUND)
+if(SUNDIALS_PTHREAD_ENABLE AND SUPERLUMT_FOUND)
   add_subdirectory(superlumt)
-endif(SUPERLUMT_ENABLE AND SUPERLUMT_FOUND)
+endif(SUNDIALS_PTHREAD_ENABLE AND SUPERLUMT_FOUND)
 
-if(MPI_ENABLE AND MPI_C_FOUND AND MPI_CXX_FOUND AND SUNDIALS_SUPERLUDIST)
+if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND AND MPI_CXX_FOUND AND SUNDIALS_SUPERLUDIST)
   add_subdirectory(superludist)
 endif()
 
-if(LAPACK_ENABLE AND LAPACK_FOUND)
+if(SUNDIALS_LAPACK_ENABLE AND LAPACK_FOUND)
   add_subdirectory(lapackband)
   add_subdirectory(lapackdense)
-endif(LAPACK_ENABLE AND LAPACK_FOUND)
+endif(SUNDIALS_LAPACK_ENABLE AND LAPACK_FOUND)
 
 if(CUDA_ENABLE AND CMAKE_CUDA_COMPILER)
   if(SUNDIALS_INDEX_SIZE MATCHES "32")
@@ -48,7 +48,7 @@ add_subdirectory(spbcgs/serial)
 add_subdirectory(sptfqmr/serial)
 add_subdirectory(pcg/serial)
 
-if(MPI_ENABLE AND MPI_C_FOUND)
+if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND)
   add_subdirectory(spgmr/parallel)
   add_subdirectory(spfgmr/parallel)
   add_subdirectory(spbcgs/parallel)

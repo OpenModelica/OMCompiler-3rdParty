@@ -43,7 +43,7 @@ set(nvecpetsc_HEADERS
 add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 
 #
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_nvecpetsc_static STATIC ${nvecpetsc_SOURCES} ${shared_SOURCES})
 
   target_link_libraries(sundials_nvecpetsc_static PUBLIC PETSC::VEC)
@@ -53,10 +53,10 @@ if(BUILD_STATIC_LIBS)
                         CLEAN_DIRECT_OUTPUT 1)
 
   install(TARGETS sundials_nvecpetsc_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 #
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_nvecpetsc_shared SHARED ${nvecpetsc_SOURCES} ${shared_SOURCES})
 
   target_link_libraries(sundials_nvecpetsc_shared PUBLIC PETSC::VEC)
@@ -72,7 +72,7 @@ if(BUILD_SHARED_LIBS)
                         SOVERSION ${nveclib_SOVERSION})
 
   install(TARGETS sundials_nvecpetsc_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the NVECPARHYP header files
 install(FILES ${nvecpetsc_HEADERS} DESTINATION include/nvector)

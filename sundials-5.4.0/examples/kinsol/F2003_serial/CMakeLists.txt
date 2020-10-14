@@ -59,17 +59,17 @@ foreach(example_tuple ${FKINSOL_examples})
   target_link_libraries(${example} ${SUNDIALS_LIBS})
 
    # install example source and out files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.f90 ${example}.out
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/F2003_serial)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/kinsol/F2003_serial)
   endif()
 endforeach(example_tuple ${FKINSOL_examples})
 
 # create Makefile and CMakeLists.txt for examples
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES README DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/F2003_serial)
+  install(FILES README DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/kinsol/F2003_serial)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER "KINSOL")
@@ -92,7 +92,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/kinsol/F2003_serial/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/F2003_serial
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/kinsol/F2003_serial
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -109,7 +109,7 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/kinsol/F2003_serial/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/F2003_serial
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/kinsol/F2003_serial
       RENAME Makefile
       )
   endif(UNIX)
@@ -117,4 +117,4 @@ if(EXAMPLES_INSTALL)
   # add test_install target
   sundials_add_test_install(kinsol F2003_serial)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

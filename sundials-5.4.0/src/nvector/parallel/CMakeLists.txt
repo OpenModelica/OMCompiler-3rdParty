@@ -54,19 +54,19 @@ add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 #  - Add the build target for the NVECPARALLEL library
 #  - Set the library name and make sure it is not deleted
 #  - Install the NVECPARALLEL library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_nvecparallel_static STATIC ${nvecparallel_SOURCES} ${shared_SOURCES})
   set_target_properties(sundials_nvecparallel_static
     PROPERTIES OUTPUT_NAME sundials_nvecparallel CLEAN_DIRECT_OUTPUT 1)
   install(TARGETS sundials_nvecparallel_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the NVECPARALLEL library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the NVECPARALLEL library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_nvecparallel_shared SHARED ${nvecparallel_SOURCES} ${shared_SOURCES})
 
   if(UNIX)
@@ -78,7 +78,7 @@ if(BUILD_SHARED_LIBS)
   set_target_properties(sundials_nvecparallel_shared
     PROPERTIES VERSION ${nveclib_VERSION} SOVERSION ${nveclib_SOVERSION})
   install(TARGETS sundials_nvecparallel_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the NVECPARALLEL header files
 install(FILES ${nvecparallel_HEADERS} DESTINATION include/nvector)
@@ -87,14 +87,14 @@ install(FILES ${nvecparallel_HEADERS} DESTINATION include/nvector)
 if(F77_INTERFACE_ENABLE AND MPI_Fortran_FOUND)
   set(fnvecparallel_SOURCES fnvector_parallel.c)
 
-  if(BUILD_STATIC_LIBS)
+  if(SUNDIALS_BUILD_STATIC_LIBS)
     add_library(sundials_fnvecparallel_static STATIC ${fnvecparallel_SOURCES})
     set_target_properties(sundials_fnvecparallel_static
       PROPERTIES OUTPUT_NAME sundials_fnvecparallel CLEAN_DIRECT_OUTPUT 1)
     install(TARGETS sundials_fnvecparallel_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_STATIC_LIBS)
+  endif(SUNDIALS_BUILD_STATIC_LIBS)
 
-  if(BUILD_SHARED_LIBS)
+  if(SUNDIALS_BUILD_SHARED_LIBS)
     add_library(sundials_fnvecparallel_shared SHARED ${fnvecparallel_SOURCES})
 
     # fnvecparallel depends on nvecparallel
@@ -105,7 +105,7 @@ if(F77_INTERFACE_ENABLE AND MPI_Fortran_FOUND)
     set_target_properties(sundials_fnvecparallel_shared
       PROPERTIES VERSION ${nveclib_VERSION} SOVERSION ${nveclib_SOVERSION})
     install(TARGETS sundials_fnvecparallel_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_SHARED_LIBS)
+  endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 endif()
 #

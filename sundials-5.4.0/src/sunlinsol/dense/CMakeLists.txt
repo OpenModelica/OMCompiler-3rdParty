@@ -32,7 +32,7 @@ set(sunlinsoldense_HEADERS
 #  - Add the build target for the library
 #  - Set the library name and make sure it is not deleted
 #  - Install the library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
 
   add_library(sundials_sunlinsoldense_static
     STATIC ${sunlinsoldense_SOURCES} ${shared_SOURCES})
@@ -52,14 +52,14 @@ if(BUILD_STATIC_LIBS)
   install(TARGETS sundials_sunlinsoldense_static
     DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
 
   add_library(sundials_sunlinsoldense_shared
     SHARED ${sunlinsoldense_SOURCES} ${shared_SOURCES})
@@ -81,7 +81,7 @@ if(BUILD_SHARED_LIBS)
   install(TARGETS sundials_sunlinsoldense_shared
     DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the header files
 install(FILES ${sunlinsoldense_HEADERS} DESTINATION include/sunlinsol)
@@ -94,7 +94,7 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
 
   set(fsunlinsoldense_SOURCES fsunlinsol_dense.c)
 
-  if(BUILD_STATIC_LIBS)
+  if(SUNDIALS_BUILD_STATIC_LIBS)
     add_library(sundials_fsunlinsoldense_static
       STATIC ${fsunlinsoldense_SOURCES})
     set_target_properties(sundials_fsunlinsoldense_static
@@ -109,9 +109,9 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
       sundials_sunlinsoldense_static)
     install(TARGETS sundials_fsunlinsoldense_static
       DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_STATIC_LIBS)
+  endif(SUNDIALS_BUILD_STATIC_LIBS)
 
-  if(BUILD_SHARED_LIBS)
+  if(SUNDIALS_BUILD_SHARED_LIBS)
     add_library(sundials_fsunlinsoldense_shared
       SHARED ${fsunlinsoldense_SOURCES})
     set_target_properties(sundials_fsunlinsoldense_shared
@@ -128,7 +128,7 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
       sundials_sunlinsoldense_shared)
     install(TARGETS sundials_fsunlinsoldense_shared
       DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_SHARED_LIBS)
+  endif(SUNDIALS_BUILD_SHARED_LIBS)
 
   #
   message(STATUS "Added SUNLINSOL_DENSE F77 interface")

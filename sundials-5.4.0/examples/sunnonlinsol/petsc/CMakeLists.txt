@@ -101,18 +101,18 @@ foreach(example_tuple ${examples})
     EXAMPLE_TYPE ${example_type}
     NODIFF)
 
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${shared_SOURCES} ${example}.c
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunnonlinsol/petscsnes)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunnonlinsol/petscsnes)
   endif()
 
 endforeach(example_tuple ${examples})
 
 
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES DESTINATION ${EXAMPLES_INSTALL_PATH}/sunnonlinsol/petscsnes)
+  install(FILES DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunnonlinsol/petscsnes)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER_LIB "sundials_sunnonlinsolpetscsnes")
@@ -139,7 +139,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/sunnonlinsol/petscsnes/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/sunnonlinsol/petscsnes
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunnonlinsol/petscsnes
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -156,9 +156,9 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/sunnonlinsol/petscsnes/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunnonlinsol/petscsnes
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunnonlinsol/petscsnes
       RENAME Makefile
       )
   endif(UNIX)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

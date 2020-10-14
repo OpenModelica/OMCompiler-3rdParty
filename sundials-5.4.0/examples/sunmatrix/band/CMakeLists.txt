@@ -109,13 +109,13 @@ foreach(example_tuple ${sunmatrix_band_examples})
     NODIFF)
 
   # install example source files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.c
       ../test_sunmatrix.c
       ../test_sunmatrix.h
       ${sundials_SOURCE_DIR}/src/sundials/sundials_matrix.c
       ${sundials_SOURCE_DIR}/src/sundials/sundials_nvector.c
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunmatrix/band)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunmatrix/band)
   endif()
 
 endforeach(example_tuple ${sunmatrix_band_examples})
@@ -171,10 +171,10 @@ foreach(example_tuple ${sunmatrix_band_fortran_examples})
 
 endforeach(example_tuple ${sunmatrix_band_fortran_examples})
 
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES DESTINATION ${EXAMPLES_INSTALL_PATH}/sunmatrix/band)
+  install(FILES DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunmatrix/band)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER_LIB "sundials_sunmatrixband")
@@ -196,7 +196,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/sunmatrix/band/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/sunmatrix/band
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunmatrix/band
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -213,9 +213,9 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/sunmatrix/band/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunmatrix/band
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunmatrix/band
       RENAME Makefile
       )
   endif(UNIX)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

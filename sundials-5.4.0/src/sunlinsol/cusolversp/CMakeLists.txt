@@ -32,7 +32,7 @@ add_prefix(${sundials_SOURCE_DIR}/include/sunlinsol/ cusolversp_HEADERS)
 # Define C preprocessor flag -DBUILD_SUNDIALS_LIBRARY
 add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_sunlinsolcusolversp_static STATIC ${cusolversp_SOURCES} ${shared_SOURCES})
   target_link_libraries(sundials_sunlinsolcusolversp_static
                         PUBLIC
@@ -47,9 +47,9 @@ if(BUILD_STATIC_LIBS)
                         OUTPUT_NAME sundials_sunlinsolcusolversp
                         CLEAN_DIRECT_OUTPUT 1)
   install(TARGETS sundials_sunlinsolcusolversp_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_sunlinsolcusolversp_shared SHARED ${cusolversp_SOURCES} ${shared_SOURCES})
   target_link_libraries(sundials_sunlinsolcusolversp_shared
                         PUBLIC
@@ -66,7 +66,7 @@ if(BUILD_SHARED_LIBS)
                         VERSION ${sunlinsollib_VERSION}
                         SOVERSION ${sunlinsollib_SOVERSION})
   install(TARGETS sundials_sunlinsolcusolversp_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the CUDA NVector header files
 install(FILES ${cusolversp_HEADERS} DESTINATION include/sunlinsol)

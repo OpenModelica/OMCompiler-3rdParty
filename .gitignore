@@ -165,8 +165,8 @@ sqlite3/ltmain.sh
 sqlite3/missing
 sqlite3/sqlite3.pc
 
-sundials/build/
-sundials/build_msvc/
+sundials-5.4.0/build/
+sundials-5.4.0/build_msvc/
 
 trilinos-nox/build/
 trilinos-nox/build_msvc/

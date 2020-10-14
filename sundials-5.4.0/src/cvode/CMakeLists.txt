@@ -108,7 +108,7 @@ include_directories(../sundials)
 add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 
 # Build the static library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   # Add the build target for the static CVODE library
   add_library(sundials_cvode_static STATIC
     ${cvode_SOURCES} ${shared_SOURCES}
@@ -142,10 +142,10 @@ if(BUILD_STATIC_LIBS)
     install(TARGETS sundials_cvode_fused_stubs_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
   endif()
 
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Build the shared library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   # Add the build target for the shared CVODE library
   add_library(sundials_cvode_shared SHARED
     ${cvode_SOURCES} ${shared_SOURCES}
@@ -187,7 +187,7 @@ if(BUILD_SHARED_LIBS)
     install(TARGETS sundials_cvode_fused_stubs_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
   endif()
 
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the CVODE header files
 install(FILES ${cvode_HEADERS} DESTINATION include/cvode)

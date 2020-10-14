@@ -107,22 +107,22 @@ foreach(example_tuple ${nvector_petsc_examples})
     NODIFF)
 
   # install example source files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.c
       ../test_nvector.c
       ../test_mpinvector.c
       ../test_nvector.h
       ../../../src/sundials/sundials_nvector.c
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/petsc)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/petsc)
   endif()
 
 endforeach(example_tuple ${nvector_petsc_examples})
 
 
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/petsc)
+  install(FILES DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/petsc)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER_LIB "sundials_nvecpetsc")
@@ -144,7 +144,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/nvector/petsc/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/petsc
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/petsc
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -161,9 +161,9 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/nvector/petsc/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/petsc
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/petsc
       RENAME Makefile
       )
   endif(UNIX)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

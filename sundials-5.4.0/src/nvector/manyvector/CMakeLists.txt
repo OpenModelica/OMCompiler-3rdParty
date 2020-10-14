@@ -34,7 +34,7 @@ set(shared_SOURCES
 # Add variable nvecmanyvector_HEADERS with the exported NVECMANYVECTOR header files
 set(nvecmanyvector_HEADERS ${sundials_SOURCE_DIR}/include/nvector/nvector_manyvector.h)
 
-if(MPI_ENABLE AND MPI_C_FOUND)
+if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND)
   install(CODE "MESSAGE(\"\nInstall NVECTOR_MPIMANYVECTOR\n\")")
   list(APPEND nvecmanyvector_HEADERS ${sundials_SOURCE_DIR}/include/nvector/nvector_mpimanyvector.h)
   if(MPI_C_COMPILER)
@@ -56,7 +56,7 @@ add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 #  - Add the build target for the NVECMANYVECTOR library
 #  - Set the library name and make sure it is not deleted
 #  - Install the NVECMANYVECTOR library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
 
   # ----------------------- No MPI
   add_library(sundials_nvecmanyvector_static STATIC ${nvecmanyvector_SOURCES} ${shared_SOURCES})
@@ -70,7 +70,7 @@ if(BUILD_STATIC_LIBS)
   install(TARGETS sundials_nvecmanyvector_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
   # ----------------------- With MPI
-  if(MPI_ENABLE AND MPI_C_FOUND)
+  if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND)
     add_library(sundials_nvecmpimanyvector_static STATIC ${nvecmanyvector_SOURCES} ${shared_SOURCES})
 
     target_compile_definitions(sundials_nvecmpimanyvector_static PRIVATE -DSUNDIALS_MPI_ENABLED=1)
@@ -82,14 +82,14 @@ if(BUILD_STATIC_LIBS)
     install(TARGETS sundials_nvecmpimanyvector_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
   endif()
 
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the NVECMANYVECTOR library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the NVECMANYVECTOR library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
 
   # ----------------------- No MPI
   add_library(sundials_nvecmanyvector_shared SHARED ${nvecmanyvector_SOURCES} ${shared_SOURCES})
@@ -109,7 +109,7 @@ if(BUILD_SHARED_LIBS)
   install(TARGETS sundials_nvecmanyvector_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
   # ----------------------- With MPI
-  if(MPI_ENABLE AND MPI_C_FOUND)
+  if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND)
     add_library(sundials_nvecmpimanyvector_shared SHARED ${nvecmanyvector_SOURCES} ${shared_SOURCES})
 
     target_compile_definitions(sundials_nvecmpimanyvector_shared PRIVATE -DSUNDIALS_MPI_ENABLED=1)
@@ -127,13 +127,13 @@ if(BUILD_SHARED_LIBS)
     install(TARGETS sundials_nvecmpimanyvector_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
   endif()
 
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the NVECMANYVECTOR header files
 install(FILES ${nvecmanyvector_HEADERS} DESTINATION include/nvector)
 
 message(STATUS "Added NVECTOR_MANYVECTOR module")
 
-if(MPI_ENABLE AND MPI_C_FOUND)
+if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND)
   message(STATUS "Added NVECTOR_MPIMANYVECTOR module")
 endif()

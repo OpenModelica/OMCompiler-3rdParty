@@ -67,19 +67,19 @@ foreach(example_tuple ${CVODE_examples})
   target_link_libraries(${example} PRIVATE ${SUNDIALS_LIBS})
 
   # install example source and out files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.cu ${example}.out
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/raja)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/raja)
   endif()
 
 endforeach(example_tuple ${CVODE_examples})
 
 
 # create Makfile and CMakeLists.txt for examples
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES README DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/raja)
+  install(FILES README DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/raja)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER "CVODE")
@@ -105,7 +105,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/cvode/raja/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/raja
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/raja
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -122,7 +122,7 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/cvode/raja/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/raja
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/cvode/raja
       RENAME Makefile
       )
   endif(UNIX)
@@ -130,4 +130,4 @@ if(EXAMPLES_INSTALL)
   # add test_install target
   sundials_add_test_install(cvode raja)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

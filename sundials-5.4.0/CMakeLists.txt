@@ -21,11 +21,15 @@
 
 # Require CMake 3.5 by default, but certain options will force us
 # to require CMake 3.10
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.4)
 
 # Project SUNDIALS (initially only C supported)
 # sets PROJECT_SOURCE_DIR and PROJECT_BINARY_DIR variables
 project(sundials C)
+
+MESSAGE(STATUS "SUNDIALS_BUILD_STATIC_LIBS: ${SUNDIALS_BUILD_STATIC_LIBS}")
+MESSAGE(STATUS "SUNDIALS_BUILD_SHARED_LIBS: ${SUNDIALS_BUILD_SHARED_LIBS}")
+
 
 # Set some variables with info on the SUNDIALS project
 set(PACKAGE_BUGREPORT "woodward6@llnl.gov")
@@ -287,8 +291,8 @@ endif()
 # Options to build static and/or shared libraries
 # ---------------------------------------------------------------
 
-option(BUILD_STATIC_LIBS "Build static libraries" ON)
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(SUNDIALS_BUILD_STATIC_LIBS "Build static libraries" ON)
+option(SUNDIALS_BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 # Prepare substitution variable SUNDIALS_EXPORT for sundials_config.h
 # When building shared SUNDIALS libraries under Windows, use
@@ -298,23 +302,27 @@ option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 # In all other cases (other platforms or static libraries
 # under Windows), the SUNDIALS_EXPORT macro is empty
 
-if(BUILD_SHARED_LIBS AND WIN32)
+if(SUNDIALS_BUILD_SHARED_LIBS AND WIN32)
   set(SUNDIALS_EXPORT
     "#ifdef BUILD_SUNDIALS_LIBRARY
 #define SUNDIALS_EXPORT __declspec(dllexport)
 #else
+#ifdef LINK_SUNDIALS_STATIC
+#define SUNDIALS_EXPORT
+#else
 #define SUNDIALS_EXPORT __declspec(dllimport)
+#endif
 #endif")
-else(BUILD_SHARED_LIBS AND WIN32)
+else(SUNDIALS_BUILD_SHARED_LIBS AND WIN32)
   set(SUNDIALS_EXPORT "#define SUNDIALS_EXPORT")
-endif(BUILD_SHARED_LIBS AND WIN32)
+endif(SUNDIALS_BUILD_SHARED_LIBS AND WIN32)
 
 # Make sure we build at least one type of libraries
-if(NOT BUILD_STATIC_LIBS AND NOT BUILD_SHARED_LIBS)
+if(NOT SUNDIALS_BUILD_STATIC_LIBS AND NOT SUNDIALS_BUILD_SHARED_LIBS)
   print_warning("Both static and shared library generation were disabled"
                 "Building static libraries was re-enabled")
-  force_variable(BUILD_STATIC_LIBS BOOL "Build static libraries" ON)
-endif(NOT BUILD_STATIC_LIBS AND NOT BUILD_SHARED_LIBS)
+  force_variable(SUNDIALS_BUILD_STATIC_LIBS BOOL "Build static libraries" ON)
+endif(NOT SUNDIALS_BUILD_STATIC_LIBS AND NOT SUNDIALS_BUILD_SHARED_LIBS)
 
 # ---------------------------------------------------------------
 # Option to use the generic math libraries (UNIX only)
@@ -331,6 +339,11 @@ if(UNIX)
 endif(UNIX)
 
 # ---------------------------------------------------------------
+# Be able to parse arguments on second run
+# ---------------------------------------------------------------
+include(CMakeParseArguments)
+
+# ---------------------------------------------------------------
 # Check for POSIX timers
 # ---------------------------------------------------------------
 include(SundialsPOSIXTimers)
@@ -342,12 +355,12 @@ include(SundialsPOSIXTimers)
 # ---------------------------------------------------------------
 # Enable MPI support?
 # ---------------------------------------------------------------
-option(MPI_ENABLE "Enable MPI support" OFF)
+option(SUNDIALS_MPI_ENABLE "Enable MPI support" OFF)
 
 # ---------------------------------------------------------------
 # Enable OpenMP support?
 # ---------------------------------------------------------------
-option(OPENMP_ENABLE "Enable OpenMP support" OFF)
+option(SUNDIALS_OPENMP_ENABLE "Enable OpenMP support" OFF)
 
 # provide OPENMP_DEVICE_ENABLE option
 option(OPENMP_DEVICE_ENABLE "Enable OpenMP device offloading support" OFF)
@@ -368,7 +381,7 @@ endif()
 # ---------------------------------------------------------------
 # Enable Pthread support?
 # ---------------------------------------------------------------
-option(PTHREAD_ENABLE "Enable Pthreads support" OFF)
+option(SUNDIALS_PTHREAD_ENABLE "Enable Pthreads support" OFF)
 
 # -------------------------------------------------------------
 # Enable CUDA support?
@@ -389,10 +402,10 @@ endif()
 # ---------------------------------------------------------------
 # Enable LAPACK support?
 # ---------------------------------------------------------------
-option(LAPACK_ENABLE "Enable Lapack support" OFF)
+option(SUNDIALS_LAPACK_ENABLE "Enable Lapack support" OFF)
 
 # LAPACK does not support extended precision
-if(LAPACK_ENABLE AND SUNDIALS_PRECISION MATCHES "EXTENDED")
+if(SUNDIALS_LAPACK_ENABLE AND SUNDIALS_PRECISION MATCHES "EXTENDED")
   print_error("LAPACK is not compatible with ${SUNDIALS_PRECISION} precision")
 endif()
 
@@ -421,36 +434,36 @@ sundials_option(SUPERLUDIST_OpenMP BOOL "Enable SUNDIALS support for SuperLU_DIS
 # ---------------------------------------------------------------
 # Enable SuperLU_MT support?
 # ---------------------------------------------------------------
-sundials_option(SUPERLUMT_ENABLE BOOL "Enable SuperLU_MT support" OFF
+sundials_option(SUNDIALS_PTHREAD_ENABLE BOOL "Enable SuperLU_MT support" OFF
                 XSDK_NAME TPL_ENABLE_SUPERLUMT)
 
 sundials_option(SUPERLUMT_INCLUDE_DIR PATH "SuperLU_MT include directory" "${SUPERLUMT_INCLUDE_DIR}"
-                DEPENDS_ON SUPERLUMT_ENABLE
+                DEPENDS_ON SUNDIALS_PTHREAD_ENABLE
                 XSDK_NAME TPL_SUPERLUMT_INCLUDE_DIRS)
 
 sundials_option(SUPERLUMT_LIBRARY_DIR PATH "SuperLU_MT library directory" "${SUPERLUMT_LIBRARY_DIR}"
-                DEPENDS_ON SUPERLUMT_ENABLE
+                DEPENDS_ON SUNDIALS_PTHREAD_ENABLE
                 XSDK_HIDE)
 
 sundials_option(SUPERLUMT_LIBRARIES STRING "Semi-colon separated list of additional libraries needed for SuperLU_MT." "${SUPERLUMT_LIBRARIES}"
-                DEPENDS_ON SUPERLUMT_ENABLE
+                DEPENDS_ON SUNDIALS_PTHREAD_ENABLE
                 XSDK_NAME TPL_SUPERLUMT_LIBRARIES)
 
 sundials_option(SUPERLUMT_THREAD_TYPE BOOL "SuperLU_MT threading type: OPENMP or PTHREAD" "PTHREAD"
-                DEPENDS_ON SUPERLUMT_ENABLE
+                DEPENDS_ON SUNDIALS_PTHREAD_ENABLE
                 XSDK_NAME TPL_SUPERLUMT_THREAD_TYPE)
 
 # ---------------------------------------------------------------
 # Enable KLU support?
 # ---------------------------------------------------------------
-option(KLU_ENABLE "Enable KLU support" OFF)
+option(SUNDIALS_KLU_ENABLE "Enable KLU support" OFF)
 
 # KLU does not support single or extended precision
-if(KLU_ENABLE AND
+if(SUNDIALS_KLU_ENABLE AND
   (SUNDIALS_PRECISION MATCHES "SINGLE" OR SUNDIALS_PRECISION MATCHES "EXTENDED"))
   print_warning("KLU is not compatible with ${SUNDIALS_PRECISION} precision"
                 "Disabling KLU")
-  force_variable(KLU_ENABLE BOOL "KLU is disabled" OFF)
+  force_variable(SUNDIALS_KLU_ENABLE BOOL "KLU is disabled" OFF)
 endif()
 
 # ---------------------------------------------------------------
@@ -459,9 +472,9 @@ endif()
 option(HYPRE_ENABLE "Enable hypre support" OFF)
 
 # Using hypre requres building with MPI enabled
-if(HYPRE_ENABLE AND NOT MPI_ENABLE)
+if(HYPRE_ENABLE AND NOT SUNDIALS_MPI_ENABLE)
   print_warning("MPI not enabled - Disabling hypre"
-                "Set MPI_ENABLE to ON to use parhyp")
+                "Set SUNDIALS_MPI_ENABLE to ON to use parhyp")
   force_variable(HYPRE_ENABLE BOOL "Enable hypre support" OFF)
 endif()
 
@@ -493,8 +506,8 @@ sundials_option(PETSC_WORKS BOOL "Set to ON to force CMake to accept a given PET
                 ADVANCED)
 
 # Using PETSc requres building with MPI enabled
-if(PETSC_ENABLE AND NOT MPI_ENABLE)
-  print_error("MPI is required for PETSc support. Set MPI_ENABLE to ON.")
+if(PETSC_ENABLE AND NOT SUNDIALS_MPI_ENABLE)
+  print_error("MPI is required for PETSc support. Set SUNDIALS_MPI_ENABLE to ON.")
 endif()
 
 
@@ -544,11 +557,11 @@ sundials_option(XBRAID_WORKS BOOL "Set to ON to force CMake to accept a given XB
 # ---------------------------------------------------------------
 
 # Enable C examples (on by default)
-option(EXAMPLES_ENABLE_C "Build SUNDIALS C examples" ON)
+option(SUNDIALS_EXAMPLES_ENABLE_C "Build SUNDIALS C examples" ON)
 
 # C++ examples (off by default, unless Trilinos is enabled)
 set(DOCSTR "Build C++ examples")
-option(EXAMPLES_ENABLE_CXX "${DOCSTR}" ${Trilinos_ENABLE})
+option(SUNDIALS_EXAMPLES_ENABLE_CXX "${DOCSTR}" ${Trilinos_ENABLE})
 
 # F77/F90 examples (on by default) are an option only if
 # the Fortran 77 interface is enabled.
@@ -638,9 +651,9 @@ else()
 endif()
 
 # If any of the above examples are enabled set EXAMPLES_ENABLED to TRUE
-if(EXAMPLES_ENABLE_C OR
+if(SUNDIALS_EXAMPLES_ENABLE_C OR
     EXAMPLES_ENABLE_F77 OR
-    EXAMPLES_ENABLE_CXX OR
+    SUNDIALS_EXAMPLES_ENABLE_CXX OR
     EXAMPLES_ENABLE_F90 OR
     EXAMPLES_ENABLE_F2003 OR
     EXAMPLES_ENABLE_CUDA)
@@ -656,29 +669,29 @@ endif()
 # Enable installing examples by default
 set(DOCSTR "Install SUNDIALS examples")
 if(EXAMPLES_ENABLED)
-  option(EXAMPLES_INSTALL "${DOCSTR}" ON)
+  option(SUNDIALS_EXAMPLES_INSTALL "${DOCSTR}" ON)
 else()
-  force_variable(EXAMPLES_INSTALL BOOL "${DOCSTR}" OFF)
-  hide_variable(EXAMPLES_INSTALL)
+  force_variable(SUNDIALS_EXAMPLES_INSTALL BOOL "${DOCSTR}" OFF)
+  hide_variable(SUNDIALS_EXAMPLES_INSTALL)
 endif()
 
 # If examples are to be exported, check where we should install them.
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
-  show_variable(EXAMPLES_INSTALL_PATH PATH
+  show_variable(SUNDIALS_EXAMPLES_INSTALL_PATH PATH
     "Output directory for installing example files"
     "${CMAKE_INSTALL_PREFIX}/examples")
 
-  if(NOT EXAMPLES_INSTALL_PATH)
+  if(NOT SUNDIALS_EXAMPLES_INSTALL_PATH)
     print_warning("The example installation path is empty"
       "Example installation path was reset to its default value")
-    set(EXAMPLES_INSTALL_PATH "${CMAKE_INSTALL_PREFIX}/examples" CACHE STRING
+    set(SUNDIALS_EXAMPLES_INSTALL_PATH "${CMAKE_INSTALL_PREFIX}/examples" CACHE STRING
       "Output directory for installing example files" FORCE)
   endif()
 
 else()
 
-  hide_variable(EXAMPLES_INSTALL_PATH)
+  hide_variable(SUNDIALS_EXAMPLES_INSTALL_PATH)
 
 endif()
 
@@ -769,7 +782,7 @@ endif(APPLE)
 # ---------------------------------------------------------------
 
 # Do we need a Fortran name-mangling scheme?
-if(F77_INTERFACE_ENABLE OR LAPACK_ENABLE)
+if(F77_INTERFACE_ENABLE OR SUNDIALS_LAPACK_ENABLE)
   set(NEED_FORTRAN_NAME_MANGLING TRUE)
 endif()
 
@@ -848,7 +861,7 @@ endif()
 # (e) SuperLU_DIST is enabled
 # ---------------------------------------------------------------
 
-if(EXAMPLES_ENABLE_CXX OR CUDA_ENABLE OR RAJA_ENABLE OR Trilinos_ENABLE OR
+if(SUNDIALS_EXAMPLES_ENABLE_CXX OR CUDA_ENABLE OR RAJA_ENABLE OR Trilinos_ENABLE OR
     SUPERLUDIST_ENABLE)
   include(SundialsCXX)
 endif()
@@ -905,11 +918,11 @@ endif()
 # components.
 # ---------------------------------------------------------------
 
-if(MPI_ENABLE OR Trilinos_ENABLE OR SUPERLUDIST_ENABLE)
+if(SUNDIALS_MPI_ENABLE OR Trilinos_ENABLE OR SUPERLUDIST_ENABLE)
   include(SundialsMPI)
 endif()
 
-if(MPI_ENABLE)
+if(SUNDIALS_MPI_ENABLE)
   if(NOT MPI_C_FOUND)
     print_warning("MPI not functional" "Parallel support will not be provided")
   else()
@@ -930,7 +943,7 @@ endif()
 # Find OpenMP
 # -------------------------------------------------------------
 
-if(OPENMP_ENABLE OR OPENMP_DEVICE_ENABLE OR
+if(SUNDIALS_OPENMP_ENABLE OR OPENMP_DEVICE_ENABLE OR
     (SUPERLUDIST_ENABLE AND SUPERLUDIST_OpenMP))
   include(SundialsOpenMP)
 endif()
@@ -939,7 +952,7 @@ endif()
 # Find PThreads
 # -------------------------------------------------------------
 
-if(PTHREAD_ENABLE)
+if(SUNDIALS_PTHREAD_ENABLE)
   find_package(Threads REQUIRED)
   if(CMAKE_USE_PTHREADS_INIT)
     set(PTHREADS_FOUND TRUE)
@@ -961,7 +974,7 @@ endif()
 # If LAPACK is needed, first try to find the appropriate
 # libraries and linker flags needed to link against them.
 
-if(LAPACK_ENABLE)
+if(SUNDIALS_LAPACK_ENABLE)
 
   # find LAPACK and BLAS Libraries
   include(SundialsLapack)
@@ -998,7 +1011,7 @@ endif()
 # Find (and test) the SUPERLUMT libraries
 # ---------------------------------------------------------------
 
-if(SUPERLUMT_ENABLE)
+if(SUNDIALS_PTHREAD_ENABLE)
   include(SundialsSuperLUMT)
 else()
   set(SUPERLUMT_DISABLED TRUE CACHE INTERNAL "GUI - return when first set")
@@ -1012,12 +1025,12 @@ endif()
 # If KLU is requested, first try to find the appropriate libraries to
 # link against them.
 
-if(KLU_ENABLE)
+if(SUNDIALS_KLU_ENABLE)
 
   show_variable(KLU_INCLUDE_DIR PATH "KLU include directory"
     "${KLU_INCLUDE_DIR}")
-  show_variable(KLU_LIBRARY_DIR PATH
-    "Klu library directory" "${KLU_LIBRARY_DIR}")
+    show_variable(SUNDIALS_KLU_LIBRARY_DIR PATH
+    "Klu library directory" "${SUNDIALS_KLU_LIBRARY_DIR}")
 
   include(SundialsKLU)
 
@@ -1028,17 +1041,17 @@ if(KLU_ENABLE)
   endif(KLU_FOUND)
 
   if(KLU_LIBRARIES AND NOT KLU_FOUND)
-    print_warning("KLU not functional - support will not be provided"
+    print_error("KLU not functional - support will not be provided"
                   "Double check spelling of include path and specified libraries (search is case sensitive)")
   endif(KLU_LIBRARIES AND NOT KLU_FOUND)
 
 else()
 
-  hide_variable(KLU_LIBRARY_DIR)
+  hide_variable(SUNDIALS_KLU_LIBRARY_DIR)
   hide_variable(KLU_INCLUDE_DIR)
   set (KLU_DISABLED TRUE CACHE INTERNAL "GUI - return when first set")
 
-endif(KLU_ENABLE)
+endif(SUNDIALS_KLU_ENABLE)
 
 # ---------------------------------------------------------------
 # Find (and test) the hypre libraries
@@ -1178,7 +1191,7 @@ if(F2003_INTERFACE_ENABLE)
   # While the .mod files get generated for static and shared
   # libraries, they are identical. So only install one set
   # of the .mod files.
-  if(BUILD_STATIC_LIBS)
+  if(SUNDIALS_BUILD_STATIC_LIBS)
     install(
       DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}_STATIC/
       DESTINATION ${Fortran_INSTALL_MODDIR}

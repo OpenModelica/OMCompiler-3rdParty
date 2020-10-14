@@ -101,9 +101,9 @@ foreach(example_tuple ${KINSOL_examples})
   file(GLOB example_out ${example}*.out)
 
   # install example source and out files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.c ${example}.out
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/serial)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/kinsol/serial)
   endif()
 
 endforeach(example_tuple ${KINSOL_examples})
@@ -152,9 +152,9 @@ if(LAPACK_FOUND)
     target_link_libraries(${example} ${SUNDIALS_LIBS} ${SUNLINSOLLAPACK_LIBS})
 
     # install example source and out files
-    if(EXAMPLES_INSTALL)
+    if(SUNDIALS_EXAMPLES_INSTALL)
       install(FILES ${example}.c ${example}.out
-        DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/serial)
+        DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/kinsol/serial)
     endif()
 
   endforeach(example_tuple ${KINSOL_examples_BL})
@@ -196,9 +196,9 @@ if(KLU_FOUND)
     target_link_libraries(${example} ${SUNDIALS_LIBS} ${SUNLINSOLKLU_LIBS})
 
     # install example source and out files
-    if(EXAMPLES_INSTALL)
+    if(SUNDIALS_EXAMPLES_INSTALL)
       install(FILES ${example}.c ${example}.out
-        DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/serial)
+        DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/kinsol/serial)
     endif()
 
   endforeach(example_tuple ${KINSOL_examples_KLU})
@@ -245,9 +245,9 @@ if(SUPERLUMT_FOUND)
     target_link_libraries(${example} ${SUNDIALS_LIBS} ${SUNLINSOLSLUMT_LIBS})
 
     # install example source and out files
-    if(EXAMPLES_INSTALL)
+    if(SUNDIALS_EXAMPLES_INSTALL)
       install(FILES ${example}.c ${example}.out
-        DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/serial)
+        DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/kinsol/serial)
     endif()
 
   endforeach(example_tuple ${KINSOL_examples_SUPERLUMT})
@@ -256,10 +256,10 @@ endif(SUPERLUMT_FOUND)
 
 
 # create Makfile and CMakeLists.txt for examples
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES README DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/serial)
+  install(FILES README DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/kinsol/serial)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER "KINSOL")
@@ -305,7 +305,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/kinsol/serial/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/serial
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/kinsol/serial
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -322,7 +322,7 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/kinsol/serial/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/serial
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/kinsol/serial
       RENAME Makefile
       )
   endif(UNIX)
@@ -330,4 +330,4 @@ if(EXAMPLES_INSTALL)
   # add test_install target
   sundials_add_test_install(kinsol serial EXECUTABLE kinAnalytic_fp)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

@@ -78,19 +78,19 @@ foreach(example_tuple ${FKINSOL_examples})
   endif()
 
   # install example source and out files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.f ${example}.out
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/fcmix_parallel)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/kinsol/fcmix_parallel)
   endif()
 
 endforeach(example_tuple ${FKINSOL_examples})
 
 
 # create Makfile and CMakeLists.txt for examples
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES README DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/fcmix_parallel)
+  install(FILES README DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/kinsol/fcmix_parallel)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER "KINSOL")
@@ -113,7 +113,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/kinsol/fcmix_parallel/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/fcmix_parallel
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/kinsol/fcmix_parallel
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -130,7 +130,7 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/kinsol/fcmix_parallel/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/fcmix_parallel
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/kinsol/fcmix_parallel
       RENAME Makefile
       )
   endif(UNIX)
@@ -138,4 +138,4 @@ if(EXAMPLES_INSTALL)
   # add test_install target
   sundials_add_test_install(kinsol fcmix_parallel)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

@@ -50,19 +50,19 @@ add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 #  - Add the build target for the NVECPARHYP library
 #  - Set the library name and make sure it is not deleted
 #  - Install the NVECPARHYP library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_nvecparhyp_static STATIC ${nvecparhyp_SOURCES} ${shared_SOURCES})
   set_target_properties(sundials_nvecparhyp_static
     PROPERTIES OUTPUT_NAME sundials_nvecparhyp CLEAN_DIRECT_OUTPUT 1)
   install(TARGETS sundials_nvecparhyp_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the NVECPARHYP library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the NVECPARHYP library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_nvecparhyp_shared SHARED ${nvecparhyp_SOURCES} ${shared_SOURCES})
 
   if(UNIX)
@@ -77,7 +77,7 @@ if(BUILD_SHARED_LIBS)
   set_target_properties(sundials_nvecparhyp_shared
     PROPERTIES VERSION ${nveclib_VERSION} SOVERSION ${nveclib_SOVERSION})
   install(TARGETS sundials_nvecparhyp_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the NVECPARHYP header files
 install(FILES ${nvecparhyp_HEADERS} DESTINATION include/nvector)

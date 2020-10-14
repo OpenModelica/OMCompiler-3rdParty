@@ -109,22 +109,22 @@ foreach(example_tuple ${sunmatrix_cusparse_examples})
     NODIFF)
 
   # install example source files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.cu
       ../test_sunmatrix.c
       ../test_sunmatrix.h
       ../dreadrb.c
       ../dreadrb.h
       ../../../src/sundials/sundials_matrix.c
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunmatrix/cusparse)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunmatrix/cusparse)
   endif()
 
 endforeach(example_tuple ${sunmatrix_cusparse_examples})
 
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES DESTINATION ${EXAMPLES_INSTALL_PATH}/sunmatrix/cusparse)
+  install(FILES DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunmatrix/cusparse)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(SOLVER_LIB "")
@@ -149,7 +149,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/sunmatrix/cusparse/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/sunmatrix/cusparse
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunmatrix/cusparse
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -166,9 +166,9 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/sunmatrix/cusparse/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/sunmatrix/cusparse
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/sunmatrix/cusparse
       RENAME Makefile
       )
   endif(UNIX)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

@@ -64,9 +64,9 @@ foreach(example_tuple ${FARKODE_examples})
   target_link_libraries(${example} ${SUNDIALS_LIBS})
 
    # install example source and out files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.f90 ${example}.out
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/F2003_serial)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/F2003_serial)
   endif()
 
 endforeach(example_tuple ${FARKODE_examples})
@@ -96,23 +96,23 @@ foreach(example_tuple ${FARKODE_tests})
   target_link_libraries(${example} ${SUNDIALS_LIBS})
 
   # install example source and out files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.f90
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/F2003_serial)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/F2003_serial)
   endif()
 
 endforeach(example_tuple ${FARKODE_tests})
 
 
 # create Makfile and CMakeLists.txt for examples
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES README DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/F2003_serial)
+  install(FILES README DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/F2003_serial)
 
   # Install the extra files
   foreach(extrafile ${ARKODE_extras})
-    install(FILES ${extrafile} DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/F2003_serial)
+    install(FILES ${extrafile} DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/F2003_serial)
   endforeach()
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
@@ -138,7 +138,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/arkode/F2003_serial/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/F2003_serial
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/F2003_serial
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -155,7 +155,7 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/arkode/F2003_serial/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/arkode/F2003_serial
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/arkode/F2003_serial
       RENAME Makefile
       )
   endif(UNIX)
@@ -163,4 +163,4 @@ if(EXAMPLES_INSTALL)
   # add test_install target
   sundials_add_test_install(arkode F2003_serial)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

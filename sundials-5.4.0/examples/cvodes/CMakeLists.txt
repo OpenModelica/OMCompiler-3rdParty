@@ -15,12 +15,12 @@
 # ---------------------------------------------------------------
 
 # C examples
-if(EXAMPLES_ENABLE_C)
+if(SUNDIALS_EXAMPLES_ENABLE_C)
   add_subdirectory(serial)
-  if(MPI_ENABLE AND MPI_C_FOUND)
+  if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND)
     add_subdirectory(parallel)
   endif()
-  if(OPENMP_ENABLE AND OPENMP_FOUND)
+  if(SUNDIALS_OPENMP_ENABLE AND OPENMP_FOUND)
     add_subdirectory(C_openmp)
   endif()
 endif()

@@ -41,7 +41,7 @@ add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 #  - Add the build target for the NVECCUDA library
 #  - Set the library name and make sure it is not deleted
 #  - Install the NVECUDA library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_nveccuda_static STATIC ${nveccuda_SOURCES} ${shared_SOURCES})
   target_compile_features(sundials_nveccuda_static PUBLIC cxx_std_11)
   target_include_directories(sundials_nveccuda_static PRIVATE . ${PROJECT_SOURCE_DIR}/src/sundials)
@@ -49,14 +49,14 @@ if(BUILD_STATIC_LIBS)
                         OUTPUT_NAME sundials_nveccuda
                         CLEAN_DIRECT_OUTPUT 1)
   install(TARGETS sundials_nveccuda_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the NVECUDA library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the NVECUDA library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_nveccuda_shared SHARED ${nveccuda_SOURCES} ${shared_SOURCES})
   target_compile_features(sundials_nveccuda_shared PUBLIC cxx_std_11)
   target_include_directories(sundials_nveccuda_shared PRIVATE . ${PROJECT_SOURCE_DIR}/src/sundials)
@@ -66,7 +66,7 @@ if(BUILD_SHARED_LIBS)
                         VERSION ${nveclib_VERSION}
                         SOVERSION ${nveclib_SOVERSION})
   install(TARGETS sundials_nveccuda_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the CUDA NVector header files
 install(FILES ${nveccuda_HEADERS} DESTINATION include/nvector)

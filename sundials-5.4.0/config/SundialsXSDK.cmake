@@ -133,13 +133,13 @@ endif()
 # LAPACK
 # ---------------------------------------------------------------
 
-# TPL_ENABLE_LAPACK => LAPACK_ENABLE
+# TPL_ENABLE_LAPACK => SUNDIALS_LAPACK_ENABLE
 if(DEFINED TPL_ENABLE_LAPACK)
-  message("Replacing LAPACK_ENABLE with TPL_ENABLE_LAPACK")
+  message("Replacing SUNDIALS_LAPACK_ENABLE with TPL_ENABLE_LAPACK")
   set(DOCSTR "Enable Lapack support")
 
-  force_variable(LAPACK_ENABLE BOOL "${DOCSTR}" "${TPL_ENABLE_LAPACK}")
-  mark_as_advanced(FORCE LAPACK_ENABLE)
+  force_variable(SUNDIALS_LAPACK_ENABLE BOOL "${DOCSTR}" "${TPL_ENABLE_LAPACK}")
+  mark_as_advanced(FORCE SUNDIALS_LAPACK_ENABLE)
 endif()
 
 # TPL_LAPACK_LIBRARIES => LAPACK_LIBRARIES
@@ -156,13 +156,13 @@ endif()
 # KLU
 # ---------------------------------------------------------------
 
-# TPL_ENABLE_KLU => KLU_ENABLE
+# TPL_ENABLE_KLU => SUNDIALS_KLU_ENABLE
 if(DEFINED TPL_ENABLE_KLU)
-  message("Replacing KLU_ENABLE with TPL_ENABLE_KLU")
+  message("Replacing SUNDIALS_KLU_ENABLE with TPL_ENABLE_KLU")
   set(DOCSTR "Enable KLU support")
 
-  force_variable(KLU_ENABLE BOOL "${DOCSTR}" "${TPL_ENABLE_KLU}")
-  mark_as_advanced(FORCE KLU_ENABLE)
+  force_variable(SUNDIALS_KLU_ENABLE BOOL "${DOCSTR}" "${TPL_ENABLE_KLU}")
+  mark_as_advanced(FORCE SUNDIALS_KLU_ENABLE)
 endif()
 
 # TPL_KLU_INCLUDE_DIRS => KLU_INCLUDE_DIR
@@ -181,7 +181,7 @@ if(TPL_ENABLE_KLU)
   show_variable(TPL_KLU_LIBRARIES STRING "${DOCSTR}" "${TPL_KLU_LIBRARIES}")
   force_variable(KLU_LIBRARY STRING "${DOCSTR}" "${TPL_KLU_LIBRARIES}")
   mark_as_advanced(FORCE KLU_LIBRARY)
-  mark_as_advanced(FORCE KLU_LIBRARY_DIR)
+  mark_as_advanced(FORCE SUNDIALS_KLU_LIBRARY_DIR)
 endif()
 
 

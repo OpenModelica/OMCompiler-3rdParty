@@ -15,7 +15,7 @@
 
 set(idas_SOURCES fidas_mod.f90 fidas_mod.c)
 
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   sundials_add_f2003_interface_library(sundials_fidas_mod_static STATIC
     ${idas_SOURCES}
     $<TARGET_OBJECTS:sundials_fnvecserial_mod_static_obj>
@@ -54,7 +54,7 @@ if(BUILD_STATIC_LIBS)
           DESTINATION ${Fortran_INSTALL_MODDIR})
 endif()
 
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   sundials_add_f2003_interface_library(sundials_fidas_mod_shared SHARED
     ${idas_SOURCES}
     $<TARGET_OBJECTS:sundials_fnvecserial_mod_shared_obj>

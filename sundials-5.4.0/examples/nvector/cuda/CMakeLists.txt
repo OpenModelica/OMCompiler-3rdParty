@@ -100,22 +100,22 @@ foreach(example_tuple ${nvector_cuda_examples})
     NODIFF)
 
   # install example source files
-  if(EXAMPLES_INSTALL)
+  if(SUNDIALS_EXAMPLES_INSTALL)
     install(FILES ${example}.cu
       ../test_nvector.c
       ../test_nvector.h
       ${sundials_SOURCE_DIR}/examples/utilities/custom_memory_helper.h
       ${sundials_SOURCE_DIR}/src/sundials/sundials_nvector.c
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/cuda)
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/cuda)
   endif()
 
 endforeach(example_tuple ${nvector_cuda_examples})
 
 
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   # Install the README file
-  install(FILES DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/cuda)
+  install(FILES DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/cuda)
 
   # Prepare substitution variables for Makefile and/or CMakeLists templates
   set(NVECTOR_LIB "sundials_nveccuda")
@@ -137,7 +137,7 @@ if(EXAMPLES_INSTALL)
   # install CMakelists.txt
   install(
     FILES ${PROJECT_BINARY_DIR}/examples/nvector/cuda/CMakeLists.txt
-    DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/cuda
+    DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/cuda
     )
 
   # On UNIX-type platforms, we also  generate and install a makefile for
@@ -154,9 +154,9 @@ if(EXAMPLES_INSTALL)
     # install the configured Makefile_ex as Makefile
     install(
       FILES ${PROJECT_BINARY_DIR}/examples/nvector/cuda/Makefile_ex
-      DESTINATION ${EXAMPLES_INSTALL_PATH}/nvector/cuda
+      DESTINATION ${SUNDIALS_EXAMPLES_INSTALL_PATH}/nvector/cuda
       RENAME Makefile
       )
   endif(UNIX)
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)

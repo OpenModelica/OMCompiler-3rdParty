@@ -47,7 +47,7 @@ add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 #  - Add the build target for the library
 #  - Set the library name and make sure it is not deleted
 #  - Install the library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_sunnonlinsolnewton_static STATIC ${lib_SOURCES} ${shared_SOURCES})
   set_target_properties(sundials_sunnonlinsolnewton_static
     PROPERTIES OUTPUT_NAME sundials_sunnonlinsolnewton CLEAN_DIRECT_OUTPUT 1)
@@ -59,7 +59,7 @@ endif()
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_sunnonlinsolnewton_shared SHARED ${lib_SOURCES} ${shared_SOURCES})
 
   if(UNIX)
@@ -81,14 +81,14 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
 
   set(flib_SOURCES fsunnonlinsol_newton.c)
 
-  if(BUILD_STATIC_LIBS)
+  if(SUNDIALS_BUILD_STATIC_LIBS)
     add_library(sundials_fsunnonlinsolnewton_static STATIC ${flib_SOURCES})
     set_target_properties(sundials_fsunnonlinsolnewton_static
       PROPERTIES OUTPUT_NAME sundials_fsunnonlinsolnewton CLEAN_DIRECT_OUTPUT 1)
     install(TARGETS sundials_fsunnonlinsolnewton_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
   endif()
 
-  if(BUILD_SHARED_LIBS)
+  if(SUNDIALS_BUILD_SHARED_LIBS)
     add_library(sundials_fsunnonlinsolnewton_shared ${flib_SOURCES})
 
     # depends on fnvecserial and sunnonlinsolnewton

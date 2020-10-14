@@ -16,14 +16,14 @@
 
 # The examples will be linked with the library corresponding to the build type.
 # Whenever building shared libraries, use them to link the examples.
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   set(LINK_LIBRARY_TYPE "shared")
 else()
   set(LINK_LIBRARY_TYPE "static")
 endif()
 
 # Set variables used in generating CMake and Makefiles for examples
-if(EXAMPLES_INSTALL)
+if(SUNDIALS_EXAMPLES_INSTALL)
 
   set(SHELL "sh")
   set(prefix "${CMAKE_INSTALL_PREFIX}")
@@ -122,7 +122,7 @@ if(EXAMPLES_INSTALL)
     endif()
   endif()
 
-endif(EXAMPLES_INSTALL)
+endif(SUNDIALS_EXAMPLES_INSTALL)
 
 
 #----------------------------------------

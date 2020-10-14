@@ -41,7 +41,7 @@ set(lib_HEADERS
 # Define C preprocessor flag -DBUILD_SUNDIALS_LIBRARY
 add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_sunnonlinsolpetscsnes_static STATIC ${lib_SOURCES} ${shared_SOURCES})
 
   target_link_libraries(sundials_sunnonlinsolpetscsnes_static
@@ -54,7 +54,7 @@ if(BUILD_STATIC_LIBS)
   install(TARGETS sundials_sunnonlinsolpetscsnes_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_sunnonlinsolpetscsnes_shared SHARED ${lib_SOURCES} ${shared_SOURCES})
 
   target_link_libraries(sundials_sunnonlinsolpetscsnes_shared

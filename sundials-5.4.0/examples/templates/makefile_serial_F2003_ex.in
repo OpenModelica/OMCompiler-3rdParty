@@ -40,7 +40,7 @@ LIBRARIES_KLU = ${LIBRARIES} \
                 -lsundials_sunmatrixsparse -lsundials_fsunmatrixsparse_mod \
                 -lsundials_sunlinsolklu -lsundials_fsunlinsolklu_mod \
                 @KLU_LIBS@
-LINKFLAGS_KLU = ${LINKFLAGS}:@KLU_LIBRARY_DIR@
+LINKFLAGS_KLU = ${LINKFLAGS}:@SUNDIALS_KLU_LIBRARY_DIR@
 
 # ------------------------------------------------------------------------------
 

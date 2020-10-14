@@ -43,7 +43,7 @@ add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 #  - Add the build target for the NVECRAJA library
 #  - Set the library name and make sure it is not deleted
 #  - Install the NVECRAJA library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_nveccudaraja_static STATIC ${nvecraja_SOURCES} ${shared_SOURCES})
   target_compile_features(sundials_nveccudaraja_static PUBLIC cxx_std_11)
   target_compile_options(sundials_nveccudaraja_static PUBLIC
@@ -54,14 +54,14 @@ if(BUILD_STATIC_LIBS)
                         OUTPUT_NAME sundials_nveccudaraja
                         CLEAN_DIRECT_OUTPUT 1)
   install(TARGETS sundials_nveccudaraja_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the NVECRAJA library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the NVECRAJA library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_nveccudaraja_shared SHARED ${nvecraja_SOURCES} ${shared_SOURCES})
   target_compile_features(sundials_nveccudaraja_shared PUBLIC cxx_std_11)
   target_compile_options(sundials_nveccudaraja_shared PUBLIC
@@ -74,7 +74,7 @@ if(BUILD_SHARED_LIBS)
                         VERSION ${nveclib_VERSION}
                         SOVERSION ${nveclib_SOVERSION})
   install(TARGETS sundials_nveccudaraja_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the NVECRAJA header files
 install(FILES ${nvecraja_HEADERS} DESTINATION include/nvector)

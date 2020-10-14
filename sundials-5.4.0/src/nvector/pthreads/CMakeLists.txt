@@ -46,7 +46,7 @@ add_definitions(-DBUILD_SUNDIALS_LIBRARY)
 #  - Add the build target for the NVECPTHREADS library
 #  - Set the library name and make sure it is not deleted
 #  - Install the NVECPTHREADS library
-if(BUILD_STATIC_LIBS)
+if(SUNDIALS_BUILD_STATIC_LIBS)
   add_library(sundials_nvecpthreads_static STATIC ${nvecpthreads_SOURCES} ${shared_SOURCES})
 
   target_link_libraries(sundials_nvecpthreads_static Threads::Threads)
@@ -57,14 +57,14 @@ if(BUILD_STATIC_LIBS)
   set_target_properties(sundials_nvecpthreads_static
     PROPERTIES OUTPUT_NAME sundials_nvecpthreads CLEAN_DIRECT_OUTPUT 1)
   install(TARGETS sundials_nvecpthreads_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_STATIC_LIBS)
+endif(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Rules for building and installing the shared library:
 #  - Add the build target for the NVECPTHREADS library
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the NVECPTHREADS library
-if(BUILD_SHARED_LIBS)
+if(SUNDIALS_BUILD_SHARED_LIBS)
   add_library(sundials_nvecpthreads_shared SHARED ${nvecpthreads_SOURCES} ${shared_SOURCES})
 
   target_link_libraries(sundials_nvecpthreads_shared Threads::Threads)
@@ -77,7 +77,7 @@ if(BUILD_SHARED_LIBS)
   set_target_properties(sundials_nvecpthreads_shared
     PROPERTIES VERSION ${nveclib_VERSION} SOVERSION ${nveclib_SOVERSION})
   install(TARGETS sundials_nvecpthreads_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(BUILD_SHARED_LIBS)
+endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the NVECPTHREADS header files
 install(FILES ${nvecpthreads_HEADERS} DESTINATION include/nvector)
@@ -86,14 +86,14 @@ install(FILES ${nvecpthreads_HEADERS} DESTINATION include/nvector)
 if(F77_INTERFACE_ENABLE AND F77_FOUND)
   set(fnvecpthreads_SOURCES fnvector_pthreads.c)
 
-  if(BUILD_STATIC_LIBS)
+  if(SUNDIALS_BUILD_STATIC_LIBS)
     add_library(sundials_fnvecpthreads_static STATIC ${fnvecpthreads_SOURCES})
     set_target_properties(sundials_fnvecpthreads_static
       PROPERTIES OUTPUT_NAME sundials_fnvecpthreads CLEAN_DIRECT_OUTPUT 1)
     install(TARGETS sundials_fnvecpthreads_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_STATIC_LIBS)
+  endif(SUNDIALS_BUILD_STATIC_LIBS)
 
-  if(BUILD_SHARED_LIBS)
+  if(SUNDIALS_BUILD_SHARED_LIBS)
     add_library(sundials_fnvecpthreads_shared ${fnvecpthreads_SOURCES})
 
     # fnvecpthreads depends on nvecpthreads
@@ -104,7 +104,7 @@ if(F77_INTERFACE_ENABLE AND F77_FOUND)
     set_target_properties(sundials_fnvecpthreads_shared
       PROPERTIES VERSION ${nveclib_VERSION} SOVERSION ${nveclib_SOVERSION})
     install(TARGETS sundials_fnvecpthreads_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  endif(BUILD_SHARED_LIBS)
+  endif(SUNDIALS_BUILD_SHARED_LIBS)
 endif(F77_INTERFACE_ENABLE AND F77_FOUND)
 
 #
