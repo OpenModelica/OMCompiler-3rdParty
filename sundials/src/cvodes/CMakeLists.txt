@@ -110,7 +110,7 @@ INCLUDE_DIRECTORIES(../sundials)
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
 # Build the static library
-IF(BUILD_STATIC_LIBS)
+IF(SUNDIALS_BUILD_STATIC_LIBS)
 
   # Add the build target for the static CVODES library
   ADD_LIBRARY(sundials_cvodes_static STATIC 
@@ -125,10 +125,10 @@ IF(BUILD_STATIC_LIBS)
   # Install the CVODES library
   INSTALL(TARGETS sundials_cvodes_static DESTINATION lib)
 
-ENDIF(BUILD_STATIC_LIBS)
+ENDIF(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Build the shared library
-IF(BUILD_SHARED_LIBS)
+IF(SUNDIALS_BUILD_SHARED_LIBS)
 
   # Add the build target for the CVODES library
   ADD_LIBRARY(sundials_cvodes_shared SHARED 
@@ -147,7 +147,7 @@ IF(BUILD_SHARED_LIBS)
   # Install the CVODES library
   INSTALL(TARGETS sundials_cvodes_shared DESTINATION lib)
 
-ENDIF(BUILD_SHARED_LIBS)
+ENDIF(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the CVODES header files
 INSTALL(FILES ${cvodes_HEADERS}  ${cvodes_BL_HEADERS} DESTINATION include/cvodes)

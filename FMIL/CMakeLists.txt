@@ -26,7 +26,7 @@ set(FMILIBRARYHOME ${FMILibrary_SOURCE_DIR})
 set(FMILIBRARYBUILD ${FMILibrary_BINARY_DIR})
 
 # User configuration options and parameters
-SET(FMILIB_INSTALL_PREFIX ${FMILibrary_BINARY_DIR}/../install CACHE PATH "Prefix prepended to install directories")
+SET(FMILIB_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "Prefix prepended to install directories")
 set(FMILIB_THIRDPARTYLIBS  ${FMILibrary_SOURCE_DIR}/ThirdParty CACHE PATH "Path to the ThirdParty library dir" )
 set(FMILIB_FMI_STANDARD_HEADERS  ${FMILIB_THIRDPARTYLIBS}/FMI/default CACHE PATH "Path to the FMI standard headers dir" )
 
@@ -84,7 +84,7 @@ IF(NOT CMAKE_BUILD_TYPE)
 	SET(CMAKE_BUILD_TYPE ${FMILIB_DEFAULT_BUILD_TYPE})
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
-SET(CMAKE_INSTALL_PREFIX ${FMILIB_INSTALL_PREFIX} CACHE INTERNAL "Prefix prepended to install directories" FORCE)
+# SET(CMAKE_INSTALL_PREFIX ${FMILIB_INSTALL_PREFIX} CACHE INTERNAL "Prefix prepended to install directories" FORCE)
 
 # debug_message is used to trace the build script
 function(debug_message)

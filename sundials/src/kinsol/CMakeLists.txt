@@ -116,7 +116,7 @@ INCLUDE_DIRECTORIES(../sundials)
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
 # Build the static library
-IF(BUILD_STATIC_LIBS)
+IF(SUNDIALS_BUILD_STATIC_LIBS)
 
   # Add the build target for the static KINSOL library
   ADD_LIBRARY(sundials_kinsol_static STATIC
@@ -131,10 +131,10 @@ IF(BUILD_STATIC_LIBS)
   # Install the KINSOL library
   INSTALL(TARGETS sundials_kinsol_static DESTINATION lib)
 
-ENDIF(BUILD_STATIC_LIBS)
+ENDIF(SUNDIALS_BUILD_STATIC_LIBS)
 
 # Build the shared library
-IF(BUILD_SHARED_LIBS)
+IF(SUNDIALS_BUILD_SHARED_LIBS)
 
   # Add the build target for the KINSOL library
   ADD_LIBRARY(sundials_kinsol_shared SHARED
@@ -153,7 +153,7 @@ IF(BUILD_SHARED_LIBS)
   # Install the KINSOL library
   INSTALL(TARGETS sundials_kinsol_shared DESTINATION lib)
 
-ENDIF(BUILD_SHARED_LIBS)
+ENDIF(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the KINSOL header files
 INSTALL(FILES ${kinsol_HEADERS} ${kinsol_BL_HEADERS} ${kinsol_SLU_HEADERS} DESTINATION include/kinsol)

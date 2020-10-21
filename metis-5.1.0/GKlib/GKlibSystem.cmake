@@ -100,7 +100,7 @@ if(HAVE_GETLINE)
   set(GKlib_COPTIONS "${GKlib_COPTIONS} -DHAVE_GETLINE")
 endif(HAVE_GETLINE)
 
-set(GKLIB_PATH "${CMAKE_BINARY_DIR}/GKlib")
+set(GKLIB_PATH "${PROJECT_SOURCE_DIR}/GKlib")
 
 # Custom check for TLS.
 if(MSVC)

@@ -21,16 +21,18 @@ ADD_CUSTOM_TARGET (uninstall "${CMAKE_COMMAND}" -P
 enable_testing()
 
 if (OS_LINUX)
-  option (USE_FPIC "Use the -fPIC compiler flag." ON)
+  option (CMINPACK_USE_FPIC "Use the -fPIC compiler flag." ON)
 else (OS_LINUX)
-  option (USE_FPIC "Use the -fPIC compiler flag." OFF)
+  option (CMINPACK_USE_FPIC "Use the -fPIC compiler flag." OFF)
 endif (OS_LINUX)
 
-option (BUILD_SHARED_LIBS "Build shared libraries instead of static." OFF)
-if (BUILD_SHARED_LIBS)
+option (CMINPACK_BUILD_SHARED_LIBS "Build shared libraries instead of static." OFF)
+if (CMINPACK_BUILD_SHARED_LIBS)
+  set (CMINPACK_LIBRARY_BUILD_TYPE SHARED)
   message (STATUS "Building shared libraries.")
 else ()
   message (STATUS "Building static libraries.")
+  set (CMINPACK_LIBRARY_BUILD_TYPE STATIC)
   if(WIN32)
     add_definitions(-DCMINPACK_NO_DLL)
   endif(WIN32)
@@ -54,7 +56,7 @@ set (cminpack_srcs
 set (cminpack_hdrs
     cminpack.h minpack.h)
 
-add_library (cminpack ${cminpack_srcs})
+add_library (cminpack ${CMINPACK_LIBRARY_BUILD_TYPE} ${cminpack_srcs})
 
 install (TARGETS cminpack 
    LIBRARY DESTINATION ${CMINPACK_LIB_INSTALL_DIR} COMPONENT library
@@ -63,7 +65,7 @@ install (TARGETS cminpack
 install (FILES ${cminpack_hdrs} DESTINATION ${CMINPACK_INCLUDE_INSTALL_DIR}
     COMPONENT cminpack_hdrs)
 
-if (USE_FPIC AND NOT BUILD_SHARED_LIBS)
+if (CMINPACK_USE_FPIC AND NOT CMINPACK_BUILD_SHARED_LIBS)
   set_target_properties (cminpack PROPERTIES COMPILE_FLAGS -fPIC)
 endif ()
 
