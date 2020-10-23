@@ -22,7 +22,8 @@ if(DOWNLOAD_SUITESPARSE)
 endif()
 
 find_file(SS_INSTALL README.txt DOC "README.txt in SuiteSparse folder"
-  HINT "${CMAKE_PROJECT_SRC_DIR}" NO_DEFAULT_PATH)
+  HINTS "${CMAKE_PROJECT_SRC_DIR}" "${CMAKE_BINARY_DIR}/.." 
+  NO_DEFAULT_PATH)
 if(SS_INSTALL)
   get_filename_component(SS_DIR ${SS_INSTALL} PATH)
   if(NOT EXISTS "${SS_DIR}/README.txt")
@@ -30,6 +31,7 @@ if(SS_INSTALL)
   endif()
 else()
   set(SS_DIR "SuiteSparse-NOTFOUND")
+  message(FATAL_ERROR "could not find SuiteSparse/README.txt")
 endif()
 
 if(SS_DIR)
