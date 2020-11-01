@@ -22,11 +22,39 @@ add_library(omc::3rd::cminpack ALIAS cminpack)
 # FMIL
 set (FMILIB_GENERATE_DOXYGEN_DOC OFF CACHE BOOL "Generate doxygen doc target")
 set (FMILIB_BUILD_TESTS OFF CACHE BOOL "Build tests")
+set (FMILIB_BUILD_SHARED_LIB OFF CACHE BOOL "Build the library as shared (dll/so/dylib).")
 omc_add_subdirectory(FMIL)
+
 # For now we deal with FMIL's nonsensical structure here. They really need to
-# fix up their cmake usage. It is their default build system and it is used in
+# fix up their structure as a whole! It is quite non-conventional.
+# They also need to fix their cmake usage. It is their default build system and it is used in
 # very contrived and unusual ways.
-target_include_directories(fmilib INTERFACE ${FMILibrary_SOURCE_DIR}/install/include)
+
+# We create a top level 'include' directory that matches their include structure when FMIL is installed-to-be-used.
+# This is how every library should be. That way when you install the library you just change the include
+# path and every include will be resolved as it was during build time.  Ideally it should even be in  'include/FMIL/'
+# but hat won't match how they install their files right now.
+file(MAKE_DIRECTORY ${FMILibrary_SOURCE_DIR}/include)
+# Do not ask me why the fmilib.h is in the cmake.config directory.
+file(COPY ${FMILibrary_SOURCE_DIR}/Config.cmake/fmilib.h DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI1 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI2 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+
+# This files 
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI1 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI2 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/JM DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+
+file(COPY ${FMILibrary_SOURCE_DIR}/ThirdParty/FMI/default/FMI1 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+file(COPY ${FMILibrary_SOURCE_DIR}/ThirdParty/FMI/default/FMI2 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+
+file(COPY ${FMILibrary_BINARY_DIR}/fmilib_config.h DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+
+# We give this new directory as include dir for targets that depend on FMIL. 
+target_include_directories(fmilib INTERFACE ${FMILibrary_SOURCE_DIR}/include)
 add_library(omc::3rd::fmilib::static ALIAS fmilib)
 add_library(omc::3rd::FMIL::minizip ALIAS minizip)
 
