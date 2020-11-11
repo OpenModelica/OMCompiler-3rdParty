@@ -86,7 +86,7 @@ if(Trilinos_FOUND AND TARGET Trilinos::Trilinos)
 
   # Create a CMakeLists.txt file
   file(WRITE ${TrilinosTest_DIR}/CMakeLists.txt
-    "CMAKE_MINIMUM_REQUIRED(VERSION 3.1.3)\n"
+    "CMAKE_MINIMUM_REQUIRED(VERSION 2.8)\n"
     "PROJECT(ltest CXX)\n"
     "SET(Trilinos_DIR ${Trilinos_DIR})\n"
     "INCLUDE(${CMAKE_SOURCE_DIR}/config/FindTrilinos.cmake)\n"

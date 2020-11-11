@@ -42,7 +42,7 @@ if(NOT MPI_C_COMPILER)
 
   # Create a CMakeLists.txt file which will generate the "mpictest" executable
   file(WRITE ${MPITest_DIR}/CMakeLists.txt
-    "CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)\n"
+    "CMAKE_MINIMUM_REQUIRED(VERSION 2.8)\n"
     "PROJECT(mpictest C)\n"
     "SET(CMAKE_VERBOSE_MAKEFILE ON)\n"
     "SET(CMAKE_C_COMPILER \"${CMAKE_C_COMPILER}\")\n"
@@ -98,7 +98,7 @@ if(MPI_C_FOUND)
 
     # Create a CMakeLists.txt file which will generate the "mpicxxtest" executable
     file(WRITE ${MPITest_DIR}/CMakeLists.txt
-      "CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)\n"
+      "CMAKE_MINIMUM_REQUIRED(VERSION 2.8)\n"
       "PROJECT(mpicxxtest CXX)\n"
       "SET(CMAKE_VERBOSE_MAKEFILE ON)\n"
       "SET(CMAKE_CXX_COMPILER \"${CMAKE_CXX_COMPILER}\")\n"
@@ -151,7 +151,7 @@ if(MPI_C_FOUND)
 
     # Create a CMakeLists.txt file which will generate the "mpiftest" executable
     file(WRITE ${MPITest_DIR}/CMakeLists.txt
-      "CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)\n"
+      "CMAKE_MINIMUM_REQUIRED(VERSION 2.8)\n"
       "PROJECT(mpiftest Fortran)\n"
       "SET(CMAKE_VERBOSE_MAKEFILE ON)\n"
       "SET(CMAKE_Fortran_COMPILER \"${CMAKE_Fortran_COMPILER}\")\n"
@@ -285,7 +285,7 @@ if(MPI_C_FOUND)
   if(MPI_C_COMPILER)
 
     file(WRITE ${MPITest_DIR}/CMakeLists.txt
-      "CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)\n"
+      "CMAKE_MINIMUM_REQUIRED(VERSION 2.8)\n"
       "PROJECT(mpi2test C)\n"
       "SET(CMAKE_VERBOSE_MAKEFILE ON)\n"
       "SET(CMAKE_C_COMPILER ${MPI_C_COMPILER})\n"
@@ -300,7 +300,7 @@ if(MPI_C_FOUND)
   else()
 
     file(WRITE ${MPITest_DIR}/CMakeLists.txt
-      "CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)\n"
+      "CMAKE_MINIMUM_REQUIRED(VERSION 2.8)\n"
       "PROJECT(mpi2test C)\n"
       "SET(CMAKE_VERBOSE_MAKEFILE ON)\n"
       "SET(CMAKE_C_COMPILER ${CMAKE_C_COMPILER})\n"
