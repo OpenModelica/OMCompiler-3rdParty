@@ -142,6 +142,7 @@ add_library(omc::3rd::modelica_io ALIAS ModelicaIO)
 omc_add_subdirectory(SuiteSparse)
 
 # sundials
+option(SUNDIALS_EXAMPLES_ENABLE_C "Build SUNDIALS C examples" OFF)
 omc_add_subdirectory(sundials-5.4.0)
 
 
