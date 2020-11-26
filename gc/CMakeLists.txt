@@ -437,11 +437,7 @@ if (build_cord)
   set(CORD_SRC cord/cordbscs.c cord/cordprnt.c cord/cordxtra.c)
   add_library(omccord ${GC_LIBRARY_BUILD_TYPE} ${CORD_SRC})
   target_link_libraries(omccord PRIVATE omcgc)
-  install(TARGETS omccord EXPORT cordExports
-          LIBRARY DESTINATION lib
-          ARCHIVE DESTINATION lib
-          RUNTIME DESTINATION bin
-          INCLUDES DESTINATION include)
+  install(TARGETS omccord EXPORT cordExports)
 endif()
 
 if (GC_BUILD_SHARED_LIBS AND HAVE_FLAG_WL_NO_UNDEFINED)
@@ -459,18 +455,10 @@ if (GC_BUILD_SHARED_LIBS AND HAVE_FLAG_WL_NO_UNDEFINED)
   endif(build_cord)
 endif()
 
-install(TARGETS omcgc EXPORT gcExports
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin
-        INCLUDES DESTINATION include)
+install(TARGETS omcgc EXPORT gcExports)
 
 if (enable_cplusplus)
-  install(TARGETS omcgccpp EXPORT gccppExports
-          LIBRARY DESTINATION lib
-          ARCHIVE DESTINATION lib
-          RUNTIME DESTINATION bin
-          INCLUDES DESTINATION include)
+  install(TARGETS omcgccpp EXPORT gccppExports)
 endif()
 
 if (install_headers)

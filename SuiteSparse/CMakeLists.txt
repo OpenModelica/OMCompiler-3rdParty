@@ -4,8 +4,6 @@ include(ExternalProject)
 include(Helpers.cmake)
 set(SS_VERSION "3.0.0")
 
-set(LIB_OMC "lib/omc" CACHE STRING "library directory")
-
 #for shared, at least in cmake 2.8.12:
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -44,7 +42,7 @@ if(SS_DIR)
     add_library(SuiteSparse_config ${SS_DIR}/SuiteSparse_config/SuiteSparse_config.c)
     install(FILES ${SS_DIR}/SuiteSparse_config/SuiteSparse_config.h
     DESTINATION include/omc/c/suitesparse/Include)
-    install(TARGETS SuiteSparse_config DESTINATION ${LIB_OMC})
+    install(TARGETS SuiteSparse_config)
   elseif(EXISTS "${SS_DIR}/UFconfig")
     include_directories(${SS_DIR}/UFconfig)
     install(FILES ${SS_DIR}/UFconfig/UFconfig.h
@@ -77,7 +75,7 @@ if(SS_DIR)
     endif (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUXX)
 
 
-    install(TARGETS colamd DESTINATION ${LIB_OMC})
+    install(TARGETS colamd)
     install(FILES ${COLAMD_DIR}/Include/colamd.h DESTINATION Include)
 
     set(CHOL_DIRS Core Check Cholesky MatrixOps Partition Modify Supernodal)
@@ -102,7 +100,7 @@ if(SS_DIR)
     set_property(TARGET cholmod_object_l APPEND PROPERTY COMPILE_DEFINITIONS "DLONG")
     add_library(cholmod $<TARGET_OBJECTS:cholmod_object> $<TARGET_OBJECTS:cholmod_object_l>)
 
-    install(TARGETS cholmod DESTINATION ${LIB_OMC})
+    install(TARGETS cholmod)
     #collect all cholmod includes
     file(GLOB cholH "${SS_DIR}/CHOLMOD/Include/cholmod*.h")
     foreach(curF IN LISTS cholH)
@@ -140,7 +138,7 @@ if(SS_DIR)
     set(AMD_OBJECTS "${AMD_OBJECTS};\$<TARGET_OBJECTS:amd_${mode}>")
   endforeach()
   add_library(amd ${AMD_OBJECTS})
-  install(TARGETS amd DESTINATION ${LIB_OMC})
+  install(TARGETS amd)
 
   #collect and build the BTF part
   set(BTF_DIR "${SS_DIR}/BTF")
@@ -161,7 +159,7 @@ if(SS_DIR)
     set(BTF_OBJECTS "${BTF_OBJECTS};\$<TARGET_OBJECTS:btf_object_${mode}>")
   endforeach()
   add_library(btf ${BTF_OBJECTS})
-  install(TARGETS btf DESTINATION ${LIB_OMC})
+  install(TARGETS btf)
   install(FILES ${BTF_DIR}/Include/btf.h DESTINATION include/omc/c/suitesparse/Include)
 
   #add colamd
@@ -179,7 +177,7 @@ if(SS_DIR)
     message(STATUS "--> add -lm to colamd linker")
   endif (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUXX)
   
-  install(TARGETS colamd DESTINATION ${LIB_OMC})
+  install(TARGETS colamd)
   install(FILES ${COLAMD_DIR}/Include/colamd.h DESTINATION include/omc/c/suitesparse/Include)
 
   #add klu
@@ -201,7 +199,7 @@ if(SS_DIR)
   endforeach()
   add_library(klu ${KLU_OBJECTS})
   target_link_libraries(klu btf colamd amd)
-  install(TARGETS klu DESTINATION ${LIB_OMC})
+  install(TARGETS klu)
   install(FILES ${KLU_DIR}/Include/klu.h DESTINATION include/omc/c/suitesparse/Include)
 
   include_directories(${SS_DIR}/UMFPACK/Include)
@@ -267,7 +265,7 @@ if(SS_DIR)
   endforeach()
   add_library(umfpack ${UMFPACK_OBJECTS})
   target_link_libraries(umfpack amd)
-  install(TARGETS umfpack DESTINATION ${LIB_OMC})
+  install(TARGETS umfpack)
 
 
   set(PACKAGE_TITLE "small umfpack")
