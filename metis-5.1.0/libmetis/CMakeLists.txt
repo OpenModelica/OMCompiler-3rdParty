@@ -9,8 +9,5 @@ if(UNIX)
 endif()
 
 if(METIS_INSTALL)
-  install(TARGETS metis
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION lib
-    ARCHIVE DESTINATION lib)
+  install(TARGETS metis DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
