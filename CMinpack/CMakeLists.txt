@@ -5,6 +5,10 @@ cmake_minimum_required (VERSION 2.6)
 project (CMINPACK)
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
+# Use whatever is set in CMAKE_INSTALL_LIBDIR instead of computing a directory
+# internally. For OMC this is set from outside.
+set(CMINPACK_LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
+
 include(${PROJECT_SOURCE_DIR}/cmake/cminpack_utils.cmake)
 # Set version and OS-specific settings
 set(CMINPACK_VERSION 1.3.4 CACHE STRING "CMinpack version")
