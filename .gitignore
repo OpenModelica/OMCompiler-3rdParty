@@ -171,3 +171,6 @@ sundials-5.4.0/build_msvc/
 
 trilinos-nox/build/
 trilinos-nox/build_msvc/
+
+/libffi/install/
+/libffi/x86_64-unknown-linux-gnu/
