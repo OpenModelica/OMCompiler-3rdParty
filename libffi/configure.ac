@@ -4,6 +4,7 @@ AC_PREREQ(2.68)
 
 AC_INIT([libffi], [3.3], [http://github.com/libffi/libffi/issues])
 AC_CONFIG_HEADERS([fficonfig.h])
+AC_CONFIG_AUX_DIR([.])
 
 AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}
