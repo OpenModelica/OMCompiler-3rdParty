@@ -173,4 +173,4 @@ trilinos-nox/build/
 trilinos-nox/build_msvc/
 
 /libffi/install/
-/libffi/x86_64-unknown-linux-gnu/
+/libffi/x86_64-*-gnu/
