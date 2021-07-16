@@ -93,6 +93,16 @@ omc_add_subdirectory(graphstream)
 add_library(omc::3rd::netstream ALIAS netstream)
 
 
+#libffi
+omc_add_subdirectory(libffi_cmake)
+target_include_directories(ffi INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/libffi_cmake/include)
+# Currently the libffi setup puts the configure-generated headers in the
+# `build directory`/include folder
+target_include_directories(ffi INTERFACE ${libffi_BINARY_DIR}/include)
+add_library(omc::3rd::ffi ALIAS ffi)
+
+
+
 
 # libzmq
 set (ZMQ_BUILD_TESTS OFF CACHE BOOL "Build the tests for ZeroMQ")
