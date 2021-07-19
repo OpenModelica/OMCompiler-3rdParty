@@ -149,7 +149,9 @@ add_library(omc::3rd::modelica_io ALIAS ModelicaIO)
 # omc_add_subdirectory(regex-0.12)
 
 # SuiteSparse
-omc_add_subdirectory(SuiteSparse)
+omc_add_subdirectory(SuiteSparse-5.8.1)
+add_library(omc::3rd::suitesparse::klu ALIAS klu)
+target_include_directories(klu INTERFACE SuiteSparse/KLU/Include)
 
 # sundials
 option(SUNDIALS_EXAMPLES_ENABLE_C "Build SUNDIALS C examples" OFF)
