@@ -42,7 +42,7 @@ file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI DESTINATION ${FMILibra
 file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI1 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
 file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI2 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
 
-# This files 
+# This files
 file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI DESTINATION ${FMILibrary_SOURCE_DIR}/include)
 file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI1 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
 file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI2 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
@@ -53,7 +53,7 @@ file(COPY ${FMILibrary_SOURCE_DIR}/ThirdParty/FMI/default/FMI2 DESTINATION ${FMI
 
 file(COPY ${FMILibrary_BINARY_DIR}/fmilib_config.h DESTINATION ${FMILibrary_SOURCE_DIR}/include)
 
-# We give this new directory as include dir for targets that depend on FMIL. 
+# We give this new directory as include dir for targets that depend on FMIL.
 target_include_directories(fmilib INTERFACE ${FMILibrary_SOURCE_DIR}/include)
 add_library(omc::3rd::fmilib::static ALIAS fmilib)
 add_library(omc::3rd::FMIL::minizip ALIAS minizip)
@@ -94,7 +94,7 @@ add_library(omc::3rd::netstream ALIAS netstream)
 
 
 #libffi
-omc_add_subdirectory(libffi_cmake)
+omc_add_subdirectory(libffi)
 target_include_directories(ffi INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/libffi_cmake/include)
 # Currently the libffi setup puts the configure-generated headers in the
 # `build directory`/include folder
