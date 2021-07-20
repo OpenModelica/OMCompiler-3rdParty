@@ -77,7 +77,7 @@ target_include_directories(omcgc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/gc/include)
 # to be set explicitly for use of pthreads API on Windows.
 if(MINGW)
     target_compile_definitions(omcgc PUBLIC GC_WIN32_PTHREADS)
-else(MINGW)
+else()
     target_compile_definitions(omcgc PUBLIC GC_THREADS)
 endif(MINGW)
 
@@ -150,11 +150,31 @@ add_library(omc::3rd::modelica_io ALIAS ModelicaIO)
 
 # SuiteSparse
 omc_add_subdirectory(SuiteSparse-5.8.1)
-add_library(omc::3rd::suitesparse::klu ALIAS klu)
-target_include_directories(klu INTERFACE SuiteSparse/KLU/Include)
+# add_library(omc::3rd::suitesparse::klu ALIAS klu)
+target_include_directories(klu INTERFACE SuiteSparse-5.8.1/KLU/Include)
+target_include_directories(amd INTERFACE SuiteSparse-5.8.1/AMD/Include)
+target_include_directories(colamd INTERFACE SuiteSparse-5.8.1/COLAMD/Include)
+target_include_directories(btf INTERFACE SuiteSparse-5.8.1/BTF/Include)
+target_include_directories(suitesparseconfig INTERFACE SuiteSparse-5.8.1/SuiteSparse_config/)
+
 
 # sundials
+set(KLU_LIBRARY klu)
+set(AMD_LIBRARY amd)
+set(COLAMD_LIBRARY colamd)
+set(BTF_LIBRARY btf)
+set(SUITESPARSECONFIG_LIBRARY suitesparseconfig)
+
+option(SUNDIALS_KLU_ENABLE "Enable KLU support" ON)
 option(SUNDIALS_EXAMPLES_ENABLE_C "Build SUNDIALS C examples" OFF)
 omc_add_subdirectory(sundials-5.4.0)
+
+# target_include_directories(sundials_cvode_static INTERFACE sundials-5.4.0/include)
+# # The sundials_config.h files are generated in the build directory. Add it as an include dir.
+# target_include_directories(sundials_cvode_static INTERFACE ${sundials_BINARY_DIR}/include/)
+# add_library(omc::3rd::sundials::cvode::static ALIAS sundials_cvode_static)
+
+# target_link_libraries(sundials_sunlinsolklu_static INTERFACE omc::3rd::suitesparse::klu)
+# add_library(omc::3rd::sundials::cvode::static ALIAS sundials_sunlinsolklu_static)
 
 
