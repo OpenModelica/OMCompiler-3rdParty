@@ -135,6 +135,9 @@ add_library(omc::3rd::Modelica::IO ALIAS ModelicaIO)
 add_library(omc::3rd::Modelica::StandardTables ALIAS ModelicaStandardTables)
 
 
+omc_add_subdirectory(open62541)
+add_library(omc::3rd::opcua ALIAS opcua)
+
 # Intel TBB
 # set(TBB_BUILD_TESTS OFF CACHE BOOL "Build TBB tests and enable testing infrastructure")
 # set(TBB_BUILD_SHARED OFF CACHE BOOL "Build TBB shared library")
