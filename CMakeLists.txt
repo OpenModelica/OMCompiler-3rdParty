@@ -129,9 +129,10 @@ target_include_directories(metis INTERFACE metis-5.1.0/include)
 
 # ModelicaExternalC
 omc_add_subdirectory(ModelicaExternalC)
-add_library(omc::3rd::modelica_external_c ALIAS ModelicaExternalC)
-add_library(omc::3rd::modelica_mat_io ALIAS ModelicaMatIO)
-add_library(omc::3rd::modelica_io ALIAS ModelicaIO)
+add_library(omc::3rd::Modelica::ExternalC ALIAS ModelicaExternalC)
+add_library(omc::3rd::Modelica::MatIO ALIAS ModelicaMatIO)
+add_library(omc::3rd::Modelica::IO ALIAS ModelicaIO)
+add_library(omc::3rd::Modelica::StandardTables ALIAS ModelicaStandardTables)
 
 
 # Intel TBB
