@@ -167,6 +167,8 @@ set(SUITESPARSECONFIG_LIBRARY suitesparseconfig)
 
 option(SUNDIALS_KLU_ENABLE "Enable KLU support" ON)
 option(SUNDIALS_EXAMPLES_ENABLE_C "Build SUNDIALS C examples" OFF)
+option(SUNDIALS_LAPACK_ENABLE "Enable Lapack support" ON)
+
 omc_add_subdirectory(sundials-5.4.0)
 
 # target_include_directories(sundials_cvode_static INTERFACE sundials-5.4.0/include)
