@@ -1,1 +1,1 @@
-git subtree add --squash --prefix Ipopt https://github.com/coin-or/Ipopt.git stable/3.12
+git subtree add --squash --prefix Ipopt-3.13.4 https://github.com/mahge/coinor-ipopt-with-cmake.git ipopt-cmake-3.13.4
