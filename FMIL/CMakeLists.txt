@@ -283,10 +283,6 @@ endif()
 if(FMILIB_BUILD_SHARED_LIB)
 	add_library(fmilib_shared SHARED ${FMILIB_SHARED_SRC})
 
-    if (UNIX)
-        target_compile_definitions(fmilib_shared PRIVATE -D_GNU_SOURCE)
-    endif()
-
 	target_link_libraries(fmilib_shared ${FMILIB_SHARED_SUBLIBS})
 	set(FMILIB_TARGETS ${FMILIB_TARGETS} fmilib_shared)
 endif()

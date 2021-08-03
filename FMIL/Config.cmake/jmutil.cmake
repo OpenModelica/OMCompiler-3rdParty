@@ -63,7 +63,6 @@ endif(CYGWIN)
 target_link_libraries(jmutils c99snprintf)
 
 if(UNIX)
-    target_compile_definitions(jmutils PRIVATE -D_GNU_SOURCE)
 	target_link_libraries(jmutils dl)
 endif(UNIX)
 if(WIN32)
