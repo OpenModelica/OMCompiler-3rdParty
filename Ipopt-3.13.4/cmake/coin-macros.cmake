@@ -62,9 +62,6 @@ endmacro()
 #
 # macros for tests
 #
-
-find_package(PythonInterp REQUIRED)
-
 set(COIN_TEST_LOG_DIR  "${CMAKE_CURRENT_BINARY_DIR}/tests" CACHE PATH "The log and output directory for tests")
 
 mark_as_advanced(COIN_TEST_LOG_DIR)
@@ -315,22 +312,27 @@ macro(add_coin_dylp_test_list Prefix Suffix FileList Label Timeout)
   endforeach ()
 endmacro()
 
-# create_log_analysis: build a log analysis test for one solver. The string FAILED is returned is case of failure and PASSED in case of success
-# - Name: a value corresponding to the name of the test
-# - AdditionalName: a value corresponding to the suffix name of the test
-# - TestRegex: the regex to be extracted with <number> where the result must be found
-# - TestRefVal: the reference result
-# - TestRelLevel: the test threshold
-macro(create_log_analysis Name AdditionalName TestRegex TestRefVal TestRelLevel)
-  add_test(NAME ${Name}_${AdditionalName}
-           WORKING_DIRECTORY ${BinTestPath}
-           COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/parse_results.py ${COIN_TEST_LOG_DIR}/${Name}.log ${TestRegex} ${TestRefVal} ${TestRelLevel})
+find_package(PythonInterp)
+if(PYTHONINTERP_FOUND)
 
-  set_tests_properties(${Name}_${AdditionalName} PROPERTIES DEPENDS "${TestName}_${TestSolverName}")
-  set_tests_properties(${Name}_${AdditionalName} PROPERTIES ENVIRONMENT "${TEST_ENV_VAR}")
-  set_tests_properties(${Name}_${AdditionalName} PROPERTIES PASS_REGULAR_EXPRESSION "PASSED")
-  set_tests_properties(${Name}_${AdditionalName} PROPERTIES LABELS "ANALYSIS")
-endmacro()
+  # create_log_analysis: build a log analysis test for one solver. The string FAILED is returned is case of failure and PASSED in case of success
+  # - Name: a value corresponding to the name of the test
+  # - AdditionalName: a value corresponding to the suffix name of the test
+  # - TestRegex: the regex to be extracted with <number> where the result must be found
+  # - TestRefVal: the reference result
+  # - TestRelLevel: the test threshold
+  macro(create_log_analysis Name AdditionalName TestRegex TestRefVal TestRelLevel)
+    add_test(NAME ${Name}_${AdditionalName}
+            WORKING_DIRECTORY ${BinTestPath}
+            COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/parse_results.py ${COIN_TEST_LOG_DIR}/${Name}.log ${TestRegex} ${TestRefVal} ${TestRelLevel})
+
+    set_tests_properties(${Name}_${AdditionalName} PROPERTIES DEPENDS "${TestName}_${TestSolverName}")
+    set_tests_properties(${Name}_${AdditionalName} PROPERTIES ENVIRONMENT "${TEST_ENV_VAR}")
+    set_tests_properties(${Name}_${AdditionalName} PROPERTIES PASS_REGULAR_EXPRESSION "PASSED")
+    set_tests_properties(${Name}_${AdditionalName} PROPERTIES LABELS "ANALYSIS")
+  endmacro()
+
+endif()
 
 # From hydrogen CMakeLists.txt file
 string( ASCII 27 _escape)
