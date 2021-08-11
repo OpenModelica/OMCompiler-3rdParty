@@ -183,4 +183,6 @@ omc_add_subdirectory(sundials-5.4.0)
 # target_link_libraries(sundials_sunlinsolklu_static INTERFACE omc::3rd::suitesparse::klu)
 # add_library(omc::3rd::sundials::cvode::static ALIAS sundials_sunlinsolklu_static)
 
-
+# Ipopt
+omc_add_subdirectory(Ipopt-3.13.4)
+add_library(omc::3rd::ipopt ALIAS ipopt)
