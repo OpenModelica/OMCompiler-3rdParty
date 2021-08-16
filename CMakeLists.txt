@@ -119,6 +119,9 @@ if(OMC_USE_LPSOLVE AND OMC_BUILD_LPSOLVE)
   add_library(omc::3rd::lpsolve55 ALIAS lpsolve55)
 endif()
 
+#lis
+omc_add_subdirectory(lis-1.4.12)
+add_library(omc::3rd::lis ALIAS lis)
 
 
 # metis
