@@ -154,11 +154,22 @@ add_library(omc::3rd::opcua ALIAS opcua)
 
 # SuiteSparse
 omc_add_subdirectory(SuiteSparse-5.8.1)
-# add_library(omc::3rd::suitesparse::klu ALIAS klu)
+add_library(omc::3rd::suitesparse::klu ALIAS klu)
 target_include_directories(klu INTERFACE SuiteSparse-5.8.1/KLU/Include)
+
+add_library(omc::3rd::suitesparse::umfpack ALIAS umfpack)
+target_include_directories(umfpack INTERFACE SuiteSparse-5.8.1/UMFPACK/Include)
+
+add_library(omc::3rd::suitesparse::amd ALIAS amd)
 target_include_directories(amd INTERFACE SuiteSparse-5.8.1/AMD/Include)
+
+add_library(omc::3rd::suitesparse::colamd ALIAS colamd)
 target_include_directories(colamd INTERFACE SuiteSparse-5.8.1/COLAMD/Include)
+
+add_library(omc::3rd::suitesparse::btf ALIAS btf)
 target_include_directories(btf INTERFACE SuiteSparse-5.8.1/BTF/Include)
+
+add_library(omc::3rd::suitesparse::config ALIAS suitesparseconfig)
 target_include_directories(suitesparseconfig INTERFACE SuiteSparse-5.8.1/SuiteSparse_config/)
 
 
@@ -175,10 +186,10 @@ option(SUNDIALS_LAPACK_ENABLE "Enable Lapack support" ON)
 
 omc_add_subdirectory(sundials-5.4.0)
 
-# target_include_directories(sundials_cvode_static INTERFACE sundials-5.4.0/include)
+target_include_directories(sundials_cvode_static INTERFACE sundials-5.4.0/include)
 # # The sundials_config.h files are generated in the build directory. Add it as an include dir.
-# target_include_directories(sundials_cvode_static INTERFACE ${sundials_BINARY_DIR}/include/)
-# add_library(omc::3rd::sundials::cvode::static ALIAS sundials_cvode_static)
+target_include_directories(sundials_cvode_static INTERFACE ${sundials_BINARY_DIR}/include/)
+add_library(omc::3rd::sundials::cvode::static ALIAS sundials_cvode_static)
 
 # target_link_libraries(sundials_sunlinsolklu_static INTERFACE omc::3rd::suitesparse::klu)
 # add_library(omc::3rd::sundials::cvode::static ALIAS sundials_sunlinsolklu_static)
