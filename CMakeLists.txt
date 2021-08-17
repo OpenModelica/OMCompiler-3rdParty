@@ -33,7 +33,7 @@ omc_add_subdirectory(FMIL)
 # We create a top level 'include' directory that matches their include structure when FMIL is installed-to-be-used.
 # This is how every library should be. That way when you install the library you just change the include
 # path and every include will be resolved as it was during build time.  Ideally it should even be in  'include/FMIL/'
-# but hat won't match how they install their files right now.
+# but that won't match how they install their files right now.
 file(MAKE_DIRECTORY ${FMILibrary_SOURCE_DIR}/include)
 # Do not ask me why the fmilib.h is in the cmake.config directory.
 file(COPY ${FMILibrary_SOURCE_DIR}/Config.cmake/fmilib.h DESTINATION ${FMILibrary_SOURCE_DIR}/include)
@@ -42,7 +42,6 @@ file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI DESTINATION ${FMILibra
 file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI1 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
 file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI2 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
 
-# This files
 file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI DESTINATION ${FMILibrary_SOURCE_DIR}/include)
 file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI1 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
 file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI2 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
@@ -183,6 +182,8 @@ set(COLAMD_LIBRARY colamd)
 set(BTF_LIBRARY btf)
 set(SUITESPARSECONFIG_LIBRARY suitesparseconfig)
 
+option(SUNDIALS_BUILD_STATIC_LIBS "Build static libraries" ON)
+option(SUNDIALS_BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option(SUNDIALS_KLU_ENABLE "Enable KLU support" ON)
 option(SUNDIALS_EXAMPLES_ENABLE_C "Build SUNDIALS C examples" OFF)
 option(SUNDIALS_LAPACK_ENABLE "Enable Lapack support" ON)
