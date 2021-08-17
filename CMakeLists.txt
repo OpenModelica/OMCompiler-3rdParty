@@ -198,6 +198,62 @@ add_library(omc::3rd::sundials::cvode::static ALIAS sundials_cvode_static)
 # target_link_libraries(sundials_sunlinsolklu_static INTERFACE omc::3rd::suitesparse::klu)
 # add_library(omc::3rd::sundials::cvode::static ALIAS sundials_sunlinsolklu_static)
 
+
+
 # Ipopt
 omc_add_subdirectory(Ipopt-3.13.4)
+## Just like FMIL, Ipopt assumes it will be always installed before use. So it does not organize
+## its header files properly. We deal with that here.
+## We collect all public headers to a new include dir in the build directory of Ipopt.
+
+set(IPOPT_LINALG_HDRS ${IpOpt_SOURCE_DIR}/src/LinAlg/IpMatrix.hpp ${IpOpt_SOURCE_DIR}/src/LinAlg/IpSymMatrix.hpp
+        ${IpOpt_SOURCE_DIR}/src/LinAlg/IpExpansionMatrix.hpp ${IpOpt_SOURCE_DIR}/src/LinAlg/IpVector.hpp
+        ${IpOpt_SOURCE_DIR}/src/LinAlg/IpDenseVector.hpp ${IpOpt_SOURCE_DIR}/src/LinAlg/IpCompoundVector.hpp
+        ${IpOpt_SOURCE_DIR}/src/LinAlg/IpCompoundMatrix.hpp ${IpOpt_SOURCE_DIR}/src/LinAlg/IpCompoundSymMatrix.hpp
+        ${IpOpt_SOURCE_DIR}/src/LinAlg/IpSumSymMatrix.hpp ${IpOpt_SOURCE_DIR}/src/LinAlg/IpDiagMatrix.hpp
+        ${IpOpt_SOURCE_DIR}/src/LinAlg/IpIdentityMatrix.hpp ${IpOpt_SOURCE_DIR}/src/LinAlg/IpScaledMatrix.hpp
+        ${IpOpt_SOURCE_DIR}/src/LinAlg/IpSymScaledMatrix.hpp ${IpOpt_SOURCE_DIR}/src/LinAlg/IpZeroSymMatrix.hpp
+        ${IpOpt_SOURCE_DIR}/src/LinAlg/IpBlas.hpp ${IpOpt_SOURCE_DIR}/src/LinAlg/IpLapack.hpp)
+
+set(IPOPT_TMATRICES_HDRS ${IpOpt_SOURCE_DIR}/src/LinAlg/TMatrices/IpGenTMatrix.hpp
+        ${IpOpt_SOURCE_DIR}/src/LinAlg/TMatrices/IpSymTMatrix.hpp ${IpOpt_SOURCE_DIR}/src/LinAlg/TMatrices/IpTripletHelper.hpp)
+
+set(IPOPT_INTERFACES_HDRS ${IpOpt_SOURCE_DIR}/src/Interfaces/IpAlgTypes.hpp
+        ${IpOpt_SOURCE_DIR}/src/Interfaces/IpIpoptApplication.hpp ${IpOpt_SOURCE_DIR}/src/Interfaces/IpNLP.hpp
+        ${IpOpt_SOURCE_DIR}/src/Interfaces/IpReturnCodes.h ${IpOpt_SOURCE_DIR}/src/Interfaces/IpReturnCodes.hpp
+        ${IpOpt_SOURCE_DIR}/src/Interfaces/IpReturnCodes_inc.h ${IpOpt_SOURCE_DIR}/src/Interfaces/IpReturnCodes.inc
+        ${IpOpt_SOURCE_DIR}/src/Interfaces/IpSolveStatistics.hpp ${IpOpt_SOURCE_DIR}/src/Interfaces/IpStdCInterface.h
+        ${IpOpt_SOURCE_DIR}/src/Interfaces/IpTNLP.hpp ${IpOpt_SOURCE_DIR}/src/Interfaces/IpTNLPAdapter.hpp
+        ${IpOpt_SOURCE_DIR}/src/Interfaces/IpTNLPReducer.hpp)
+
+set(IPOPT_COMMON_HDRS ${IpOpt_SOURCE_DIR}/src/Common/IpCachedResults.hpp
+        ${IpOpt_SOURCE_DIR}/src/Common/IpDebug.hpp ${IpOpt_SOURCE_DIR}/src/Common/IpException.hpp
+        ${IpOpt_SOURCE_DIR}/src/Common/IpJournalist.hpp ${IpOpt_SOURCE_DIR}/src/Common/IpObserver.hpp
+        ${IpOpt_SOURCE_DIR}/src/Common/IpOptionsList.hpp ${IpOpt_SOURCE_DIR}/src/Common/IpoptConfig.h
+        ${IpOpt_SOURCE_DIR}/src/Common/config_ipopt_default.h ${IpOpt_SOURCE_DIR}/src/Common/IpReferenced.hpp
+        ${IpOpt_SOURCE_DIR}/src/Common/IpRegOptions.hpp ${IpOpt_SOURCE_DIR}/src/Common/IpSmartPtr.hpp
+        ${IpOpt_SOURCE_DIR}/src/Common/IpTaggedObject.hpp ${IpOpt_SOURCE_DIR}/src/Common/IpTimedTask.hpp
+        ${IpOpt_SOURCE_DIR}/src/Common/IpTypes.hpp ${IpOpt_SOURCE_DIR}/src/Common/IpUtils.hpp)
+
+set(IPOPT_ALGORITHMS_HDRS ${IpOpt_SOURCE_DIR}/src/Algorithm/IpIpoptCalculatedQuantities.hpp
+        ${IpOpt_SOURCE_DIR}/src/Algorithm/IpIpoptData.hpp ${IpOpt_SOURCE_DIR}/src/Algorithm/IpIteratesVector.hpp
+        ${IpOpt_SOURCE_DIR}/src/Algorithm/IpTimingStatistics.hpp ${IpOpt_SOURCE_DIR}/src/Algorithm/IpIpoptNLP.hpp
+        ${IpOpt_SOURCE_DIR}/src/Algorithm/IpOrigIpoptNLP.hpp ${IpOpt_SOURCE_DIR}/src/Algorithm/IpNLPScaling.hpp
+        ${IpOpt_SOURCE_DIR}/src/Algorithm/IpAlgBuilder.hpp ${IpOpt_SOURCE_DIR}/src/Algorithm/IpIpoptAlg.hpp
+        ${IpOpt_SOURCE_DIR}/src/Algorithm/IpAlgStrategy.hpp ${IpOpt_SOURCE_DIR}/src/Algorithm/IpSearchDirCalculator.hpp
+        ${IpOpt_SOURCE_DIR}/src/Algorithm/IpLineSearch.hpp ${IpOpt_SOURCE_DIR}/src/Algorithm/IpMuUpdate.hpp
+        ${IpOpt_SOURCE_DIR}/src/Algorithm/IpConvCheck.hpp ${IpOpt_SOURCE_DIR}/src/Algorithm/IpIterateInitializer.hpp
+        ${IpOpt_SOURCE_DIR}/src/Algorithm/IpIterationOutput.hpp ${IpOpt_SOURCE_DIR}/src/Algorithm/IpHessianUpdater.hpp
+        ${IpOpt_SOURCE_DIR}/src/Algorithm/IpEqMultCalculator.hpp ${IpOpt_SOURCE_DIR}/src/Algorithm/IpAugSystemSolver.hpp
+        ${IpOpt_SOURCE_DIR}/src/Algorithm/IpPDSystemSolver.hpp)
+set(IPOPT_LINEARSOLVERS_HDRS ${IpOpt_SOURCE_DIR}/src/Algorithm/LinearSolvers/IpSymLinearSolver.hpp)
+
+set(IPOPT_ALL_HDRS ${IPOPT_LINALG_HDRS} ${IPOPT_TMATRICES_HDRS} ${IPOPT_INTERFACES_HDRS}
+                   ${IPOPT_COMMON_HDRS} ${IPOPT_ALGORITHMS_HDRS} ${IPOPT_LINEARSOLVERS_HDRS})
+
+file(MAKE_DIRECTORY ${IpOpt_BINARY_DIR}/include/Ipopt)
+file(COPY ${IPOPT_ALL_HDRS} DESTINATION ${IpOpt_BINARY_DIR}/include/Ipopt)
+
+# We give this new directory as include dir ONLY for targets that depend on Ipopt (not Ipopt itslef).
+target_include_directories(ipopt INTERFACE ${IpOpt_BINARY_DIR}/include/)
 add_library(omc::3rd::ipopt ALIAS ipopt)
