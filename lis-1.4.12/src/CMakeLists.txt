@@ -17,3 +17,5 @@ target_sources(lis PRIVATE ${LIS_MATRIX_SOURCES} ${LIS_VECTOR_SOURCES} ${LIS_MAT
 target_compile_definitions(lis PRIVATE HAVE_CONFIG_H)
 
 target_include_directories(lis PUBLIC ${Lis_SOURCE_DIR}/include)
+
+install(TARGETS lis)
