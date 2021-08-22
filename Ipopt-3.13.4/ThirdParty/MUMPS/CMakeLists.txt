@@ -128,6 +128,13 @@ else()
   add_library(coinmumps STATIC ${MUMPS_D_SRCS} ${MUMPS_COMMON_SRCS} ${MUMPS_LIBSEQ_SRCS})
 endif()
 
+## Add fallow-argument-mismatch for newer Fortran compiler versions.
+include(CheckFortranCompilerFlag)
+check_fortran_compiler_flag(-fallow-argument-mismatch NEEDS_FALLOW_ARG_MISMATCH)
+if(NEEDS_FALLOW_ARG_MISMATCH)
+  target_compile_options(coinmumps PRIVATE -fallow-argument-mismatch)
+endif()
+
 if (MSVC)
   target_compile_definitions(coinmumps PRIVATE "/DMUMPS_ARITH=MUMPS_ARITH_d")
 else ()
