@@ -6,12 +6,13 @@ project(OMCompiler_3rdParty)
 omc_add_subdirectory(antlr)
 add_library(omc::3rd::omantlr3 ALIAS omantlr3)
 
-
+# CDaskr
+omc_add_subdirectory(Cdaskr)
+add_library(omc::3rd::cdaskr ALIAS cdaskr)
 
 # CMinpack
 omc_add_subdirectory(CMinpack)
 add_library(omc::3rd::cminpack ALIAS cminpack)
-
 
 
 # # cppzmq
