@@ -55,8 +55,9 @@ file(COPY ${FMILibrary_BINARY_DIR}/fmilib_config.h DESTINATION ${FMILibrary_SOUR
 
 # We give this new directory as include dir for targets that depend on FMIL.
 target_include_directories(fmilib INTERFACE ${FMILibrary_SOURCE_DIR}/include)
-add_library(omc::3rd::fmilib::static ALIAS fmilib)
+add_library(omc::3rd::fmilib ALIAS fmilib)
 add_library(omc::3rd::FMIL::minizip ALIAS minizip)
+add_library(omc::3rd::FMIL::expat ALIAS expat)
 
 
 
@@ -147,7 +148,7 @@ add_library(omc::3rd::opcua ALIAS opcua)
 # set(TBB_BUILD_TBBMALLOC OFF CACHE BOOL "Build TBB malloc library")
 # set(TBB_BUILD_TBBMALLOC_PROXY OFF CACHE BOOL "Build TBB malloc proxy library")
 # omc_add_subdirectory(tbb_cmake)
-# add_library(omc::3rd::tbb::static ALIAS tbb_static)
+# add_library(omc::3rd::tbb ALIAS tbb_static)
 # add_library(omc::3rd::tbb::shared ALIAS tbb)
 
 
