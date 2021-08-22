@@ -192,13 +192,29 @@ option(SUNDIALS_LAPACK_ENABLE "Enable Lapack support" ON)
 
 omc_add_subdirectory(sundials-5.4.0)
 
-target_include_directories(sundials_cvode_static INTERFACE sundials-5.4.0/include)
-# # The sundials_config.h files are generated in the build directory. Add it as an include dir.
-target_include_directories(sundials_cvode_static INTERFACE ${sundials_BINARY_DIR}/include/)
-add_library(omc::3rd::sundials::cvode::static ALIAS sundials_cvode_static)
+## Sundials thoughtfully has organized its headers cleanly in one include/ directory
+## Take advantage of that to transitively provide the headers when an external target links to
+## any one of the sundials' libs.
+add_library(sundials_interface INTERFACE)
+target_include_directories(sundials_interface INTERFACE ${sundials_SOURCE_DIR}/include/)
+## The sundials_config.h files are generated in the build directory. Add it as an include dir.
+target_include_directories(sundials_interface INTERFACE ${sundials_BINARY_DIR}/include/)
 
-# target_link_libraries(sundials_sunlinsolklu_static INTERFACE omc::3rd::suitesparse::klu)
-# add_library(omc::3rd::sundials::cvode::static ALIAS sundials_sunlinsolklu_static)
+## Now that the includes are attached to a utility interface library (sundials_interface) link it
+## to the sundials libs so they can be found when the sundials lib is linked-to from an external lib.
+### Note! It should have been enough for the scope here to be INTERFACE instead of PUBLIC. However,
+### that does not seem to work. This should be fine anyway.
+target_link_libraries(sundials_cvode_static PUBLIC sundials_interface)
+target_link_libraries(sundials_idas_static PUBLIC sundials_interface)
+target_link_libraries(sundials_kinsol_static PUBLIC sundials_interface)
+target_link_libraries(sundials_sunlinsolklu_static PUBLIC sundials_interface)
+target_link_libraries(sundials_sunlinsollapackdense_static PUBLIC sundials_interface)
+
+add_library(omc::3rd::sundials::cvode ALIAS sundials_cvode_static)
+add_library(omc::3rd::sundials::idas ALIAS sundials_idas_static)
+add_library(omc::3rd::sundials::kinsol ALIAS sundials_kinsol_static)
+add_library(omc::3rd::sundials::sunlinsolklu ALIAS sundials_sunlinsolklu_static)
+add_library(omc::3rd::sundials::sunlinsollapackdense ALIAS sundials_sunlinsollapackdense_static)
 
 
 
