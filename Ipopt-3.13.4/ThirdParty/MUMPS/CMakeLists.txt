@@ -132,7 +132,7 @@ endif()
 include(CheckFortranCompilerFlag)
 check_fortran_compiler_flag(-fallow-argument-mismatch NEEDS_FALLOW_ARG_MISMATCH)
 if(NEEDS_FALLOW_ARG_MISMATCH)
-  target_compile_options(coinmumps PRIVATE -fallow-argument-mismatch)
+  target_compile_options(coinmumps PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:-fallow-argument-mismatch>)
 endif()
 
 if (MSVC)
