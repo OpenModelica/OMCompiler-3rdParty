@@ -3,13 +3,8 @@ OBJDIR=obj
 SRCDIR=src
 INCDIR=include
 
-ifeq (darwin,$(findstring darwin,$(shell $(CC) -v 2>&1 | grep ^Target)))
-	AR=libtool
-	ARFLAGS=-static -o
-else
-	AR=ar
-	ARFLAGS=rcs
-endif
+AR=ar
+ARFLAGS=rcs
 
 CWARN = -W -Wall -Wshadow -Wimplicit -Wreturn-type -Wcomment -Wtrigraphs -Wformat -Wparentheses -Wpointer-arith -Wuninitialized -O
 
