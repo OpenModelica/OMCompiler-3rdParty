@@ -76,6 +76,7 @@ set(kinsol_HEADERS
   kinsol_direct.h
   kinsol_ls.h
   kinsol_spils.h
+  kinsol_impl.h
   )
 
 # Add prefix with complete path to the KINSOL header files
