@@ -69,7 +69,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the CUDA NVector header files
-install(FILES ${cusolversp_HEADERS} DESTINATION include/sunlinsol)
+install(FILES ${cusolversp_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sunlinsol)
 
 #
 message(STATUS "Added SUNLINSOL_CUSOLVERSP module")

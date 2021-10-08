@@ -130,7 +130,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the NVECMANYVECTOR header files
-install(FILES ${nvecmanyvector_HEADERS} DESTINATION include/nvector)
+install(FILES ${nvecmanyvector_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nvector)
 
 message(STATUS "Added NVECTOR_MANYVECTOR module")
 

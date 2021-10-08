@@ -94,7 +94,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the header files
-install(FILES ${sunlinsolspfgmr_HEADERS} DESTINATION include/sunlinsol)
+install(FILES ${sunlinsolspfgmr_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sunlinsol)
 
 #
 message(STATUS "Added SUNLINSOL_SPFGMR module")

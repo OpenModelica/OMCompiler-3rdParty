@@ -80,7 +80,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the NVECPTHREADS header files
-install(FILES ${nvecpthreads_HEADERS} DESTINATION include/nvector)
+install(FILES ${nvecpthreads_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nvector)
 
 # If FCMIX is enabled, build and install the FNVECPTHREADS library
 if(F77_INTERFACE_ENABLE AND F77_FOUND)

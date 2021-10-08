@@ -141,7 +141,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the IDA header files
-install(FILES ${ida_HEADERS} DESTINATION include/ida)
+install(FILES ${ida_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ida)
 
 #
 message(STATUS "Added IDA module")

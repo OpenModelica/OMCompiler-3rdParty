@@ -23,6 +23,13 @@
 # to require CMake 3.10
 cmake_minimum_required(VERSION 2.8)
 
+# OpenModelica runtime system source files expect all sundials headers under a folder
+# 'sundials'. e.g. <include_dir>/sundials/cvode or <include_dir>/sundials/sundials
+# (yes there is a folder named sundails already)
+# But sundials wants to put them in just <include_dir>. So we update the
+# CMAKE_INSTALL_INCLUDEDIR here until we fix our runtime system (maybe?).
+set(CMAKE_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR}/sundials)
+
 # Fixes for CMake 2.8
 include(CMakeParseArguments)
 
@@ -1180,13 +1187,13 @@ endif()
 # install configured header file
 install(
   FILES ${PROJECT_BINARY_DIR}/include/sundials/sundials_config.h
-  DESTINATION include/sundials
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sundials
   )
 
 # install configured header file for Fortran 90
 install(
   FILES ${PROJECT_BINARY_DIR}/include/sundials/sundials_fconfig.h
-  DESTINATION include/sundials
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sundials
   )
 
 # install shared Fortran 2003 modules
@@ -1210,9 +1217,9 @@ endif()
 # install license and notice files
 install(
   FILES ${PROJECT_SOURCE_DIR}/LICENSE
-  DESTINATION include/sundials
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sundials
   )
 install(
   FILES ${PROJECT_SOURCE_DIR}/NOTICE
-  DESTINATION include/sundials
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sundials
   )

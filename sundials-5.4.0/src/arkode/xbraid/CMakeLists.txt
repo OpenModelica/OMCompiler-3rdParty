@@ -73,7 +73,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif()
 
 # Install the ARKODE header files
-install(FILES ${arkode_HEADERS} DESTINATION include/arkode)
+install(FILES ${arkode_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/arkode)
 
 # Finished
 message(STATUS "Added ARKODE Xbraid interface")

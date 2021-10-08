@@ -84,7 +84,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the header files
-install(FILES ${sunlinsoldense_HEADERS} DESTINATION include/sunlinsol)
+install(FILES ${sunlinsoldense_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sunlinsol)
 
 #
 message(STATUS "Added SUNLINSOL_DENSE module")

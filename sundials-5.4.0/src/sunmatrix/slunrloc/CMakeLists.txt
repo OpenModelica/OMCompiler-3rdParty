@@ -93,6 +93,6 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the sunmatrixslunrloc header files
-install(FILES ${sunmatrixslunrloc_HEADERS} DESTINATION include/sunmatrix)
+install(FILES ${sunmatrixslunrloc_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sunmatrix)
 
 message(STATUS "Added SUNMATRIX_SLUNRLOC module")

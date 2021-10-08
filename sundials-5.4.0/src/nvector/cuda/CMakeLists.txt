@@ -69,7 +69,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the CUDA NVector header files
-install(FILES ${nveccuda_HEADERS} DESTINATION include/nvector)
-install(FILES ${PROJECT_SOURCE_DIR}/include/sunmemory/sunmemory_cuda.h DESTINATION include/sunmemory)
+install(FILES ${nveccuda_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nvector)
+install(FILES ${PROJECT_SOURCE_DIR}/include/sunmemory/sunmemory_cuda.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sunmemory)
 
 message(STATUS "Added NVECTOR_CUDA module")

@@ -30,12 +30,12 @@ set(FMICAPISOURCE
     src/FMI2/fmi2_capi.c
 )
 set(FMICAPIHEADERS
-	include/FMI1/fmi1_capi.h	
+	include/FMI1/fmi1_capi.h
 	src/FMI1/fmi1_capi_impl.h
-	include/FMI2/fmi2_capi.h	
+	include/FMI2/fmi2_capi.h
 	src/FMI2/fmi2_capi_impl.h
 )
- 
+
 include_directories(${FMILIB_FMI_STANDARD_HEADERS})
 
 PREFIXLIST(FMICAPISOURCE  ${FMICAPIDIR}/)
@@ -47,6 +47,6 @@ target_link_libraries(fmicapi ${JMUTIL_LIBRARIES})
 
 # install(DIRECTORY ${FMIXMLDIR}/include DESTINATION .)
 # install(DIRECTORY ${FMICAPIDIR}/include DESTINATION .)
-#install(DIRECTORY ${JMRUNTIMEHOME}/FMI/ZIP/include DESTINATION include)
+#install(DIRECTORY ${JMRUNTIMEHOME}/FMI/ZIP/include DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 endif(NOT FMICAPIDIR)

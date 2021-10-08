@@ -150,7 +150,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the CVODES header files
-install(FILES ${cvodes_HEADERS} DESTINATION include/cvodes)
+install(FILES ${cvodes_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cvodes)
 
 #
 message(STATUS "Added CVODES module")

@@ -46,8 +46,8 @@ endif(MSVC)
 set(expat_SRCS
     lib/xmlparse.c
     lib/xmlrole.c
-    lib/xmltok.c 
-    lib/xmltok_impl.c 
+    lib/xmltok.c
+    lib/xmltok_impl.c
     lib/xmltok_ns.c
 )
 
@@ -71,7 +71,7 @@ set(libdir "\${prefix}/lib")
 set(includedir "\${prefix}/include")
 configure_file(expat.pc.in ${CMAKE_CURRENT_BINARY_DIR}/expat.pc)
 
-install(FILES lib/expat.h lib/expat_external.h DESTINATION include)
+install(FILES lib/expat.h lib/expat_external.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/expat.pc DESTINATION lib/pkgconfig)
 
 

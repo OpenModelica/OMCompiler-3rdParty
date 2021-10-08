@@ -96,11 +96,11 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif()
 
 # Install the SUNDIALS header files
-install(FILES ${sundials_HEADERS} DESTINATION include/sundials)
+install(FILES ${sundials_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sundials)
 
 # If Blas/Lapack support was enabled, install the Lapack interface headers
 if(LAPACK_FOUND)
   set(sundials_BL_HEADERS sundials_lapack.h)
   add_prefix(${sundials_SOURCE_DIR}/include/sundials/ sundials_BL_HEADERS)
-  install(FILES ${sundials_BL_HEADERS} DESTINATION include/sundials)
+  install(FILES ${sundials_BL_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sundials)
 endif(LAPACK_FOUND)

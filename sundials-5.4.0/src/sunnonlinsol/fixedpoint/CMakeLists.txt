@@ -74,7 +74,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif()
 
 # Install the header files
-install(FILES ${lib_HEADERS} DESTINATION include/sunnonlinsol)
+install(FILES ${lib_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sunnonlinsol)
 
 # If FCMIX is enabled, build and install the F library
 if(F77_INTERFACE_ENABLE AND F77_FOUND)
