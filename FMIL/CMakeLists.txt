@@ -231,7 +231,7 @@ configure_file (
   "${FMILibrary_BINARY_DIR}/fmilib_config.h"
   )
 
-set(FMILIB_SHARED_SUBLIBS ${FMIXML_LIBRARIES} ${FMIZIP_LIBRARIES} ${FMICAPI_LIBRARIES} expat minizip zlib c99snprintf)
+set(FMILIB_SHARED_SUBLIBS ${FMIXML_LIBRARIES} ${FMIZIP_LIBRARIES} ${FMICAPI_LIBRARIES} expat minizip c99snprintf)
 set(FMILIB_SUBLIBS ${FMIIMPORT_LIBRARIES} ${JMUTIL_LIBRARIES} ${FMILIB_SHARED_SUBLIBS})
 set(FMILIB_SHARED_SRC ${FMIIMPORTSOURCE} ${JMUTILSOURCE} ${FMIIMPORTHEADERS})
 
@@ -246,7 +246,7 @@ if(FMILIB_GENERATE_BUILD_STAMP)
 		DEPENDS ${FMILIB_SUBLIBS}
 	)
 	add_library(fmilib_timestamp STATIC ${FMILibrary_BINARY_DIR}/config_fmilib.c "${FMILibrary_BINARY_DIR}/fmilib_config.h")
-#	add_dependencies(fmilib_timestamp ${FMILIB_SUBLIBS} expat minizip zlib ${FMILIBRARYHOME}/Config.cmake/config_stamp.cmake)
+#	add_dependencies(fmilib_timestamp ${FMILIB_SUBLIBS} expat minizip ${OMC_ZLIB_LIBRARY} ${FMILIBRARYHOME}/Config.cmake/config_stamp.cmake)
 
 	set(FMILIB_SUBLIBS ${FMILIB_SUBLIBS} fmilib_timestamp)
 	set(FMILIB_SHARED_SRC ${FMILIB_SHARED_SRC} ${FMILibrary_BINARY_DIR}/config_fmilib.c)
