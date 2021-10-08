@@ -74,6 +74,6 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif()
 
 # Install the header files
-install(FILES ${lib_HEADERS} DESTINATION include/sunnonlinsol)
+install(FILES ${lib_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sunnonlinsol)
 
 message(STATUS "Added SUNNONLINSOL_PETSCSNES module")

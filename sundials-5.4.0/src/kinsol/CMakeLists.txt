@@ -131,7 +131,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the KINSOL header files
-install(FILES ${kinsol_HEADERS} DESTINATION include/kinsol)
+install(FILES ${kinsol_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/kinsol)
 
 #
 message(STATUS "Added KINSOL module")

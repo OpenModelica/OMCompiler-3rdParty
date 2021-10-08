@@ -97,6 +97,6 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the header files
-install(FILES ${sunlinsolsuperludist_HEADERS} DESTINATION include/sunlinsol)
+install(FILES ${sunlinsolsuperludist_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sunlinsol)
 
 message(STATUS "Added SUNLINSOL_SUPERLUDIST module")

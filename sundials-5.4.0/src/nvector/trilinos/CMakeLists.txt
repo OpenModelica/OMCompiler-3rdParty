@@ -85,8 +85,8 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the NVECTRILINOS header files
-install(FILES ${nvectrilinos_HEADERS} DESTINATION include/nvector)
-install(FILES ${nvectrilinos_CXXHEADERS} DESTINATION include/nvector/trilinos)
+install(FILES ${nvectrilinos_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nvector)
+install(FILES ${nvectrilinos_CXXHEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nvector/trilinos)
 
 #
 message(STATUS "Added NVECTOR_Trilinos module")

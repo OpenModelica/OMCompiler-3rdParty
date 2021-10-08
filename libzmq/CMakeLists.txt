@@ -390,15 +390,15 @@ if (MSVC)
 else ()
   if (WITH_OPENPGM)
     #  message (FATAL_ERROR "WITH_OPENPGM not implemented")
-    
+
     if (NOT OPENPGM_PKGCONFIG_NAME)
       SET (OPENPGM_PKGCONFIG_NAME "openpgm-5.2")
     endif(NOT OPENPGM_PKGCONFIG_NAME)
-    
-    SET (OPENPGM_PKGCONFIG_NAME ${OPENPGM_PKGCONFIG_NAME} CACHE STRING 
+
+    SET (OPENPGM_PKGCONFIG_NAME ${OPENPGM_PKGCONFIG_NAME} CACHE STRING
       "Name pkg-config shall use to find openpgm libraries and include paths"
       FORCE )
-    
+
     find_package(PkgConfig)
     pkg_check_modules (OPENPGM  ${OPENPGM_PKGCONFIG_NAME})
 
@@ -413,7 +413,7 @@ else ()
     if (HAVE_FLAG_VISIBILITY_HIDDEN)
 
     elseif (HAVE_FLAG_LDSCOPE_HIDDEN)
-    
+
     endif ()
   endif ()
 endif ()
@@ -756,7 +756,7 @@ if (MSVC)
       COMPILE_DEFINITIONS "DLL_EXPORT"
       OUTPUT_NAME "libzmq")
   endif()
-  
+
   if (ZMQ_BUILD_STATIC)
     add_library (libzmq-static STATIC ${sources})
     set_target_properties (libzmq-static PROPERTIES
@@ -960,7 +960,7 @@ else ()
 endif ()
 
 # install (FILES ${public_headers}
-#          DESTINATION include
+#          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 #          COMPONENT SDK)
 
 #if (NOT ZMQ_BUILD_FRAMEWORK)

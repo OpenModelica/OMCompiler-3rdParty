@@ -74,7 +74,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the SUNMATRIXSPARSE header files
-install(FILES ${sunmatrixsparse_HEADERS} DESTINATION include/sunmatrix)
+install(FILES ${sunmatrixsparse_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sunmatrix)
 
 # If FCMIX is enabled, build and install the FSUNMATRIXSPARSE library
 if(F77_INTERFACE_ENABLE AND F77_FOUND)

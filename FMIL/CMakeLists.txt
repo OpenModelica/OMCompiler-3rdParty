@@ -10,9 +10,9 @@
 
 #    You should have received a copy of the FMILIB_License.txt file
 #    along with this program. If not, contact Modelon AB <http://www.modelon.com>.
-	
+
 # NOTE: CMake 2.8.6 is required since this is the version used in development.
-# The script is KNOWN NOT TO WORK WITH 2.8.3 and below (ExternalProject 
+# The script is KNOWN NOT TO WORK WITH 2.8.3 and below (ExternalProject
 # interface changes). CMake 2.8.4 and 2.8.5 are not tested.
 cmake_minimum_required (VERSION 2.8.6 FATAL_ERROR)
 
@@ -100,7 +100,7 @@ ENDIF(NOT CMAKE_CFG_INTDIR)
 if(MSVC)
 	# With C89 we're forced to use non-secure functions
 	ADD_DEFINITIONS (/D _CRT_SECURE_NO_WARNINGS)
-	
+
 	# Set the run-time library flag as controlled by the FMILIB_BUILD_WITH_STATIC_RTLIB option
 	if(FMILIB_BUILD_WITH_STATIC_RTLIB)
 		set(BUILD_WITH_STATIC_CRT YES)
@@ -121,7 +121,7 @@ if(MSVC)
 			string(REPLACE "${replace_from}" "${replace_to}" tmp "${${flag_var}}")
 			set(${flag_var} ${tmp} CACHE STRING "compiler flags" FORCE)
 		endif()
-	endforeach(flag_var)	
+	endforeach(flag_var)
 endif(MSVC)
 
 IF(CMAKE_COMPILER_IS_GNUCC)
@@ -139,7 +139,7 @@ ENDIF(CMAKE_COMPILER_IS_GNUCC)
 # The config files will end up in the binary dir
 include_directories("${FMILibrary_BINARY_DIR}")
 
-if(FMILIB_BUILD_FOR_SHARED_LIBS) 
+if(FMILIB_BUILD_FOR_SHARED_LIBS)
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_SHARED_LIBRARY_C_FLAGS}")
 	SET(WITH_PIC ON) # this is used in MERGE_LIBRARIES below
 endif()
@@ -153,7 +153,7 @@ macro(PREFIXLIST list_name prefix)
     foreach(l IN LISTS ${list_name})
       list(APPEND ${list_name}_TMP ${prefix}${l}${suffix} )
     endforeach()
-	
+
     # replace list by tmp list
     SET(${list_name} ${${list_name}_TMP})
     UNSET(${list_name}_TMP)
@@ -161,13 +161,13 @@ endmacro(PREFIXLIST)
 
 # For MSVC define source groups. Does not work for MSVC 8. MSVC 9 not tested.
 if(MSVC AND (${CMAKE_GENERATOR} MATCHES "Visual Studio 10"))
-	source_group("Source files\\FMI1" REGULAR_EXPRESSION "fmi1_.*.c") 
-	source_group("Source files\\FMI2" REGULAR_EXPRESSION "fmi2_.*.c") 
-	source_group("Header files\\FMI1" REGULAR_EXPRESSION "fmi1_.*.h") 
-	source_group("Header files\\FMI2" REGULAR_EXPRESSION "fmi2_.*.h") 
-	source_group("Private headers" REGULAR_EXPRESSION "fmi_.*impl.h") 
-	source_group("Private headers\\FMI1" REGULAR_EXPRESSION "fmi1_.*impl.h") 
-	source_group("Private headers\\FMI2" REGULAR_EXPRESSION "fmi2_.*impl.h") 
+	source_group("Source files\\FMI1" REGULAR_EXPRESSION "fmi1_.*.c")
+	source_group("Source files\\FMI2" REGULAR_EXPRESSION "fmi2_.*.c")
+	source_group("Header files\\FMI1" REGULAR_EXPRESSION "fmi1_.*.h")
+	source_group("Header files\\FMI2" REGULAR_EXPRESSION "fmi2_.*.h")
+	source_group("Private headers" REGULAR_EXPRESSION "fmi_.*impl.h")
+	source_group("Private headers\\FMI1" REGULAR_EXPRESSION "fmi1_.*impl.h")
+	source_group("Private headers\\FMI2" REGULAR_EXPRESSION "fmi2_.*impl.h")
 endif()
 
 set(FMILIBKIND STATIC)
@@ -229,7 +229,7 @@ endif()
 configure_file (
   "${FMILibrary_SOURCE_DIR}/Config.cmake/config_fmilib.h.cmake"
   "${FMILibrary_BINARY_DIR}/fmilib_config.h"
-  ) 
+  )
 
 set(FMILIB_SHARED_SUBLIBS ${FMIXML_LIBRARIES} ${FMIZIP_LIBRARIES} ${FMICAPI_LIBRARIES} expat minizip zlib c99snprintf)
 set(FMILIB_SUBLIBS ${FMIIMPORT_LIBRARIES} ${JMUTIL_LIBRARIES} ${FMILIB_SHARED_SUBLIBS})
@@ -239,7 +239,7 @@ if(FMILIB_GENERATE_BUILD_STAMP)
 	debug_message("FMILIB_SUBLIBS= ${FMILIB_SUBLIBS}")
     add_custom_command(
 		OUTPUT ${FMILibrary_BINARY_DIR}/config_fmilib.c
-		COMMAND	"${CMAKE_COMMAND}" 
+		COMMAND	"${CMAKE_COMMAND}"
 			-D FMILIBRARYHOME="${FMILIBRARYHOME}" -D FMILIBRARYBUILD="${FMILIBRARYBUILD}"
 			-P ${FMILIBRARYHOME}/Config.cmake/config_stamp.cmake
 		COMMAND ${CMAKE_COMMAND}  -E touch ${FMILibrary_BINARY_DIR}/config_fmilib.c
@@ -247,7 +247,7 @@ if(FMILIB_GENERATE_BUILD_STAMP)
 	)
 	add_library(fmilib_timestamp STATIC ${FMILibrary_BINARY_DIR}/config_fmilib.c "${FMILibrary_BINARY_DIR}/fmilib_config.h")
 #	add_dependencies(fmilib_timestamp ${FMILIB_SUBLIBS} expat minizip zlib ${FMILIBRARYHOME}/Config.cmake/config_stamp.cmake)
-	
+
 	set(FMILIB_SUBLIBS ${FMILIB_SUBLIBS} fmilib_timestamp)
 	set(FMILIB_SHARED_SRC ${FMILIB_SHARED_SRC} ${FMILibrary_BINARY_DIR}/config_fmilib.c)
 endif()
@@ -255,11 +255,11 @@ endif()
 set_target_properties(
 	${FMILIB_SUBLIBS}
     PROPERTIES FOLDER "Sublibs")
-	
+
 if(FMILIB_INSTALL_SUBLIBS)
 	set(FMILIB_TARGETS fmiimport jmutils fmizip fmixml fmicapi)
 endif()
-	
+
 if(FMILIB_BUILD_STATIC_LIB)
 	include(mergestaticlibs)
 	if(WIN32)
@@ -274,7 +274,7 @@ if(FMILIB_BUILD_STATIC_LIB)
 	else()
 		merge_static_libs(fmilib ${FMILIB_SUBLIBS} )
 	endif(WIN32)
-	if(UNIX) 
+	if(UNIX)
 		target_link_libraries(fmilib dl)
 	endif(UNIX)
 	set(FMILIB_TARGETS ${FMILIB_TARGETS} fmilib)
@@ -303,47 +303,47 @@ file(COPY "${FMILIBRARYHOME}/Config.cmake/fmilib.h" DESTINATION "${FMILibrary_BI
 
 install(TARGETS ${FMILIB_TARGETS} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-install(FILES 
+install(FILES
 			"${FMILIBRARYHOME}/FMILIB_Readme.txt"
 			"${FMILIBRARYHOME}/FMILIB_License.txt"
 			"${FMILIBRARYHOME}/FMILIB_Acknowledgements.txt"
 		DESTINATION doc)
-		
-install(FILES 
-			"${FMILibrary_BINARY_DIR}/fmilib_config.h" 
-			"${FMILibrary_BINARY_DIR}/fmilib.h" 
-		DESTINATION include)
 
-install(DIRECTORY 
-	${FMIIMPORTDIR}/include 
-	${JMUTILDIR}/include
-	DESTINATION .
+install(FILES
+			"${FMILibrary_BINARY_DIR}/fmilib_config.h"
+			"${FMILibrary_BINARY_DIR}/fmilib.h"
+		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(DIRECTORY
+	${FMIIMPORTDIR}/include/
+	${JMUTILDIR}/include/
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     FILES_MATCHING PATTERN "*.h")
 
 if(FMILIB_INSTALL_SUBLIBS)
-	install(DIRECTORY 
-		${FMICAPIDIR}/include 	
-		${FMIXMLDIR}/include 
-		${FMIZIPDIR}/include
-		DESTINATION .
+	install(DIRECTORY
+		${FMICAPIDIR}/include/
+		${FMIXMLDIR}/include/
+		${FMIZIPDIR}/include/
+		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING PATTERN "*.h")
 endif()
-	
-install(DIRECTORY 
+
+install(DIRECTORY
 	${FMILIB_FMI_STANDARD_HEADERS}/FMI1
 	${FMILIB_FMI_STANDARD_HEADERS}/FMI2
-	DESTINATION include
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     FILES_MATCHING PATTERN "*.h")
 
 function(append_file_context file_out file_in)
 	#file(APPEND filename "message to write"... )
 	#file(READ filename variable [LIMIT numBytes] [OFFSET offset] [HEX])
 	file(READ "${file_in}" text)
-	string(REGEX REPLACE "%.*%" " " text "${text}")	
+	string(REGEX REPLACE "%.*%" " " text "${text}")
 	file(APPEND ${file_out} "${text}")
 	set(text "")
 endfunction()
-	
+
 
 if(FMILIB_GENERATE_DOXYGEN_DOC)
 
@@ -353,8 +353,8 @@ if(FMILIB_GENERATE_DOXYGEN_DOC)
 	set(DOXYFILE_IMAGE_DIR "${FMILIBRARYHOME}/images" CACHE INTERNAL "Doxygen images" FORCE)
 
 	file(MAKE_DIRECTORY ${FMILIBRARYBUILD}/doc)
-	
-	file(COPY 
+
+	file(COPY
 		"${FMILIBRARYHOME}/Config.cmake/fmilib.h"
 		"${FMILibrary_BINARY_DIR}/fmilib_config.h"
 		DESTINATION ${FMILIBRARYBUILD}/doc)
@@ -374,6 +374,6 @@ if(FMILIB_GENERATE_DOXYGEN_DOC)
 	set(DOXYFILE_STRIP_FROM_PATH "${FMILIBRARYHOME}")
 
 	SET(CMAKE_MODULE_PATH ${FMILIB_THIRDPARTYLIBS}/CMakeModules)
- 
+
 	include(UseDoxygen/UseDoxygen)
 endif(FMILIB_GENERATE_DOXYGEN_DOC)

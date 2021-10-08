@@ -72,4 +72,4 @@ install(TARGETS ffi
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/include/ffi.h
     ${CMAKE_CURRENT_BINARY_DIR}/include/ffitarget.h
-    DESTINATION include/ffi)
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ffi)

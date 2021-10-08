@@ -81,7 +81,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the NVECPARALLEL header files
-install(FILES ${nvecparallel_HEADERS} DESTINATION include/nvector)
+install(FILES ${nvecparallel_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nvector)
 
 # If FCMIX is enabled and MPI works, build and install the FNVECPARALLEL library
 if(F77_INTERFACE_ENABLE AND MPI_Fortran_FOUND)

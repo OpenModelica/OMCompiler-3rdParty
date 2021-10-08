@@ -145,7 +145,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the IDAS header files
-install(FILES ${idas_HEADERS} DESTINATION include/idas)
+install(FILES ${idas_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/idas)
 
 #
 message(STATUS "Added IDAS module")

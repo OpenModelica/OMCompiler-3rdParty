@@ -75,7 +75,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the SUNMATRIXDENSE header files
-install(FILES ${sunmatrixdense_HEADERS} DESTINATION include/sunmatrix)
+install(FILES ${sunmatrixdense_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sunmatrix)
 
 # If FCMIX is enabled, build and install the FSUNMATRIXDENSE library
 if(F77_INTERFACE_ENABLE AND F77_FOUND)

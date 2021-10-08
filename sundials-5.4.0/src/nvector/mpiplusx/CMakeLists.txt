@@ -92,6 +92,6 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the NVECMPIPLUSX header files
-install(FILES ${nvecmpiplusx_HEADERS} DESTINATION include/nvector)
+install(FILES ${nvecmpiplusx_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nvector)
 
 message(STATUS "Added NVECTOR_MPIPLUSX module")

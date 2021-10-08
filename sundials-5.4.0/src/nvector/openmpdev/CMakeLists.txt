@@ -74,7 +74,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif()
 
 # Install the NVECOPENMPDEV header files
-install(FILES ${nvecopenmpdev_HEADERS} DESTINATION include/nvector)
+install(FILES ${nvecopenmpdev_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nvector)
 
 #
 message(STATUS "Added NVECTOR_OPENMPDEV module")

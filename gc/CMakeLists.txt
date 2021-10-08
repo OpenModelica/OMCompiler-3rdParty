@@ -474,22 +474,22 @@ if (install_headers)
                 include/gc_version.h
                 include/javaxfc.h
                 include/leak_detector.h
-          DESTINATION include/gc)
-  install(FILES include/extra/gc.h DESTINATION include)
+          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/gc)
+  install(FILES include/extra/gc.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
   if (enable_cplusplus)
     install(FILES include/gc_allocator.h
                   include/gc_cpp.h
-            DESTINATION include/gc)
-    install(FILES include/extra/gc_cpp.h DESTINATION include)
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/gc)
+    install(FILES include/extra/gc_cpp.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
   endif()
   if (enable_disclaim)
-    install(FILES include/gc_disclaim.h DESTINATION include/gc)
+    install(FILES include/gc_disclaim.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/gc)
   endif()
   if (build_cord)
     install(FILES include/cord.h
                   include/cord_pos.h
                   include/ec.h
-            DESTINATION include/gc)
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/gc)
   endif()
 endif(install_headers)
 

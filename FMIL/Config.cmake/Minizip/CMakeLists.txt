@@ -46,7 +46,7 @@ endif(WIN32)
 
 set(HEADERS
   ${FMILIB_THIRDPARTYLIBS}/Minizip/minizip/crypt.h
-  ${FMILIB_THIRDPARTYLIBS}/Minizip/minizip/ioapi.h  
+  ${FMILIB_THIRDPARTYLIBS}/Minizip/minizip/ioapi.h
   ${FMILIB_THIRDPARTYLIBS}/Minizip/minizip/miniunz.h
   #${FMILIB_THIRDPARTYLIBS}/Minizip/minizip/mztools.h
   ${FMILIB_THIRDPARTYLIBS}/Minizip/minizip/unzip.h
@@ -63,7 +63,7 @@ target_link_libraries(minizip zlib)
 if(FMILIB_INSTALL_SUBLIBS)
 	install(TARGETS minizip
         ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib 
+        LIBRARY DESTINATION lib
 	)
 endif()
 

@@ -18,4 +18,4 @@ add_subdirectory("test")
 install(TARGETS GKlib
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
-install(FILES ${GKlib_includes} DESTINATION include)
+install(FILES ${GKlib_includes} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

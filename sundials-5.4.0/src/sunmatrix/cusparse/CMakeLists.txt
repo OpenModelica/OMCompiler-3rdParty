@@ -72,7 +72,7 @@ if(SUNDIALS_BUILD_SHARED_LIBS)
 endif(SUNDIALS_BUILD_SHARED_LIBS)
 
 # Install the CUDA NVector header files
-install(FILES ${cusparse_HEADERS} DESTINATION include/sunmatrix)
+install(FILES ${cusparse_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sunmatrix)
 
 #
 message(STATUS "Added SUNMATRIX_CUSPARSE module")
