@@ -15,7 +15,7 @@
 # CMakeLists.txt file for the CVODE library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall CVODE\n\")")
+# install(CODE "MESSAGE(\"\nInstall CVODE\n\")")
 
 # Add F90 module if F2003 interface is enabled
 if(F2003_FOUND AND F2003_INTERFACE_ENABLE)

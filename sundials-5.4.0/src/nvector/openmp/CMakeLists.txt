@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the openmp NVECTOR library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall NVECTOR_OPENMP\n\")")
+# install(CODE "MESSAGE(\"\nInstall NVECTOR_OPENMP\n\")")
 
 # Add F90 module if F2003 interface is enabled
 if(F2003_FOUND AND F2003_INTERFACE_ENABLE)

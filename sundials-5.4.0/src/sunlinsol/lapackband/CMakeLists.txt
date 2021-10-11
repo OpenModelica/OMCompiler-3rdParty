@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the LapackBand SUNLinearSolver library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNLINSOL_LAPACKBAND\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNLINSOL_LAPACKBAND\n\")")
 
 # Source files for the library
 set(sunlinsollapackband_SOURCES sunlinsol_lapackband.c)

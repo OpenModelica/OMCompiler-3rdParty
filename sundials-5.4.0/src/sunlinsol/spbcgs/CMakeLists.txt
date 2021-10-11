@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the SPBCGS SUNLinearSolver library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNLINSOL_SPBCGS\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNLINSOL_SPBCGS\n\")")
 
 # Source files for the library
 set(sunlinsolspbcgs_SOURCES sunlinsol_spbcgs.c)

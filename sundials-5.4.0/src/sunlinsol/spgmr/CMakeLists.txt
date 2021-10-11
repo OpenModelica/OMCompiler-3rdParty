@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the SPGMR SUNLinearSolver library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNLINSOL_SPGMR\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNLINSOL_SPGMR\n\")")
 
 # Source files for the library
 set(sunlinsolspgmr_SOURCES sunlinsol_spgmr.c)

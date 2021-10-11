@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the Newton SUNNonlinearSolver library
 # ------------------------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNNONLINSOL_NEWTON\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNNONLINSOL_NEWTON\n\")")
 
 # Add F90 module if F2003 interface is enabled
 if(F2003_FOUND AND F2003_INTERFACE_ENABLE)

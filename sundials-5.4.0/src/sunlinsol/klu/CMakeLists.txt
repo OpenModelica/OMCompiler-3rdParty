@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the klu SUNLinearSolver library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNLINSOL_KLU\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNLINSOL_KLU\n\")")
 
 # Source files for the library
 set(sunlinsolklu_SOURCES sunlinsol_klu.c)

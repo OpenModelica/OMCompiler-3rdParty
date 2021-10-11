@@ -15,7 +15,7 @@
 # ---------------------------------------------------------------
 
 # Set install message
-install(CODE "MESSAGE(\"\nInstall ARKODE XBraid interface\n\")")
+# install(CODE "MESSAGE(\"\nInstall ARKODE XBraid interface\n\")")
 
 # Use MPI compiler wrapper if available
 if(MPI_C_COMPILER)

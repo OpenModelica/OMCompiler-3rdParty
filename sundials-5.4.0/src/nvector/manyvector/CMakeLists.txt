@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the ManyVector NVECTOR library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall NVECTOR_MANYVECTOR\n\")")
+# install(CODE "MESSAGE(\"\nInstall NVECTOR_MANYVECTOR\n\")")
 
 # Add F90 module if F2003 interface is enabled
 if(F2003_FOUND AND F2003_INTERFACE_ENABLE)
@@ -35,7 +35,7 @@ set(shared_SOURCES
 set(nvecmanyvector_HEADERS ${sundials_SOURCE_DIR}/include/nvector/nvector_manyvector.h)
 
 if(SUNDIALS_MPI_ENABLE AND MPI_C_FOUND)
-  install(CODE "MESSAGE(\"\nInstall NVECTOR_MPIMANYVECTOR\n\")")
+  # install(CODE "MESSAGE(\"\nInstall NVECTOR_MPIMANYVECTOR\n\")")
   list(APPEND nvecmanyvector_HEADERS ${sundials_SOURCE_DIR}/include/nvector/nvector_mpimanyvector.h)
   if(MPI_C_COMPILER)
     # use MPI wrapper as the compiler

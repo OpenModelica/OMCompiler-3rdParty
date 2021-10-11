@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the petsc NVECTOR library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall NVECTOR_PETSC\n\")")
+# install(CODE "MESSAGE(\"\nInstall NVECTOR_PETSC\n\")")
 
 if(MPI_C_COMPILER)
   # use MPI wrapper as the compiler

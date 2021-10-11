@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the PCG SUNLinearSolver library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNLINSOL_PCG\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNLINSOL_PCG\n\")")
 
 # Source files for the library
 set(sunlinsolpcg_SOURCES sunlinsol_pcg.c)

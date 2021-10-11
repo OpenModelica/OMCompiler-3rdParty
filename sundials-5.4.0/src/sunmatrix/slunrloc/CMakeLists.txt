@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the SuperLU SLU_NR_LOC SUNMatrix library
 # -----------------------------------------------------------------------------
 
-install(CODE "message(\"\nInstall SUNMATRIX_SLUNRLOC\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNMATRIX_SLUNRLOC\n\")")
 
 # Add variable sunmatrixslunrloc_SOURCES with the sources for the
 # sunmatrixslunrloc lib

@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the superlumt SUNLinearSolver library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNLINSOL_SUPERLUMT\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNLINSOL_SUPERLUMT\n\")")
 
 # Source files for the library
 set(sunlinsolsuperlumt_SOURCES sunlinsol_superlumt.c)

@@ -17,7 +17,7 @@
 # From here we only install the generic SUNDIALS headers.
 # The implementations themselves are incorporated in the individual SUNDIALS solver libraries.
 
-install(CODE "MESSAGE(\"\nInstall shared components\n\")")
+# install(CODE "MESSAGE(\"\nInstall shared components\n\")")
 
 # Add F90 module if F2003 interface is enabled
 if(F2003_FOUND AND F2003_INTERFACE_ENABLE)

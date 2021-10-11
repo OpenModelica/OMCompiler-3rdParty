@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the band SUNLinearSolver library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNLINSOL_BAND\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNLINSOL_BAND\n\")")
 
 # Source files for the library
 set(sunlinsolband_SOURCES sunlinsol_band.c)

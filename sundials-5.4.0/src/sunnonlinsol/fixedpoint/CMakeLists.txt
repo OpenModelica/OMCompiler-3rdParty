@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the fixed-point SUNNonlinearSolver library
 # ------------------------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNNONLINSOL_FIXEDPOINT\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNNONLINSOL_FIXEDPOINT\n\")")
 
 # Add F90 module if F2003 interface is enabled
 if(F2003_FOUND AND F2003_INTERFACE_ENABLE)

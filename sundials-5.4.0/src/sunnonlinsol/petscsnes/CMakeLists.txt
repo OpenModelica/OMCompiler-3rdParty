@@ -13,7 +13,7 @@
 # ------------------------------------------------------------------------------
 # CMakeLists.txt file for the PETSc SUNNonlinearSolver library
 # ------------------------------------------------------------------------------
-install(CODE "MESSAGE(\"\nInstall SUNNONLINSOL_PETSCSNES\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNNONLINSOL_PETSCSNES\n\")")
 
 if(MPI_C_COMPILER)
   # use MPI wrapper as the compiler

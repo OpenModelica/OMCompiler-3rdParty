@@ -15,7 +15,7 @@
 # CMakeLists.txt file for the IDAS library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall IDAS\n\")")
+# install(CODE "MESSAGE(\"\nInstall IDAS\n\")")
 
 # Add F90 module if F2003 interface is enabled
 if(F2003_FOUND AND F2003_INTERFACE_ENABLE)

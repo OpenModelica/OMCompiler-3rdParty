@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the sparse SUNMatrix library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNMATRIX_SPARSE\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNMATRIX_SPARSE\n\")")
 
 # Add variable sunmatrixsparse_SOURCES with the sources for the SUNMATRIXSPARSE lib
 set(sunmatrixsparse_SOURCES sunmatrix_sparse.c)

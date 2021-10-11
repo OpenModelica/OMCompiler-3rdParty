@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the superlu-dist SUNLinearSolver library
 # -----------------------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNLINSOL_SUPERLUDIST\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNLINSOL_SUPERLUDIST\n\")")
 
 # Source files for the library
 set(sunlinsolsuperludist_SOURCES sunlinsol_superludist.c)

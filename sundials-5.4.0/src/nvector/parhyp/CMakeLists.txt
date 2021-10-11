@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the parhyp NVECTOR library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall NVECTOR_PARHYP\n\")")
+# install(CODE "MESSAGE(\"\nInstall NVECTOR_PARHYP\n\")")
 
 if(MPI_C_COMPILER)
   # use MPI wrapper as the compiler

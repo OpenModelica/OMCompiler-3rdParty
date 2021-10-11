@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the SPTFQMR SUNLinearSolver library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNLINSOL_SPTFQMR\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNLINSOL_SPTFQMR\n\")")
 
 # Source files for the library
 set(sunlinsolsptfqmr_SOURCES sunlinsol_sptfqmr.c)

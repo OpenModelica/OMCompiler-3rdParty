@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the openmpdev NVECTOR library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall NVECTOR_OPENMPDEV\n\")")
+# install(CODE "MESSAGE(\"\nInstall NVECTOR_OPENMPDEV\n\")")
 
 # Add variable nvecopenmpdev_SOURCES with the sources for the NVECOPENMPDEV lib
 set(nvecopenmpdev_SOURCES nvector_openmpdev.c)

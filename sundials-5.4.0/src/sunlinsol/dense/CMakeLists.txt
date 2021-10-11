@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the dense SUNLinearSolver library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNLINSOL_DENSE\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNLINSOL_DENSE\n\")")
 
 # Source files for the library
 set(sunlinsoldense_SOURCES sunlinsol_dense.c)

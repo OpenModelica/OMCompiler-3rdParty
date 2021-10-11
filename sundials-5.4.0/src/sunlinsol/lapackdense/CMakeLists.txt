@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the LapackDense SUNLinearSolver library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNLINSOL_LAPACKDENSE\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNLINSOL_LAPACKDENSE\n\")")
 
 # Source files for the library
 set(sunlinsollapackdense_SOURCES sunlinsol_lapackdense.c)

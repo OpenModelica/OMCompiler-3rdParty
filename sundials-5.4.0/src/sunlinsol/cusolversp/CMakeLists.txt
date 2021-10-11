@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the cuda cuSolverSp SUNLinearSolver
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNLINSOL_CUSOLVERSP\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNLINSOL_CUSOLVERSP\n\")")
 
 # Add variable cusolversp_SOURCES with the sources for the cusolversp lib
 set(cusolversp_SOURCES sunlinsol_cusolversp_batchqr.cu)

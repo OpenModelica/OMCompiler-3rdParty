@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the RAJA NVECTOR library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall NVECTOR_RAJA\n\")")
+# install(CODE "MESSAGE(\"\nInstall NVECTOR_RAJA\n\")")
 
 # Add variable nvecraja_SOURCES with the sources for the NVECRAJA lib
 set(nvecraja_SOURCES

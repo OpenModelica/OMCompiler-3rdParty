@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the cuda NVECTOR library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall NVECTOR_CUDA\n\")")
+# install(CODE "MESSAGE(\"\nInstall NVECTOR_CUDA\n\")")
 
 # Add variable nveccuda_SOURCES with the sources for the NVECUDA lib
 set(nveccuda_SOURCES nvector_cuda.cu)

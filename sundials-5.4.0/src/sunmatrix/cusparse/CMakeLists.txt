@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the CUDA cuSPARSE SUNMatrix
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNMATRIX_CUSPARSE\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNMATRIX_CUSPARSE\n\")")
 
 # Add variable cusparse_SOURCES with the sources for the cusparse lib
 set(cusparse_SOURCES

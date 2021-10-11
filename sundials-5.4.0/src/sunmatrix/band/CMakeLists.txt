@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the band SUNMatrix library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall SUNMATRIX_BAND\n\")")
+# install(CODE "MESSAGE(\"\nInstall SUNMATRIX_BAND\n\")")
 
 # Add variable sunmatrixband_SOURCES with the sources for the SUNMATRIXBAND lib
 set(sunmatrixband_SOURCES sunmatrix_band.c)

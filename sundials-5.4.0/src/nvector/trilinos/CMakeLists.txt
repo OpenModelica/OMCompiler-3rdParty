@@ -14,7 +14,7 @@
 # CMakeLists.txt file for the Trilinos NVECTOR library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall NVECTOR_Trilinos\n\")")
+# install(CODE "MESSAGE(\"\nInstall NVECTOR_Trilinos\n\")")
 
 # Set Trilinos compilers/flags
 set(CMAKE_CXX_COMPILER ${Trilinos_INTERFACE_CXX_COMPILER})

@@ -15,7 +15,7 @@
 # CMakeLists.txt file for the IDA library
 # ---------------------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall IDA\n\")")
+# install(CODE "MESSAGE(\"\nInstall IDA\n\")")
 
 # Add F90 module if F2003 interface is enabled
 if(F2003_FOUND AND F2003_INTERFACE_ENABLE)
