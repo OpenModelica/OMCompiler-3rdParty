@@ -27,7 +27,7 @@ include(CheckTypeSize)
 check_type_size(intptr_t INTPTR_T)
 
 # Generate a configure header
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/antlr3config.h.in.cmake ${CMAKE_CURRENT_SOURCE_DIR}/include/antlr3config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/antlr3config.h.in.cmake ${CMAKE_CURRENT_BINARY_DIR}/include/antlr3config.h)
 
 
 
@@ -35,3 +35,5 @@ add_library(omantlr3 STATIC)
 
 target_sources(omantlr3 PRIVATE ${ANTLR_SOURCES})
 target_include_directories(omantlr3 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# The config header is generated in the build dir.
+target_include_directories(omantlr3 PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
