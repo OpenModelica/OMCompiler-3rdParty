@@ -171,9 +171,6 @@ sqlite3/sqlite3.pc
 sundials-5.4.0/build/
 sundials-5.4.0/build_msvc/
 
-trilinos-nox/build/
-trilinos-nox/build_msvc/
-
 /libffi/install/
 /libffi/x86_64-*-gnu/
 /libffi/x86_64-w64-mingw32/
