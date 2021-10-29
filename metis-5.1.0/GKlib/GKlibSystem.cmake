@@ -14,11 +14,15 @@ option(GKREGEX "enable GKREGEX support" OFF)
 option(GKRAND "enable GKRAND support" OFF)
 
 # Add compiler flags.
+## mahge: Do not enable the use of GKRegex (i.e, -DUSE_GKREGEX) if it is not
+## requested explicitly by the option GKREGEX above.
+## It is not compatible with the regex implementation OpenModelica expects.
+## It segfaults in quite confusing ways.
 if(MSVC)
   set(GKlib_COPTS "/Ox")
-  set(GKlib_COPTIONS "-DWIN32 -DMSC -D_CRT_SECURE_NO_DEPRECATE -DUSE_GKREGEX")
+  set(GKlib_COPTIONS "-DWIN32 -DMSC -D_CRT_SECURE_NO_DEPRECATE")
 elseif(MINGW)
-  set(GKlib_COPTS "-DUSE_GKREGEX")
+  set(GKlib_COPTS "")
 else()
   set(GKlib_COPTS "-O3")
   set(GKlib_COPTIONS "-DLINUX -D_FILE_OFFSET_BITS=64")
