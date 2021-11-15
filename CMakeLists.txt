@@ -200,16 +200,23 @@ target_include_directories(sundials_interface INTERFACE ${sundials_SOURCE_DIR}/i
 ## The sundials_config.h files are generated in the build directory. Add it as an include dir.
 target_include_directories(sundials_interface INTERFACE ${sundials_BINARY_DIR}/include/)
 
-## Now that the includes are attached to a utility interface library (sundials_interface) link it
-## to the sundials libs so they can be found when the sundials lib is linked-to from an external lib.
+## Add an interface lib for linking ot the static libs. This will transitively add
+## DLINK_SUNDIALS_STATIC to anything that links to the static sundials libs.
+add_library(sundials_interface_static INTERFACE)
+target_link_libraries(sundials_interface_static INTERFACE sundials_interface)
+target_compile_definitions(sundials_interface_static INTERFACE -DLINK_SUNDIALS_STATIC)
+
+## Now that the includes and defines are attached to a utility interface library (sundials_interface_static) link it
+## to the sundials static libs so they can be found when the sundials lib is linked-to from an external lib.
 ### Note! It should have been enough for the scope here to be INTERFACE instead of PUBLIC. However,
 ### that does not seem to work. This should be fine anyway.
-target_link_libraries(sundials_cvode_static PUBLIC sundials_interface)
-target_link_libraries(sundials_idas_static PUBLIC sundials_interface)
-target_link_libraries(sundials_kinsol_static PUBLIC sundials_interface)
-target_link_libraries(sundials_sunlinsolklu_static PUBLIC sundials_interface)
-target_link_libraries(sundials_sunlinsollapackdense_static PUBLIC sundials_interface)
+target_link_libraries(sundials_cvode_static PUBLIC sundials_interface_static)
+target_link_libraries(sundials_idas_static PUBLIC sundials_interface_static)
+target_link_libraries(sundials_kinsol_static PUBLIC sundials_interface_static)
+target_link_libraries(sundials_sunlinsolklu_static PUBLIC sundials_interface_static)
+target_link_libraries(sundials_sunlinsollapackdense_static PUBLIC sundials_interface_static)
 
+## Add aliases for the static libs. For readability.
 add_library(omc::3rd::sundials::cvode ALIAS sundials_cvode_static)
 add_library(omc::3rd::sundials::idas ALIAS sundials_idas_static)
 add_library(omc::3rd::sundials::kinsol ALIAS sundials_kinsol_static)
