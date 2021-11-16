@@ -83,30 +83,6 @@ Ipopt-3.13.4/build
 FMIL/build/
 FMIL/install/
 
-ModelicaExternalC/BuildProjects/autotools/.libs/
-ModelicaExternalC/BuildProjects/autotools/AUTHORS
-ModelicaExternalC/BuildProjects/autotools/COPYING
-ModelicaExternalC/BuildProjects/autotools/ChangeLog
-ModelicaExternalC/BuildProjects/autotools/INSTALL
-ModelicaExternalC/BuildProjects/autotools/Makefile
-ModelicaExternalC/BuildProjects/autotools/Makefile.in
-ModelicaExternalC/BuildProjects/autotools/NEWS
-ModelicaExternalC/BuildProjects/autotools/aclocal.m4
-ModelicaExternalC/BuildProjects/autotools/compile
-ModelicaExternalC/BuildProjects/autotools/config.guess
-ModelicaExternalC/BuildProjects/autotools/config.sub
-ModelicaExternalC/BuildProjects/autotools/configure
-ModelicaExternalC/BuildProjects/autotools/depcomp
-ModelicaExternalC/BuildProjects/autotools/install-sh
-ModelicaExternalC/BuildProjects/autotools/libtool
-ModelicaExternalC/BuildProjects/autotools/ltmain.sh
-ModelicaExternalC/BuildProjects/autotools/m4/
-ModelicaExternalC/BuildProjects/autotools/missing
-ModelicaExternalC/C-Sources/.deps/
-ModelicaExternalC/C-Sources/.dirstamp
-ModelicaExternalC/C-Sources/zlib/.deps/
-ModelicaExternalC/C-Sources/zlib/.dirstamp
-
 SuiteSparse/build/
 
 antlr/3.2/libantlr3c-3.2/.deps/
