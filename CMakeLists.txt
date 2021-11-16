@@ -131,14 +131,6 @@ add_library(omc::3rd::metis ALIAS metis)
 target_include_directories(metis INTERFACE metis-5.1.0/include)
 
 
-# ModelicaExternalC
-omc_add_subdirectory(ModelicaExternalC)
-add_library(omc::3rd::Modelica::ExternalC ALIAS ModelicaExternalC)
-add_library(omc::3rd::Modelica::MatIO ALIAS ModelicaMatIO)
-add_library(omc::3rd::Modelica::IO ALIAS ModelicaIO)
-add_library(omc::3rd::Modelica::StandardTables ALIAS ModelicaStandardTables)
-
-
 omc_add_subdirectory(open62541)
 add_library(omc::3rd::opcua ALIAS opcua)
 
