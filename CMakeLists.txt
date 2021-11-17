@@ -137,6 +137,7 @@ add_library(omc::3rd::Modelica::ExternalC ALIAS ModelicaExternalC)
 add_library(omc::3rd::Modelica::MatIO ALIAS ModelicaMatIO)
 add_library(omc::3rd::Modelica::IO ALIAS ModelicaIO)
 add_library(omc::3rd::Modelica::StandardTables ALIAS ModelicaStandardTables)
+add_library(omc::3rd::Modelica::zlib ALIAS zlib)
 
 
 omc_add_subdirectory(open62541)
