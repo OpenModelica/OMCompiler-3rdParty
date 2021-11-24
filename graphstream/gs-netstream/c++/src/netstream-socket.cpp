@@ -6,7 +6,16 @@
  ** file in the root of the Shawn source tree for further details.     **
  ************************************************************************/
 
-#if !defined(_WIN32) && !defined(_WIN64)
+#ifdef SHAWN
+	#include <apps/tcpip/socket.h>
+	#include <sys/simulation/simulation_controller.h>
+#else
+	#include "netstream-socket.h"
+#endif
+
+
+
+#ifndef WIN32
 	#include <sys/types.h>
 	#include <sys/socket.h>
 	#include <netinet/in.h>
@@ -15,7 +24,7 @@
 	#include <netdb.h>
 	#include <errno.h>
 	#include <fcntl.h>
-	#include <unistd.h> /* include unistd on *nix systems for close */
+  	#include <unistd.h>
 #else
 	#ifdef ERROR
 		#undef ERROR
@@ -23,19 +32,10 @@
 
 	#include <winsock2.h>
 
-#if !defined(__MINGW32__)
 	#ifndef vsnprintf
 		#define vsnprintf _vsnprintf
 	#endif
-#endif
 
-#endif
-
-#ifdef SHAWN
-	#include <apps/tcpip/socket.h>
-	#include <sys/simulation/simulation_controller.h>
-#else
-	#include "netstream-socket.h"
 #endif
 
 #include <cstdio>
@@ -67,7 +67,7 @@ namespace netstream
 
 	// ----------------------------------------------------------------------
 	NetStreamSocket::
-		NetStreamSocket(std::string host, int port)
+		NetStreamSocket(std::string host, int port) 
 		: host_( host ),
 		port_( port ),
 		socket_(-1),
@@ -80,7 +80,7 @@ namespace netstream
 
 	// ----------------------------------------------------------------------
 	NetStreamSocket::
-		NetStreamSocket(int port)
+		NetStreamSocket(int port) 
 		: host_(""),
 		port_( port ),
 		socket_(-1),
@@ -131,7 +131,7 @@ namespace netstream
 		}
 
 #ifdef WIN32
-		if( server_socket_ == -1 && socket_ == -1
+		if( server_socket_ == -1 && socket_ == -1 
 		    && init_windows_sockets_ && instance_count_ == 0 )
 				WSACleanup();
                 windows_sockets_initialized_ = false;
@@ -139,10 +139,10 @@ namespace netstream
 	}
 
 	// ----------------------------------------------------------------------
-	void
+	void 
 		NetStreamSocket::
-		BailOnNetStreamSocketError( std::string context)
-		const throw( NetStreamSocketException )
+		BailOnNetStreamSocketError( std::string context) 
+		const
 	{
 #ifdef WIN32
 		int e = WSAGetLastError();
@@ -154,7 +154,7 @@ namespace netstream
 	}
 
 	// ----------------------------------------------------------------------
-	int
+	int  
 		NetStreamSocket::
 		port()
 	{
@@ -163,10 +163,10 @@ namespace netstream
 
 
 	// ----------------------------------------------------------------------
-	bool
+	bool 
 		NetStreamSocket::
-		datawaiting(int sock)
-		const throw()
+		datawaiting(int sock) 
+		const
 	{
 		fd_set fds;
 		FD_ZERO( &fds );
@@ -197,7 +197,7 @@ namespace netstream
 
 		// First try nnn.nnn.nnn.nnn form
 		saddr.s_addr = inet_addr(address.c_str());
-		if (saddr.s_addr != static_cast<unsigned int>(-1))
+		if (saddr.s_addr != static_cast<unsigned int>(-1)) 
 		{
 			addr = saddr;
 			return true;
@@ -214,10 +214,9 @@ namespace netstream
 
 
 	// ----------------------------------------------------------------------
-	void
+	void 
 		NetStreamSocket::
 		accept()
-		throw( NetStreamSocketException )
 	{
 		if( socket_ >= 0 )
 			return;
@@ -237,7 +236,7 @@ namespace netstream
 			server_socket_ = static_cast<int>(socket( AF_INET, SOCK_STREAM, 0 ));
 			if( server_socket_ < 0 )
 				BailOnNetStreamSocketError("netstream::NetStreamSocket::accept() @ socket");
-
+			
 			//"Address already in use" error protection
 			{
 				int reuseaddr = 1;
@@ -279,10 +278,9 @@ namespace netstream
 	}
 
 	// ----------------------------------------------------------------------
-	void
+	void 
 		NetStreamSocket::
-		set_blocking(bool blocking)
-		throw(NetStreamSocketException )
+		set_blocking(bool blocking) 
 	{
 		blocking_ = blocking;
 
@@ -303,14 +301,13 @@ namespace netstream
 			fcntl(server_socket_, F_SETFL, arg);
 #endif
 		}
-
+	
 	}
 
 	// ----------------------------------------------------------------------
-	void
+	void 
 		NetStreamSocket::
 		connect()
-		throw( NetStreamSocketException )
 	{
 		in_addr addr;
 		if( !atoaddr( host_.c_str(), addr) )
@@ -338,11 +335,11 @@ namespace netstream
     }
 
 	// ----------------------------------------------------------------------
-	void
+	void 
 		NetStreamSocket::
 		close()
 	{
-		// Close client-connection
+		// Close client-connection 
 		if( socket_ >= 0 )
 		{
 #ifdef WIN32
@@ -356,10 +353,9 @@ namespace netstream
 	}
 
 	// ----------------------------------------------------------------------
-	void
+	void 
 		NetStreamSocket::
-		send( std::vector<unsigned char> b)
-		throw( NetStreamSocketException )
+		send( std::vector<unsigned char> b) 
 	{
 		if( socket_ < 0 ) return;
 
@@ -371,7 +367,7 @@ namespace netstream
 			buf[i] = b[i];
 		}
 
-		if (verbose_)
+		if (verbose_) 
 		{
 			cerr << "Send " << numbytes << " bytes via netstream::NetStreamSocket: [";
 			for(size_t i = 0; i < numbytes; ++i)
@@ -380,7 +376,6 @@ namespace netstream
 				cerr << " " << (int)b[i] << " ";
 			}
 			cerr << "]" << endl;
-			cerr.flush();
 		}
 
 		unsigned char const *buf_ptr = buf;
@@ -404,15 +399,14 @@ namespace netstream
 
 		delete[] buf;
 	}
+	
 
-
-
+	
         // ----------------------------------------------------------------------
 
 	void
 		NetStreamSocket::
 		sendExact( const NetStreamStorage &b)
-		throw( NetStreamSocketException )
 	{
 		int length = static_cast<int>(b.size());
 		NetStreamStorage length_storage;
@@ -424,12 +418,11 @@ namespace netstream
 	}
 
 
-
+	
 	// ----------------------------------------------------------------------
-	vector<unsigned char>
+	vector<unsigned char> 
 		NetStreamSocket::
 		receive(int bufSize)
-		throw( NetStreamSocketException )
 	{
 		vector<unsigned char> b;
 
@@ -455,7 +448,7 @@ namespace netstream
 			b[i] = buf[i];
 		}
 
-		if (verbose_)
+		if (verbose_) 
 		{
 			cerr << "Rcvd "  << a <<  " bytes via netstream::NetStreamSocket: [";
 			for(int i = 0; i < a; ++i)
@@ -470,18 +463,17 @@ namespace netstream
 	}
 
 	// ----------------------------------------------------------------------
-
+	
 
 	bool
 		NetStreamSocket::
 		receiveExact( NetStreamStorage &msg )
-		throw( NetStreamSocketException )
 	{
 		/* receive length of vector */
 		unsigned char * const bufLength = new unsigned char[4];
 		int bytesRead = 0;
 		int readThisTime = 0;
-
+		
 		while (bytesRead<4)
 		{
 			readThisTime = recv( socket_, (char*)(bufLength + bytesRead), 4-bytesRead, 0 );
@@ -502,7 +494,7 @@ namespace netstream
 		unsigned char * const buf = new unsigned char[NN];
 		bytesRead = 0;
 		readThisTime = 0;
-
+		
 		while (bytesRead<NN)
 		{
 			readThisTime = recv( socket_, (char*)(buf + bytesRead), NN-bytesRead, 0 );
@@ -519,7 +511,7 @@ namespace netstream
 		}
 		msg.reset();
 		msg.writePacket(buf, NN);
-
+		
 		if (verbose_)
 		{
 			cerr << "Rcvd Storage with "  << 4 + NN <<  " bytes via netstream::NetStreamSocket: [";
@@ -538,22 +530,21 @@ namespace netstream
 		delete[] bufLength;
 		return true;
 	}
-
-
+	
+	
 	// ----------------------------------------------------------------------
-	bool
+	bool 
 		NetStreamSocket::
-		has_client_connection()
+		has_client_connection() 
 		const
 	{
 		return socket_ >= 0;
 	}
 
 	// ----------------------------------------------------------------------
-	bool
+	bool 
 		NetStreamSocket::
-		is_blocking()
-		throw()
+		is_blocking() 
 	{
 		return blocking_;
 	}
@@ -561,9 +552,9 @@ namespace netstream
 
 #ifdef WIN32
 	// ----------------------------------------------------------------------
-	std::string
+	std::string 
 		NetStreamSocket::
-		GetWinsockErrorString(int err)
+		GetWinsockErrorString(int err) 
 		const
 	{
 

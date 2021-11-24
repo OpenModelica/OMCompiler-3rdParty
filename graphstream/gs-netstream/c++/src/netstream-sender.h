@@ -13,14 +13,18 @@
 #ifndef NETSTREAM_SENDER_H
 #define NETSTREAM_SENDER_H
 
+
+
+
+#ifndef WIN32
+  #include <unistd.h>
+#else
+  #include <windows.h>
+#endif
+
+
 #include <iostream>
 
-#if !defined(__MINGW32__)
-#include <sys/socket.h>
-#endif
-#include <errno.h>
-
-#include "netstream-sizes.h"
 #include "netstream-storage.h"
 #include "netstream-socket.h"
 #include "netstream-constants.h"
@@ -33,39 +37,39 @@ namespace netstream{
 class NetStreamSender{
 
 protected:
-  GS_STRING _stream_name;
-  GS_STRING _host;
-  GS_INT _port;
+  string _stream_name;
+  string _host;
+  int _port;
   NetStreamSocket _socket;
   NetStreamStorage _stream;
-  GS_BOOL debug;
+  bool debug;
 
   void init();
   
   template <typename T>
-  GS_INT getType(T t)
+  int getType(T t) 
   {
     return _getType(t);
   }
   template <typename T>
-  GS_INT getType(const vector<T> & t)
+  int getType(const vector<T> & t) 
   {
     return _getType(t);
   }
 
-  GS_INT _getType(GS_CHAR object);
-  GS_INT _getType(GS_BOOL object);
-  GS_INT _getType(GS_INT object);
-  GS_INT _getType(GS_LONG object);
-  GS_INT _getType(GS_FLOAT object);
-  GS_INT _getType(GS_DOUBLE object);
-  GS_INT _getType(const GS_STRING & object);
-  GS_INT _getType( const vector<GS_CHAR> & object);
-  GS_INT _getType( const vector<GS_BOOL> & object);
-  GS_INT _getType( const vector<GS_INT> & object);
-  GS_INT _getType( const vector<GS_LONG> & object);
-  GS_INT _getType( const vector<GS_FLOAT> & object);
-  GS_INT _getType( const vector<GS_DOUBLE> & object);
+  int _getType(char object);
+  int _getType(bool object);
+  int _getType(int object);
+  int _getType(long object);
+  int _getType(float object);
+  int _getType(double object);
+  int _getType(const string & object);
+  int _getType( const vector<char> & object);
+  int _getType( const vector<bool> & object);
+  int _getType( const vector<int> & object);
+  int _getType( const vector<long> & object);
+  int _getType( const vector<float> & object);
+  int _getType( const vector<double> & object);
 
   template <typename T>
   void encode(NetStreamStorage & event, const T & value){
@@ -75,20 +79,20 @@ protected:
   void encode(NetStreamStorage & event, const vector<T> & value){
     _encode(event, value);
   }
-  void _encode(NetStreamStorage & event, GS_CHAR value);
-  void _encode(NetStreamStorage & event, GS_BOOL value);
-  void _encode(NetStreamStorage & event, GS_INT value);
-  void _encode(NetStreamStorage & event, GS_LONG value);
-  void _encode(NetStreamStorage & event, GS_FLOAT value);
-  void _encode(NetStreamStorage & event, GS_DOUBLE value);
-  void _encode(NetStreamStorage & event, const GS_STRING & value);
+  void _encode(NetStreamStorage & event, char value);
+  void _encode(NetStreamStorage & event, bool value);
+  void _encode(NetStreamStorage & event, int value);
+  void _encode(NetStreamStorage & event, long value);
+  void _encode(NetStreamStorage & event, float value);
+  void _encode(NetStreamStorage & event, double value);
+  void _encode(NetStreamStorage & event, const string & value);
   
-  void _encode(NetStreamStorage & event, const vector<GS_CHAR> & value);
-  void _encode(NetStreamStorage & event, const vector<GS_BOOL> & value);
-  void _encode(NetStreamStorage & event, const vector<GS_INT> & value);
-  void _encode(NetStreamStorage & event, const vector <GS_LONG> & value);
-  void _encode(NetStreamStorage & event, const vector <GS_FLOAT> & value);
-  void _encode(NetStreamStorage & event, const vector <GS_DOUBLE> & value);
+  void _encode(NetStreamStorage & event, const vector<char> & value);
+  void _encode(NetStreamStorage & event, const vector<bool> & value);
+  void _encode(NetStreamStorage & event, const vector<int> & value);
+  void _encode(NetStreamStorage & event, const vector <long> & value);
+  void _encode(NetStreamStorage & event, const vector <float> & value);
+  void _encode(NetStreamStorage & event, const vector <double> & value);
   
   
   void _sendEvent(NetStreamStorage &);
@@ -98,30 +102,29 @@ public:
   // ================
   // = Constructors =
   // ================
-  NetStreamSender(const GS_STRING & host, GS_INT port);
-  NetStreamSender(GS_INT port);
-  NetStreamSender(const GS_STRING & stream, const GS_STRING & host, GS_INT port);
-  NetStreamSender(const GS_STRING & stream, const GS_STRING & host, GS_INT port, GS_BOOL debug);
-
+  NetStreamSender(const string & host, int port);
+  NetStreamSender(int port); 
+  NetStreamSender(const string & stream, const string & host, int port);
+  NetStreamSender(const string & stream, const string & host, int port, bool debug);
   // ==================
   // = Element events =
   // ================== 
-  void addNode(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & node_id);
-  void removeNode(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & node_id);
-  void addEdge(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & edge_id, const GS_STRING & from_node, const GS_STRING & to_node, GS_BOOL directed);
-  void removeEdge(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & edge_id);
-  void stepBegins(const GS_STRING & source_id, GS_LONG time_id, GS_DOUBLE timestamp);
-  void graphClear(const GS_STRING & source_id, GS_LONG time_id);
+  void addNode(const string & source_id, long time_id, const string & node_id);
+  void removeNode(const string & source_id, long time_id, const string & node_id);
+  void addEdge(const string & source_id, long time_id, const string & edge_id, const string & from_node, const string & to_node, bool directed);
+  void removeEdge(const string & source_id, long time_id, const string & edge_id);
+  void stepBegins(const string & source_id, long time_id, double timestamp);
+  void graphClear(const string & source_id, long time_id);
   
   // ====================
   // = Attribute events =
   // ====================
   template <typename T>
-  void addGraphAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & attribute, T value){
+  void addGraphAttribute(const string & source_id, long time_id, const string & attribute,  T value){
     NetStreamStorage event = NetStreamStorage();
     event.writeByte(netstream::EVENT_ADD_GRAPH_ATTR);
     event.writeString(source_id);
-    event.writeUnsignedVarInt(time_id);
+    event.writeUnsignedVarint(time_id);
     event.writeString(attribute);
     event.writeByte(getType(value));
     encode(event, value);
@@ -129,11 +132,11 @@ public:
   }
 
   template <typename T1, typename T2>
-  void changeGraphAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & attribute, const T1 & oldValue, const T2 & newValue){
+  void changeGraphAttribute(const string & source_id, long time_id, const string & attribute, const T1 & oldValue, const T2 & newValue){
      NetStreamStorage event = NetStreamStorage();
      event.writeByte(EVENT_CHG_GRAPH_ATTR);
      event.writeString(source_id);
-     event.writeUnsignedVarInt(time_id);
+     event.writeUnsignedVarint(time_id);
      event.writeString(attribute);
      event.writeByte(getType(oldValue));
      encode(event, oldValue);
@@ -142,14 +145,14 @@ public:
      _sendEvent(event);
   }
   
-  void removeGraphAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & attribute);
+  void removeGraphAttribute(const string & source_id, long time_id, const string & attribute);
   
   template <typename T>
-  void addNodeAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & node_id, const GS_STRING & attribute, const T & value){
+  void addNodeAttribute(const string & source_id, long time_id, const string & node_id, const string & attribute, const T & value){
     NetStreamStorage event = NetStreamStorage();
     event.writeByte(EVENT_ADD_NODE_ATTR);
     event.writeString(source_id);
-    event.writeUnsignedVarInt(time_id);
+    event.writeUnsignedVarint(time_id);
     event.writeString(node_id);
     event.writeString(attribute);
     event.writeByte(getType(value));
@@ -158,11 +161,11 @@ public:
   }
 
   template <typename T1, typename T2>
-  void changeNodeAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & node_id, const GS_STRING & attribute, const T1 & oldValue, const T2 & newValue){
+  void changeNodeAttribute(const string & source_id, long time_id, const string & node_id, const string & attribute, const T1 & oldValue, const T2 & newValue){
     NetStreamStorage event = NetStreamStorage();
     event.writeByte(EVENT_CHG_NODE_ATTR);
     event.writeString(source_id);
-    event.writeUnsignedVarInt(time_id);
+    event.writeUnsignedVarint(time_id);
     event.writeString(node_id);
     event.writeString(attribute);
     event.writeByte(getType(oldValue));
@@ -172,14 +175,14 @@ public:
     _sendEvent(event);
   }
   
-  void removeNodeAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & node_id, const GS_STRING & attribute);
+  void removeNodeAttribute(const string & source_id, long time_id, const string & node_id, const string & attribute);
   
   template <typename T>
-  void addEdgeAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & edge_id, const GS_STRING & attribute, const T & value){
+  void addEdgeAttribute(const string & source_id, long time_id, const string & edge_id, const string & attribute, const T & value){
     NetStreamStorage event = NetStreamStorage();
     event.writeByte(EVENT_ADD_EDGE_ATTR);
     event.writeString(source_id);
-    event.writeUnsignedVarInt(time_id);
+    event.writeUnsignedVarint(time_id);
     event.writeString(edge_id);
     event.writeString(attribute);
     event.writeByte(getType(value));
@@ -189,11 +192,11 @@ public:
   }
 
   template <typename T1, typename T2>
-  void changeEdgeAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & edge_id, const GS_STRING & attribute, const T1 & oldValue, const T2 & newValue){
+  void changeEdgeAttribute(const string & source_id, long time_id, const string & edge_id, const string & attribute, const T1 & oldValue, const T2 & newValue){
     NetStreamStorage event = NetStreamStorage();
     event.writeByte(EVENT_CHG_EDGE_ATTR);
     event.writeString(source_id);
-    event.writeUnsignedVarInt(time_id);
+    event.writeUnsignedVarint(time_id);
     event.writeString(edge_id);
     event.writeString(attribute);
     event.writeByte(getType(oldValue));
@@ -203,7 +206,7 @@ public:
     _sendEvent(event);
   }
   
-  void removeEdgeAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & edge_id, const GS_STRING & attribute);
+  void removeEdgeAttribute(const string & source_id, long time_id, const string & edge_id, const string & attribute);
   
 };
 

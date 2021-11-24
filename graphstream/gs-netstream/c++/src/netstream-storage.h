@@ -17,7 +17,7 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
-#include "netstream-sizes.h"
+#include <cstdint>
 
 namespace netstream
 {
@@ -41,7 +41,7 @@ private:
 	void init();
 
 	/// Check if the next \p num bytes can be read safely
-	void checkReadSafe(unsigned int num) const throw(std::invalid_argument);
+	void checkReadSafe(unsigned int num) const;
 	/// Read a byte \em without validity check
 	unsigned char readCharUnsafe();
 	/// Write \p size elements of array \p begin according to endianess
@@ -56,8 +56,8 @@ public:
 	/// Standard Constructor
 	NetStreamStorage();
 
-	/// Constructor, that fills the storage with an char array.
-	NetStreamStorage(unsigned char[], size_t length);
+	/// Constructor, that fills the storage with an char array. If length is -1, the whole array is handed over
+	NetStreamStorage(unsigned char[], int length=-1);
 
 	// Destructor
 	virtual ~NetStreamStorage();
@@ -67,45 +67,49 @@ public:
 
 	void reset();
 
-	virtual unsigned char readChar() throw(std::invalid_argument);
-	virtual void writeChar(unsigned char) throw();
+	virtual size_t varintSize(uint_fast64_t);
+	virtual uint_fast64_t readUnsignedVarint() ;
+	virtual void writeUnsignedVarint(uint_fast64_t) ;
 
-	virtual GS_INT readByte() throw(std::invalid_argument);
-	virtual void writeByte(GS_INT) throw(std::invalid_argument);
-//	virtual void writeByte(unsigned char) throw();
+	virtual int_fast64_t readVarint() ;
+	virtual void writeVarint(int_fast64_t) ;
 
-	virtual int readUnsignedByte() throw(std::invalid_argument);
-	virtual void writeUnsignedByte(int) throw(std::invalid_argument);
+	virtual unsigned char readChar() ;
+	virtual void writeChar(unsigned char) ;
 
-	virtual std::string readString() throw(std::invalid_argument);
-	virtual void writeString(const std::string& s) throw();
+	virtual int readByte() ;
+	virtual void writeByte(int) ;
+//	virtual void writeByte(unsigned char) ;
 
-	virtual std::vector<std::string> readStringList() throw(std::invalid_argument);
-	virtual void writeStringList(const std::vector<std::string> &s) throw();
+	virtual int readUnsignedByte() ;
+	virtual void writeUnsignedByte(int) ;
 
-	virtual GS_INT readShort() throw(std::invalid_argument);
-	virtual void writeShort(GS_INT) throw(std::invalid_argument);
+	virtual std::string readString() ;
+	virtual void writeString(const std::string& s) ;
 
-	virtual GS_INT readInt() throw(std::invalid_argument);
-	virtual void writeInt(GS_INT) throw();
+	virtual std::vector<std::string> readStringList() ;
+	virtual void writeStringList(const std::vector<std::string> &s) ;
 
-	GS_INT varintSize(GS_LONG data);
-	virtual void writeUnsignedVarInt(GS_LONG data) throw();
+	virtual int readShort() ;
+	virtual void writeShort(int) ;
 
-	virtual GS_LONG readLong() throw(std::invalid_argument);
-	virtual void writeLong(GS_LONG) throw();
+	virtual int readInt() ;
+	virtual void writeInt(int) ;
 
-	virtual GS_FLOAT readFloat() throw(std::invalid_argument);
-	virtual void writeFloat( GS_FLOAT ) throw();
+	virtual long readLong() ;
+	virtual void writeLong(long) ;
 
-	virtual GS_DOUBLE readDouble() throw(std::invalid_argument);
-	virtual void writeDouble( GS_DOUBLE ) throw();
+	virtual float readFloat() ;
+	virtual void writeFloat( float ) ;
+
+	virtual double readDouble() ;
+	virtual void writeDouble( double ) ;
 
 	virtual void writePacket(unsigned char* packet, int length);
 
 	virtual void writeStorage(netstream::NetStreamStorage& store);
 
-    virtual NetStreamStorage operator+(const NetStreamStorage & storage);
+  virtual NetStreamStorage operator+(const NetStreamStorage & storage);
 
   
 	// Some enabled functions of the underlying std::list
