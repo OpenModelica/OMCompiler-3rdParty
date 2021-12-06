@@ -124,7 +124,9 @@ STATIC void GC_grow_table(struct hash_chain_entry ***table,
     GC_ASSERT(I_HOLD_LOCK());
     /* Avoid growing the table in case of at least 25% of entries can   */
     /* be deleted by enforcing a collection.  Ignored for small tables. */
-    if (log_old_size >= GC_ON_GROW_LOG_SIZE_MIN) {
+    /* In incremental mode we skip this optimization, as we want to     */
+    /* avoid triggering a full GC whenever possible.                    */
+    if (log_old_size >= GC_ON_GROW_LOG_SIZE_MIN && !GC_incremental) {
       IF_CANCEL(int cancel_state;)
 
       DISABLE_CANCEL(cancel_state);
@@ -632,6 +634,10 @@ GC_API GC_await_finalize_proc GC_CALL GC_get_await_finalize_proc(void)
 
 /* Possible finalization_marker procedures.  Note that mark stack       */
 /* overflow is handled by the caller, and is not a disaster.            */
+#if defined(_MSC_VER) && defined(I386)
+  GC_ATTR_NOINLINE
+  /* Otherwise some optimizer bug is tickled in VC for X86 (v19, at least). */
+#endif
 STATIC void GC_normal_finalize_mark_proc(ptr_t p)
 {
     GC_mark_stack_top = GC_push_obj(p, HDR(p), GC_mark_stack_top,
@@ -1326,7 +1332,7 @@ GC_INNER void GC_notify_or_invoke_finalizers(void)
 #       ifdef KEEP_BACK_PTRS
           long i;
           /* Stops when GC_gc_no wraps; that's OK.      */
-          last_back_trace_gc_no = (word)(-1);  /* disable others. */
+          last_back_trace_gc_no = GC_WORD_MAX;  /* disable others. */
           for (i = 0; i < GC_backtraces; ++i) {
               /* FIXME: This tolerates concurrent heap mutation,        */
               /* which may cause occasional mysterious results.         */

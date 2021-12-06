@@ -24,7 +24,6 @@
  * For better performance, also look at GC_MALLOC_ATOMIC, and
  * GC_enable_incremental.  If you need an action to be performed
  * immediately before an object is collected, look at GC_register_finalizer.
- * If you are using Solaris threads, look at the end of this file.
  * Everything else is best ignored unless you encounter performance
  * problems.
  */
@@ -90,11 +89,12 @@ GC_API GC_word GC_CALL GC_get_gc_no(void);
 #ifdef GC_THREADS
   GC_API GC_ATTR_DEPRECATED int GC_parallel;
                         /* GC is parallelized for performance on        */
-                        /* multiprocessors.  Currently set only         */
-                        /* implicitly if collector is built with        */
-                        /* PARALLEL_MARK defined and if either:         */
-                        /*  Env variable GC_NPROC is set to > 1, or     */
-                        /*  GC_NPROC is not set and this is an MP.      */
+                        /* multiprocessors.  Set to a non-zero value    */
+                        /* only implicitly if collector is built with   */
+                        /* PARALLEL_MARK defined, and if either         */
+                        /* GC_MARKERS (or GC_NPROCS) environment        */
+                        /* variable is set to > 1, or multiple cores    */
+                        /* (processors) are available.                  */
                         /* If GC_parallel is on (non-zero), incremental */
                         /* collection is only partially functional,     */
                         /* and may not be desirable.  The getter does   */
@@ -1328,7 +1328,12 @@ GC_API int GC_CALL GC_invoke_finalizers(void);
                 __asm__ __volatile__(" " : : "X"(ptr) : "memory")
 #else
   GC_API void GC_CALL GC_noop1(GC_word);
-# define GC_reachable_here(ptr) GC_noop1((GC_word)(ptr))
+# ifdef LINT2
+#   define GC_reachable_here(ptr) GC_noop1(~(GC_word)(ptr)^(~(GC_word)0))
+                /* The expression matches the one of COVERT_DATAFLOW(). */
+# else
+#   define GC_reachable_here(ptr) GC_noop1((GC_word)(ptr))
+# endif
 #endif
 
 /* GC_set_warn_proc can be used to redirect or filter warning messages. */
@@ -1368,6 +1373,7 @@ GC_API void GC_CALL GC_abort_on_oom(void);
 /* that finalization code will arrange for hidden pointers to   */
 /* disappear.  Otherwise objects can be accessed after they     */
 /* have been collected.                                         */
+/* Should not be used in the leak-finding mode.                 */
 /* Note that putting pointers in atomic objects or in           */
 /* non-pointer slots of "typed" objects is equivalent to        */
 /* disguising them in this way, and may have other advantages.  */
@@ -1528,8 +1534,13 @@ GC_API void * GC_CALL GC_call_with_stack_base(GC_stack_base_func /* fn */,
 /* the current thread (this means that the thread is not suspended and  */
 /* the thread's stack frames "belonging" to the functions in the        */
 /* "inactive" state are not scanned during garbage collections).  It is */
-/* allowed for fn to call GC_call_with_gc_active() (even recursively),  */
-/* thus temporarily toggling the collector's state back to "active".    */
+/* assumed that the collector is already initialized and the current    */
+/* thread is registered.  It is allowed for fn to call                  */
+/* GC_call_with_gc_active() (even recursively), thus temporarily        */
+/* toggling the collector's state back to "active".  The latter         */
+/* technique might be used to make stack scanning more precise (i.e.    */
+/* scan only stack frames of functions that allocate garbage collected  */
+/* memory and/or manipulate pointers to the garbage collected heap).    */
 GC_API void * GC_CALL GC_do_blocking(GC_fn_type /* fn */,
                                 void * /* client_data */) GC_ATTR_NONNULL(1);
 
@@ -1887,38 +1898,20 @@ GC_API int GC_CALL GC_get_force_unmap_on_gcollect(void);
         /* Required at least if GC is in a DLL.  And doesn't hurt. */
 #elif defined(_AIX)
   extern int _data[], _end[];
-# define GC_DATASTART ((void *)((ulong)_data))
-# define GC_DATAEND ((void *)((ulong)_end))
+# define GC_DATASTART ((void *)_data)
+# define GC_DATAEND ((void *)_end)
 # define GC_INIT_CONF_ROOTS GC_add_roots(GC_DATASTART, GC_DATAEND)
 #elif (defined(HOST_ANDROID) || defined(__ANDROID__)) \
-      && !defined(GC_NOT_DLL) && defined(IGNORE_DYNAMIC_LOADING)
-  /* It causes the entire binary section of memory be pushed as a root. */
-  /* This might be a bad idea though because on some Android devices    */
-  /* some of the binary data might become unmapped thus causing SIGSEGV */
-  /* with code SEGV_MAPERR.                                             */
-# pragma weak _etext
-# pragma weak __data_start
+      && defined(IGNORE_DYNAMIC_LOADING)
+  /* This is ugly but seems the only way to register data roots of the  */
+  /* client shared library if the GC dynamic loading support is off.    */
 # pragma weak __dso_handle
-  extern int _etext[], __data_start[], __dso_handle[];
-# pragma weak __end__
-  extern int __end__[], _end[];
-  /* Explicitly register caller static data roots.  Workaround for      */
-  /* __data_start: NDK "gold" linker might miss it or place it          */
-  /* incorrectly, __dso_handle is an alternative data start reference.  */
-  /* Workaround for _end: NDK Clang 3.5+ does not place it at correct   */
-  /* offset (as of NDK r10e) but "bfd" linker provides __end__ symbol   */
-  /* that could be used instead.                                        */
-# define GC_INIT_CONF_ROOTS \
-                (void)((GC_word)__data_start < (GC_word)_etext \
-                        && (GC_word)_etext < (GC_word)__dso_handle \
-                        ? (__end__ != 0 \
-                            ? (GC_add_roots(__dso_handle, __end__), 0) \
-                            : (GC_word)__dso_handle < (GC_word)_end \
-                            ? (GC_add_roots(__dso_handle, _end), 0) : 0) \
-                        : __data_start != 0 ? (__end__ != 0 \
-                            ? (GC_add_roots(__data_start, __end__), 0) \
-                            : (GC_word)__data_start < (GC_word)_end \
-                            ? (GC_add_roots(__data_start, _end), 0) : 0) : 0)
+  extern int __dso_handle[];
+  GC_API void * GC_CALL GC_find_limit(void * /* start */, int /* up */);
+# define GC_INIT_CONF_ROOTS (void)(__dso_handle != 0 \
+                                   ? (GC_add_roots(__dso_handle, \
+                                            GC_find_limit(__dso_handle, \
+                                                          1 /*up*/)), 0) : 0)
 #else
 # define GC_INIT_CONF_ROOTS /* empty */
 #endif
@@ -2014,7 +2007,7 @@ GC_API int GC_CALL GC_get_force_unmap_on_gcollect(void);
 
 /* Portable clients should call this at the program start-up.  More     */
 /* over, some platforms require this call to be done strictly from the  */
-/* primordial thread.                                                   */
+/* primordial thread.  Multiple invocations are harmless.               */
 #define GC_INIT() { GC_INIT_CONF_DONT_EXPAND; /* pre-init */ \
                     GC_INIT_CONF_FORCE_UNMAP_ON_GCOLLECT; \
                     GC_INIT_CONF_MAX_RETRIES; \
