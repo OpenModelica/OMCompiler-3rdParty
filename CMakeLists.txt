@@ -1,6 +1,8 @@
 project(OMCompiler_3rdParty)
 
-
+# antlr
+omc_add_subdirectory(zlib)
+add_library(omc::3rd::zlib ALIAS zlib)
 
 # antlr
 omc_add_subdirectory(antlr)
