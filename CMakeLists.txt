@@ -70,20 +70,20 @@ set(enable_java_finalization OFF CACHE BOOL "Support for java finalization")
 set(enable_gcj_support OFF CACHE BOOL "Support for gcj")
 set(enable_large_config ON CACHE BOOL "Optimize for large heap or root set")
 omc_add_subdirectory(gc)
-target_include_directories(omcgc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/gc/include)
+target_include_directories(gc-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/gc/include)
 # make sure every target that links to gc-lib has its sources
 # compiled with -DGC_WIN32_PTHREADS (for pthreads on Windows, i.e., our MingW)
 # Or -DGC_THREADS (for auto detection on other systems.)
 # On Windows with MinGW OM uses pthreads-win32. GC_WIN32_PTHREADS is required
 # to be set explicitly for use of pthreads API on Windows.
 if(MINGW)
-    target_compile_definitions(omcgc PUBLIC GC_WIN32_PTHREADS)
+    target_compile_definitions(gc-lib PUBLIC GC_WIN32_PTHREADS)
 else()
-    target_compile_definitions(omcgc PUBLIC GC_THREADS)
+    target_compile_definitions(gc-lib PUBLIC GC_THREADS)
 endif(MINGW)
 
 # Finally add an alias for clarity purposes.
-add_library(omc::3rd::omcgc ALIAS omcgc)
+add_library(omc::3rd::omcgc ALIAS gc-lib)
 
 
 
