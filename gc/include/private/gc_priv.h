@@ -26,8 +26,7 @@
 # define GC_BUILD
 #endif
 
-#if (defined(__linux__) || defined(__GLIBC__) || defined(__GNU__) \
-     || (defined(__CYGWIN__) && !defined(USE_MMAP))) \
+#if (defined(__linux__) || defined(__GLIBC__) || defined(__GNU__)) \
     && !defined(_GNU_SOURCE)
   /* Can't test LINUX, since this must be defined before other includes. */
 # define _GNU_SOURCE 1
@@ -81,8 +80,13 @@
 # endif
 #endif
 
-#include "../gc_tiny_fl.h"
-#include "../gc_mark.h"
+#ifndef GC_TINY_FL_H
+# include "../gc_tiny_fl.h"
+#endif
+
+#ifndef GC_MARK_H
+# include "../gc_mark.h"
+#endif
 
 typedef GC_word word;
 typedef GC_signed_word signed_word;
@@ -92,12 +96,9 @@ typedef int GC_bool;
 #define TRUE 1
 #define FALSE 0
 
-#ifndef PTR_T_DEFINED
-  typedef char * ptr_t; /* A generic pointer to which we can add        */
+typedef char * ptr_t;   /* A generic pointer to which we can add        */
                         /* byte displacements and which can be used     */
                         /* for address comparisons.                     */
-# define PTR_T_DEFINED
-#endif
 
 #ifndef SIZE_MAX
 # include <limits.h>
@@ -121,7 +122,9 @@ typedef int GC_bool;
 #define SIZET_SAT_ADD(a, b) \
             (EXPECT((a) < GC_SIZE_MAX - (b), TRUE) ? (a) + (b) : GC_SIZE_MAX)
 
-#include "gcconfig.h"
+#ifndef GCCONFIG_H
+# include "gcconfig.h"
+#endif
 
 #if !defined(GC_ATOMIC_UNCOLLECTABLE) && defined(ATOMIC_UNCOLLECTABLE)
   /* For compatibility with old-style naming. */
@@ -165,14 +168,6 @@ typedef int GC_bool;
   /* Used only for several local variables in the performance-critical  */
   /* functions.  Should not be used for new code.                       */
 # define REGISTER register
-#endif
-
-#if defined(M68K) && defined(__GNUC__)
-  /* By default, __alignof__(word) is 2 on m68k.  Use this attribute to */
-  /* have proper word alignment (i.e. 4-byte on a 32-bit arch).         */
-# define GC_ATTR_WORD_ALIGNED __attribute__((__aligned__(sizeof(word))))
-#else
-# define GC_ATTR_WORD_ALIGNED /* empty */
 #endif
 
 #ifndef HEADERS_H
@@ -262,20 +257,19 @@ typedef int GC_bool;
 #if defined(THREADS) && !defined(NN_PLATFORM_CTR) \
     && !defined(SN_TARGET_ORBIS) && !defined(SN_TARGET_PSP2)
 # include "gc_atomic_ops.h"
-# ifndef AO_HAVE_compiler_barrier
-#   define AO_HAVE_compiler_barrier 1
-# endif
 #endif
 
-#include "gc_locks.h"
+#ifndef GC_LOCKS_H
+# include "gc_locks.h"
+#endif
 
-#define GC_WORD_MAX (~(word)0)
+#define ONES ((word)(signed_word)(-1))
 
 # ifdef STACK_GROWS_DOWN
 #   define COOLER_THAN >
 #   define HOTTER_THAN <
 #   define MAKE_COOLER(x,y) if ((word)((x) + (y)) > (word)(x)) {(x) += (y);} \
-                            else (x) = (ptr_t)GC_WORD_MAX
+                            else (x) = (ptr_t)ONES
 #   define MAKE_HOTTER(x,y) (x) -= (y)
 # else
 #   define COOLER_THAN <
@@ -438,17 +432,14 @@ EXTERN_C_END
 # undef GET_TIME
 # undef MS_TIME_DIFF
 # define CLOCK_TYPE struct timeval
-# define CLOCK_TYPE_INITIALIZER { 0, 0 }
 # define GET_TIME(x) \
                 do { \
                   struct rusage rusage; \
                   getrusage(RUSAGE_SELF, &rusage); \
                   x = rusage.ru_utime; \
                 } while (0)
-# define MS_TIME_DIFF(a,b) ((unsigned long)((long)(a.tv_sec-b.tv_sec) * 1000 \
-                                    + (long)(a.tv_usec-b.tv_usec) / 1000))
-                            /* "a" time is expected to be not earlier than  */
-                            /* "b" one; the result has unsigned long type.  */
+# define MS_TIME_DIFF(a,b) ((unsigned long)(a.tv_sec - b.tv_sec) * 1000 \
+                            + (unsigned long)(a.tv_usec - b.tv_usec) / 1000)
 #elif defined(MSWIN32) || defined(MSWINCE)
 # ifndef WIN32_LEAN_AND_MEAN
 #   define WIN32_LEAN_AND_MEAN 1
@@ -462,7 +453,7 @@ EXTERN_C_END
 # else
 #   define GET_TIME(x) (void)(x = GetTickCount())
 # endif
-# define MS_TIME_DIFF(a,b) ((unsigned long)((a)-(b)))
+# define MS_TIME_DIFF(a,b) ((long)((a)-(b)))
 #elif defined(NN_PLATFORM_CTR)
 # define CLOCK_TYPE long long
   EXTERN_C_BEGIN
@@ -470,7 +461,7 @@ EXTERN_C_END
   CLOCK_TYPE n3ds_convert_tick_to_ms(CLOCK_TYPE tick);
   EXTERN_C_END
 # define GET_TIME(x) (void)(x = n3ds_get_system_tick())
-# define MS_TIME_DIFF(a,b) ((unsigned long)n3ds_convert_tick_to_ms((a)-(b)))
+# define MS_TIME_DIFF(a,b) ((long)n3ds_convert_tick_to_ms((a)-(b)))
 #else /* !BSD_TIME && !NN_PLATFORM_CTR && !MSWIN32 && !MSWINCE */
 # include <time.h>
 # if defined(FREEBSD) && !defined(CLOCKS_PER_SEC)
@@ -497,11 +488,6 @@ EXTERN_C_END
   /* Avoid using double type since some targets (like ARM) might        */
   /* require -lm option for double-to-long conversion.                  */
 #endif /* !BSD_TIME && !MSWIN32 */
-# ifndef CLOCK_TYPE_INITIALIZER
-    /* This is used to initialize CLOCK_TYPE variables (to some value)  */
-    /* to avoid "variable might be uninitialized" compiler warnings.    */
-#   define CLOCK_TYPE_INITIALIZER 0
-# endif
 #endif /* !NO_CLOCK */
 
 /* We use bzero and bcopy internally.  They may not be available.       */
@@ -874,8 +860,8 @@ EXTERN_C_BEGIN
 #   define CPP_LOG_HBLKSIZE 13
 # elif HBLKSIZE == 16384
 #   define CPP_LOG_HBLKSIZE 14
-# elif !defined(CPPCHECK)
-#   error Bad HBLKSIZE value
+# else
+#   error fix HBLKSIZE
 # endif
 # undef HBLKSIZE
 #endif
@@ -984,9 +970,6 @@ typedef word page_hash_table[PHT_SIZE];
 # define set_pht_entry_from_index_concurrent(bl, index) \
                 AO_or((volatile AO_t *)&(bl)[divWORDSZ(index)], \
                       (AO_t)((word)1 << modWORDSZ(index)))
-#else
-# define set_pht_entry_from_index_concurrent(bl, index) \
-                set_pht_entry_from_index(bl, index)
 #endif
 
 
@@ -1240,8 +1223,8 @@ typedef struct GC_ms_entry {
 /* be pointers are also put here.               */
 /* The main fields should precede any           */
 /* conditionally included fields, so that       */
-/* gc_inline.h will work even if a different    */
-/* set of macros is defined when the client is  */
+/* gc_inl.h will work even if a different set   */
+/* of macros is defined when the client is      */
 /* compiled.                                    */
 
 struct _GC_arrays {
@@ -1308,10 +1291,6 @@ struct _GC_arrays {
 # ifdef USE_MUNMAP
 #   define GC_unmapped_bytes GC_arrays._unmapped_bytes
     word _unmapped_bytes;
-#   ifdef COUNT_UNMAPPED_REGIONS
-#     define GC_num_unmapped_regions GC_arrays._num_unmapped_regions
-      signed_word _num_unmapped_regions;
-#   endif
 # else
 #   define GC_unmapped_bytes 0
 # endif
@@ -1551,14 +1530,8 @@ GC_EXTERN size_t GC_page_size;
 #endif
 
 #if defined(MSWIN32) || defined(MSWINCE) || defined(CYGWIN32)
-# ifndef WIN32_LEAN_AND_MEAN
-#   define WIN32_LEAN_AND_MEAN 1
-# endif
-# define NOSERVICE
-  EXTERN_C_END
-# include <windows.h>
-  EXTERN_C_BEGIN
-  GC_EXTERN SYSTEM_INFO GC_sysinfo;
+  struct _SYSTEM_INFO;
+  GC_EXTERN struct _SYSTEM_INFO GC_sysinfo;
   GC_INNER GC_bool GC_is_heap_base(void *p);
 #endif
 
@@ -1681,16 +1654,12 @@ void GC_apply_to_all_blocks(void (*fn)(struct hblk *h, word client_data),
                             word client_data);
                         /* Invoke fn(hbp, client_data) for each         */
                         /* allocated heap block.                        */
-GC_INNER struct hblk * GC_next_block(struct hblk *h, GC_bool allow_free);
-                        /* Get the next block whose address is at least */
-                        /* h.  Returned block is managed by GC.  The    */
-                        /* block must be in use unless allow_free is    */
-                        /* true.  Return 0 if there is no such block.   */
+GC_INNER struct hblk * GC_next_used_block(struct hblk * h);
+                        /* Return first in-use block >= h       */
 GC_INNER struct hblk * GC_prev_block(struct hblk * h);
-                        /* Get the last (highest address) block whose   */
-                        /* address is at most h.  Returned block is     */
-                        /* managed by GC, but may or may not be in use. */
-                        /* Return 0 if there is no such block.          */
+                        /* Return last block <= h.  Returned block      */
+                        /* is managed by GC, but may or may not be in   */
+                        /* use.                                         */
 GC_INNER void GC_mark_init(void);
 GC_INNER void GC_clear_marks(void);
                         /* Clear mark bits for all heap objects.        */
@@ -1884,13 +1853,10 @@ GC_INNER void GC_scratch_recycle_inner(void *ptr, size_t bytes);
                                 /* Reuse the memory region by the heap. */
 
 /* Heap block layout maps: */
-#ifdef MARK_BIT_PER_GRANULE
-  GC_INNER GC_bool GC_add_map_entry(size_t sz);
+GC_INNER GC_bool GC_add_map_entry(size_t sz);
                                 /* Add a heap block map for objects of  */
                                 /* size sz to obj_map.                  */
                                 /* Return FALSE on failure.             */
-#endif
-
 GC_INNER void GC_register_displacement_inner(size_t offset);
                                 /* Version of GC_register_displacement  */
                                 /* that assumes lock is already held.   */
@@ -1967,7 +1933,7 @@ GC_INNER GC_bool GC_try_to_collect_inner(GC_stop_func f);
 #define GC_gcollect_inner() \
                 (void)GC_try_to_collect_inner(GC_never_stop_func)
 
-#ifdef THREADS
+#if defined(GC_PTHREADS) && !defined(GC_WIN32_THREADS)
   GC_EXTERN GC_bool GC_in_thread_creation;
         /* We may currently be in thread creation or destruction.       */
         /* Only set to TRUE while allocation lock is held.              */
@@ -2156,13 +2122,7 @@ GC_EXTERN GC_bool GC_print_back_height;
   GC_INNER void GC_remap(ptr_t start, size_t bytes);
   GC_INNER void GC_unmap_gap(ptr_t start1, size_t bytes1, ptr_t start2,
                              size_t bytes2);
-
-  /* Compute end address for an unmap operation on the indicated block. */
-  GC_INLINE ptr_t GC_unmap_end(ptr_t start, size_t bytes)
-  {
-     return (ptr_t)((word)(start + bytes) & ~(GC_page_size - 1));
-  }
-#endif /* USE_MUNMAP */
+#endif
 
 #ifdef CAN_HANDLE_FORK
   GC_EXTERN int GC_handle_fork;
@@ -2213,17 +2173,6 @@ GC_EXTERN GC_bool GC_print_back_height;
                 /* - may be essential if we need to ensure that         */
                 /* pointer-free system call buffers in the heap are     */
                 /* not protected.                                       */
-
-# ifdef CAN_HANDLE_FORK
-#   if defined(PROC_VDB)
-      GC_INNER void GC_dirty_update_child(void);
-                /* Update pid-specific resources (like /proc file       */
-                /* descriptors) needed by the dirty bits implementation */
-                /* after fork in the child process.                     */
-#   else
-#     define GC_dirty_update_child() (void)0
-#   endif
-# endif /* CAN_HANDLE_FORK */
 
   GC_INNER GC_bool GC_dirty_init(void);
                 /* Returns true if dirty bits are maintained (otherwise */
@@ -2367,7 +2316,8 @@ GC_EXTERN signed_word GC_bytes_found;
                                 /* protected by GC_write_cs.    */
 
 # endif
-# if defined(GC_DISABLE_INCREMENTAL) || defined(HAVE_LOCKFREE_AO_OR)
+# if defined(GC_DISABLE_INCREMENTAL) \
+     || defined(set_pht_entry_from_index_concurrent)
 #   define GC_acquire_dirty_lock() (void)0
 #   define GC_release_dirty_lock() (void)0
 # else
@@ -2501,12 +2451,12 @@ GC_INNER void *GC_store_debug_info_inner(void *p, word sz, const char *str,
 
 #ifdef SEARCH_FOR_DATA_START
   GC_INNER void GC_init_linux_data_start(void);
-  void * GC_find_limit(void *, int);
+  ptr_t GC_find_limit(ptr_t, GC_bool);
 #endif
 
 #if defined(NETBSD) && defined(__ELF__)
   GC_INNER void GC_init_netbsd_elf(void);
-  void * GC_find_limit(void *, int);
+  ptr_t GC_find_limit(ptr_t, GC_bool);
 #endif
 
 #ifdef UNIX_LIKE
@@ -2685,6 +2635,7 @@ GC_INNER void *GC_store_debug_info_inner(void *p, word sz, const char *str,
 /* Do we need the GC_find_limit machinery to find the end of a  */
 /* data segment.                                                */
 #if defined(HEURISTIC2) || defined(SEARCH_FOR_DATA_START) \
+    || (!defined(STACKBOTTOM) && defined(HEURISTIC2)) \
     || ((defined(SVR4) || defined(AIX) || defined(DGUX) \
          || (defined(LINUX) && defined(SPARC))) && !defined(PCR))
 # define NEED_FIND_LIMIT

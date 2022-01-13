@@ -349,9 +349,10 @@ GC_API void GC_CALL GC_generic_malloc_many(size_t lb, int k, void **result)
         struct hblk * hbp;
         hdr * hhdr;
 
-        while ((hbp = rlh[lg]) != NULL) {
+        rlh += lg;
+        while ((hbp = *rlh) != 0) {
             hhdr = HDR(hbp);
-            rlh[lg] = hhdr -> hb_next;
+            *rlh = hhdr -> hb_next;
             GC_ASSERT(hhdr -> hb_sz == lb);
             hhdr -> hb_last_reclaimed = (unsigned short) GC_gc_no;
 #           ifdef PARALLEL_MARK
@@ -415,9 +416,6 @@ GC_API void GC_CALL GC_generic_malloc_many(size_t lb, int k, void **result)
                 /* GC lock is needed for reclaim list access.   We      */
                 /* must decrement fl_builder_count before reacquiring   */
                 /* the lock.  Hopefully this path is rare.              */
-
-                rlh = ok -> ok_reclaim_list; /* reload rlh after locking */
-                if (NULL == rlh) break;
               }
 #           endif
         }

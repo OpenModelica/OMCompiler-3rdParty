@@ -114,12 +114,9 @@ STATIC void GC_remove_allowed_signals(sigset_t *set)
 
 static sigset_t suspend_handler_mask;
 
-#define THREAD_RESTARTED 0x1
-
 STATIC volatile AO_t GC_stop_count = 0;
-                        /* Incremented by two (not to alter             */
-                        /* THREAD_RESTARTED bit) at the beginning of    */
-                        /* GC_stop_world.                               */
+                        /* Incremented by two at the beginning of       */
+                        /* GC_stop_world (the lowest bit is always 0).  */
 
 STATIC volatile AO_t GC_world_is_stopped = FALSE;
                         /* FALSE ==> it is safe for threads to restart, */
@@ -244,22 +241,6 @@ STATIC void GC_suspend_handler_inner(ptr_t dummy, void *context);
   errno = old_errno;
 }
 
-#ifdef BASE_ATOMIC_OPS_EMULATED
- /* The AO primitives emulated with locks cannot be used inside signal  */
- /* handlers as this could cause a deadlock or a double lock.           */
- /* The following "async" macro definitions are correct only for        */
- /* an uniprocessor case and are provided for a test purpose.           */
-# define ao_load_acquire_async(p) (*(p))
-# define ao_load_async(p) ao_load_acquire_async(p)
-# define ao_store_release_async(p, v) (void)(*(p) = (v))
-# define ao_store_async(p, v) ao_store_release_async(p, v)
-#else
-# define ao_load_acquire_async(p) AO_load_acquire(p)
-# define ao_load_async(p) AO_load(p)
-# define ao_store_release_async(p, v) AO_store_release(p, v)
-# define ao_store_async(p, v) AO_store(p, v)
-#endif /* !BASE_ATOMIC_OPS_EMULATED */
-
 /* The lookup here is safe, since this is done on behalf        */
 /* of a thread which holds the allocation lock in order         */
 /* to stop the world.  Thus concurrent modification of the      */
@@ -291,14 +272,13 @@ GC_INLINE void GC_store_stack_ptr(GC_thread me)
   /* and fetched (by GC_push_all_stacks) using the atomic primitives to */
   /* avoid the related TSan warning.                                    */
 # ifdef SPARC
-    ao_store_async((volatile AO_t *)&me->stop_info.stack_ptr,
+    AO_store((volatile AO_t *)&me->stop_info.stack_ptr,
              (AO_t)GC_save_regs_in_stack());
 # else
 #   ifdef IA64
       me -> backing_store_ptr = GC_save_regs_in_stack();
 #   endif
-    ao_store_async((volatile AO_t *)&me->stop_info.stack_ptr,
-                   (AO_t)GC_approx_sp());
+    AO_store((volatile AO_t *)&me->stop_info.stack_ptr, (AO_t)GC_approx_sp());
 # endif
 }
 
@@ -308,7 +288,7 @@ STATIC void GC_suspend_handler_inner(ptr_t dummy GC_ATTR_UNUSED,
   pthread_t self = pthread_self();
   GC_thread me;
   IF_CANCEL(int cancel_state;)
-  AO_t my_stop_count = ao_load_acquire_async(&GC_stop_count);
+  AO_t my_stop_count = AO_load_acquire(&GC_stop_count);
                         /* After the barrier, this thread should see    */
                         /* the actual content of GC_threads.            */
 
@@ -324,12 +304,12 @@ STATIC void GC_suspend_handler_inner(ptr_t dummy GC_ATTR_UNUSED,
 # ifdef DEBUG_THREADS
     GC_log_printf("Suspending %p\n", (void *)self);
 # endif
-  GC_ASSERT(((word)my_stop_count & THREAD_RESTARTED) == 0);
+  GC_ASSERT(((word)my_stop_count & 1) == 0);
 
   me = GC_lookup_thread_async(self);
 
 # ifdef GC_ENABLE_SUSPEND_THREAD
-    if (ao_load_async(&me->suspended_ext)) {
+    if (AO_load(&me->suspended_ext)) {
       GC_store_stack_ptr(me);
       sem_post(&GC_suspend_ack_sem);
       suspend_self_inner(me);
@@ -341,7 +321,7 @@ STATIC void GC_suspend_handler_inner(ptr_t dummy GC_ATTR_UNUSED,
     }
 # endif
 
-  if (((word)me->stop_info.last_stop_count & ~(word)THREAD_RESTARTED)
+  if (((word)me->stop_info.last_stop_count & ~(word)0x1)
         == (word)my_stop_count) {
       /* Duplicate signal.  OK if we are retrying.      */
       if (!GC_retry_signals) {
@@ -370,7 +350,7 @@ STATIC void GC_suspend_handler_inner(ptr_t dummy GC_ATTR_UNUSED,
   /* thread has been stopped.  Note that sem_post() is          */
   /* the only async-signal-safe primitive in LinuxThreads.      */
   sem_post(&GC_suspend_ack_sem);
-  ao_store_release_async(&me->stop_info.last_stop_count, my_stop_count);
+  AO_store_release(&me->stop_info.last_stop_count, my_stop_count);
 
   /* Wait until that thread tells us to restart by sending      */
   /* this thread a GC_sig_thr_restart signal (should be masked  */
@@ -384,8 +364,8 @@ STATIC void GC_suspend_handler_inner(ptr_t dummy GC_ATTR_UNUSED,
   /* this code should not be executed.                          */
   do {
       sigsuspend (&suspend_handler_mask);
-  } while (ao_load_acquire_async(&GC_world_is_stopped)
-           && ao_load_async(&GC_stop_count) == my_stop_count);
+  } while (AO_load_acquire(&GC_world_is_stopped)
+           && AO_load(&GC_stop_count) == my_stop_count);
 
 # ifdef DEBUG_THREADS
     GC_log_printf("Continuing %p\n", (void *)self);
@@ -403,9 +383,10 @@ STATIC void GC_suspend_handler_inner(ptr_t dummy GC_ATTR_UNUSED,
       if (GC_retry_signals)
 #   endif
     {
-      /* Set the flag that the thread has been restarted.       */
-      ao_store_release_async(&me->stop_info.last_stop_count,
-                             (AO_t)((word)my_stop_count | THREAD_RESTARTED));
+      /* Set the flag (the lowest bit of last_stop_count) that the      */
+      /* thread has been restarted.                                     */
+      AO_store_release(&me->stop_info.last_stop_count,
+                       (AO_t)((word)my_stop_count | 1));
     }
   }
   RESTORE_CANCEL(cancel_state);
@@ -544,7 +525,7 @@ STATIC void GC_restart_handler(int sig)
     static void *GC_CALLBACK suspend_self_inner(void *client_data) {
       GC_thread me = (GC_thread)client_data;
 
-      while (ao_load_acquire_async(&me->suspended_ext)) {
+      while (AO_load_acquire(&me->suspended_ext)) {
         /* TODO: Use sigsuspend() instead. */
         GC_brief_async_signal_safe_sleep();
       }
@@ -648,10 +629,6 @@ STATIC void GC_restart_handler(int sig)
     }
 # endif /* GC_ENABLE_SUSPEND_THREAD */
 
-# undef ao_load_acquire_async
-# undef ao_load_async
-# undef ao_store_async
-# undef ao_store_release_async
 #endif /* !GC_OPENBSD_UTHREADS && !NACL */
 
 #ifdef IA64
@@ -919,8 +896,7 @@ GC_INNER void GC_stop_world(void)
 # if defined(GC_OPENBSD_UTHREADS) || defined(NACL)
     (void)GC_suspend_all();
 # else
-    AO_store(&GC_stop_count,
-             (AO_t)((word)GC_stop_count + (THREAD_RESTARTED+1)));
+    AO_store(&GC_stop_count, (AO_t)((word)GC_stop_count + 2));
         /* Only concurrent reads are possible. */
     if (GC_manual_vdb) {
       GC_acquire_dirty_lock();
@@ -1123,9 +1099,8 @@ GC_INNER void GC_stop_world(void)
 #           ifdef GC_ENABLE_SUSPEND_THREAD
               if (p -> suspended_ext) continue;
 #           endif
-            if (GC_retry_signals
-                && AO_load(&p->stop_info.last_stop_count)
-                    == (AO_t)((word)GC_stop_count | THREAD_RESTARTED))
+            if (GC_retry_signals && AO_load(&p->stop_info.last_stop_count)
+                                    == (AO_t)((word)GC_stop_count | 1))
               continue; /* The thread has been restarted. */
             n_live_threads++;
 #         endif

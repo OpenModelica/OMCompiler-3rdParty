@@ -40,7 +40,7 @@ void GC_noop6(word arg1 GC_ATTR_UNUSED, word arg2 GC_ATTR_UNUSED,
               word arg5 GC_ATTR_UNUSED, word arg6 GC_ATTR_UNUSED)
 {
   /* Avoid GC_noop6 calls to be optimized away. */
-# if defined(AO_HAVE_compiler_barrier) && !defined(BASE_ATOMIC_OPS_EMULATED)
+# ifdef AO_CLEAR
     AO_compiler_barrier(); /* to serve as a special side-effect */
 # else
     GC_noop1(0);
@@ -123,7 +123,7 @@ STATIC GC_bool GC_objects_are_marked = FALSE;
                 /* Are there collectible marked objects in the heap?    */
 
 /* Is a collection in progress?  Note that this can return true in the  */
-/* non-incremental case, if a collection has been abandoned and the     */
+/* nonincremental case, if a collection has been abandoned and the      */
 /* mark state is now MS_INVALID.                                        */
 GC_INNER GC_bool GC_collection_in_progress(void)
 {
@@ -161,7 +161,7 @@ GC_INNER void GC_set_hdr_marks(hdr *hhdr)
       }
 #   else
       for (i = 0; i < divWORDSZ(n_marks + WORDSZ); ++i) {
-        hhdr -> hb_marks[i] = GC_WORD_MAX;
+        hhdr -> hb_marks[i] = ONES;
       }
 #   endif
 #   ifdef MARK_BIT_PER_OBJ
@@ -502,8 +502,7 @@ static void alloc_mark_stack(size_t);
         /* to the exception case; our results are invalid and we have   */
         /* to start over.  This cannot be prevented since we can't      */
         /* block in DllMain.                                            */
-        if (GC_started_thread_while_stopped())
-          goto handle_thr_start;
+        if (GC_started_thread_while_stopped()) goto handle_ex;
 #     endif
      rm_handler:
       return ret_val;
@@ -527,7 +526,7 @@ static void alloc_mark_stack(size_t);
 #       endif
         er.alt_path = &&handle_ex;
 #       pragma GCC diagnostic pop
-#     elif !defined(CPPCHECK) /* pragma diagnostic is not supported */
+#     else /* pragma diagnostic is not supported */
         er.alt_path = &&handle_ex;
 #     endif
       er.ex_reg.handler = mark_ex_handler;
@@ -540,7 +539,7 @@ static void alloc_mark_stack(size_t);
           goto handle_ex;
 #     if defined(GC_WIN32_THREADS) && !defined(GC_PTHREADS)
         if (GC_started_thread_while_stopped())
-          goto handle_thr_start;
+          goto handle_ex;
 #     endif
     rm_handler:
       /* Uninstall the exception handler */
@@ -554,17 +553,10 @@ static void alloc_mark_stack(size_t);
       /* thread that is in the process of exiting, and disappears       */
       /* while we are marking it.  This seems extremely difficult to    */
       /* avoid otherwise.                                               */
-#     ifndef DEFAULT_VDB
-        if (GC_auto_incremental) {
-          static GC_bool is_warned = FALSE;
-
-          if (!is_warned) {
-            is_warned = TRUE;
-            WARN("Incremental GC incompatible with /proc roots\n", 0);
-          }
-          /* I'm not sure if this could still work ...  */
-        }
-#     endif
+      if (GC_incremental) {
+        WARN("Incremental GC incompatible with /proc roots\n", 0);
+        /* I'm not sure if this could still work ...    */
+      }
       GC_setup_temporary_fault_handler();
       if(SETJMP(GC_jmp_buf) != 0) goto handle_ex;
       ret_val = GC_mark_some_inner(cold_gc_frame);
@@ -586,10 +578,6 @@ handle_ex:
                " memory mapping disappeared\n", 0);
         }
       }
-#   if (defined(MSWIN32) || defined(MSWINCE)) && defined(GC_WIN32_THREADS) \
-       && !defined(GC_PTHREADS)
-      handle_thr_start:
-#   endif
       /* We have bad roots on the stack.  Discard mark stack.   */
       /* Rescan from marked objects.  Redetermine roots.        */
 #     ifdef REGISTER_LIBRARIES_EARLY
@@ -1282,7 +1270,7 @@ GC_INNER void GC_scratch_recycle_inner(void *ptr, size_t bytes)
     /* TODO: Assert correct memory flags if GWW_VDB */
     if (page_offset != 0)
       displ = GC_page_size - page_offset;
-    recycled_bytes = bytes > displ ? (bytes - displ) & ~(GC_page_size-1) : 0;
+    recycled_bytes = (bytes - displ) & ~(GC_page_size - 1);
     GC_COND_LOG_PRINTF("Recycle %lu/%lu scratch-allocated bytes at %p\n",
                        (unsigned long)recycled_bytes, (unsigned long)bytes,
                        ptr);
@@ -1533,7 +1521,7 @@ struct trace_entry {
     word bytes_allocd;
     word arg1;
     word arg2;
-} GC_trace_buf[TRACE_ENTRIES] = { { NULL, 0, 0, 0, 0 } };
+} GC_trace_buf[TRACE_ENTRIES];
 
 int GC_trace_buf_ptr = 0;
 
@@ -1617,8 +1605,7 @@ GC_INNER void GC_push_all_stack(ptr_t bottom, ptr_t top)
 #         if defined(THREADS) && defined(MPROTECT_VDB)
             && !GC_auto_incremental
 #         endif
-          && (word)GC_mark_stack_top
-             < (word)(GC_mark_stack_limit - INITIAL_MARK_STACK_SIZE/8)) {
+         ) {
         GC_push_all(bottom, top);
       } else
 #   endif
@@ -1974,8 +1961,8 @@ STATIC struct hblk * GC_push_next_marked(struct hblk *h)
     hdr * hhdr = HDR(h);
 
     if (EXPECT(IS_FORWARDING_ADDR_OR_NIL(hhdr) || HBLK_IS_FREE(hhdr), FALSE)) {
-      h = GC_next_block(h, FALSE);
-      if (NULL == h) return NULL;
+      h = GC_next_used_block(h);
+      if (h == 0) return(0);
       hhdr = GC_find_header((ptr_t)h);
     } else {
 #     ifdef LINT2
@@ -1996,8 +1983,8 @@ STATIC struct hblk * GC_push_next_marked(struct hblk *h)
     for (;;) {
         if (EXPECT(IS_FORWARDING_ADDR_OR_NIL(hhdr)
                    || HBLK_IS_FREE(hhdr), FALSE)) {
-          h = GC_next_block(h, FALSE);
-          if (NULL == h) return NULL;
+          h = GC_next_used_block(h);
+          if (h == 0) return(0);
           hhdr = GC_find_header((ptr_t)h);
         } else {
 #         ifdef LINT2
@@ -2037,8 +2024,8 @@ STATIC struct hblk * GC_push_next_marked_uncollectable(struct hblk *h)
     for (;;) {
         if (EXPECT(IS_FORWARDING_ADDR_OR_NIL(hhdr)
                    || HBLK_IS_FREE(hhdr), FALSE)) {
-          h = GC_next_block(h, FALSE);
-          if (NULL == h) return NULL;
+          h = GC_next_used_block(h);
+          if (h == 0) return(0);
           hhdr = GC_find_header((ptr_t)h);
         } else {
 #         ifdef LINT2

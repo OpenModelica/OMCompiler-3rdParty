@@ -121,8 +121,6 @@ int main(int argc, char **argv)
         model_min = 0;
         model_max = 2;
     }
-    if (GC_get_find_leak())
-        printf("This test program is not designed for leak detection mode\n");
 
     keep_arr = (testobj_t *)GC_MALLOC(sizeof(void *) * KEEP_CNT);
     if (NULL == keep_arr) {

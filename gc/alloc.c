@@ -3,7 +3,7 @@
  * Copyright (c) 1991-1996 by Xerox Corporation.  All rights reserved.
  * Copyright (c) 1998 by Silicon Graphics.  All rights reserved.
  * Copyright (c) 1999-2004 Hewlett-Packard Development Company, L.P.
- * Copyright (c) 2008-2019 Ivan Maidanski
+ * Copyright (c) 2008-2018 Ivan Maidanski
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -124,7 +124,7 @@ const char * const GC_copyright[] =
 "Copyright (c) 1991-1995 by Xerox Corporation.  All rights reserved. ",
 "Copyright (c) 1996-1998 by Silicon Graphics.  All rights reserved. ",
 "Copyright (c) 1999-2009 by Hewlett-Packard Company.  All rights reserved. ",
-"Copyright (c) 2008-2019 Ivan Maidanski ",
+"Copyright (c) 2008-2018 Ivan Maidanski ",
 "THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY",
 " EXPRESSED OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.",
 "See source code for details." };
@@ -173,7 +173,7 @@ GC_INNER int GC_CALLBACK GC_never_stop_func(void)
 #endif
 
 #ifndef NO_CLOCK
-  STATIC CLOCK_TYPE GC_start_time = CLOCK_TYPE_INITIALIZER;
+  STATIC CLOCK_TYPE GC_start_time = 0;
                                 /* Time at which we stopped world.      */
                                 /* used only in GC_timeout_stop_func.   */
 #endif
@@ -349,7 +349,7 @@ STATIC void GC_clear_a_few_frames(void)
 
 /* Heap size at which we need a collection to avoid expanding past      */
 /* limits used by blacklisting.                                         */
-STATIC word GC_collect_at_heapsize = GC_WORD_MAX;
+STATIC word GC_collect_at_heapsize = (word)(-1);
 
 /* Have we allocated enough to amortize a collection? */
 GC_INNER GC_bool GC_should_collect(void)
@@ -485,7 +485,7 @@ GC_API GC_on_collection_event_proc GC_CALL GC_get_on_collection_event(void)
 GC_INNER GC_bool GC_try_to_collect_inner(GC_stop_func stop_func)
 {
 #   ifndef NO_CLOCK
-      CLOCK_TYPE start_time = CLOCK_TYPE_INITIALIZER;
+      CLOCK_TYPE start_time = 0; /* initialized to prevent warning. */
       GC_bool start_time_valid;
 #   endif
 
@@ -715,7 +715,7 @@ STATIC GC_bool GC_stopped_mark(GC_stop_func stop_func)
 {
     unsigned i;
 #   ifndef NO_CLOCK
-      CLOCK_TYPE start_time = CLOCK_TYPE_INITIALIZER;
+      CLOCK_TYPE start_time = 0; /* initialized to prevent warning. */
 #   endif
 
     GC_ASSERT(I_HOLD_LOCK());
@@ -984,7 +984,7 @@ GC_INLINE int GC_compute_heap_usage_percent(void)
 {
   word used = GC_composite_in_use + GC_atomic_in_use;
   word heap_sz = GC_heapsize - GC_unmapped_bytes;
-  return used >= heap_sz ? 0 : used < GC_WORD_MAX / 100 ?
+  return used >= heap_sz ? 0 : used < ((word)-1) / 100 ?
                 (int)((used * 100) / heap_sz) : (int)(used / (heap_sz / 100));
 }
 
@@ -993,8 +993,8 @@ GC_INLINE int GC_compute_heap_usage_percent(void)
 STATIC void GC_finish_collection(void)
 {
 #   ifndef NO_CLOCK
-      CLOCK_TYPE start_time = CLOCK_TYPE_INITIALIZER;
-      CLOCK_TYPE finalize_time = CLOCK_TYPE_INITIALIZER;
+      CLOCK_TYPE start_time = 0; /* initialized to prevent warning. */
+      CLOCK_TYPE finalize_time = 0;
 #   endif
 
     GC_ASSERT(I_HOLD_LOCK());
@@ -1261,13 +1261,13 @@ GC_INNER void GC_add_to_heap(struct hblk *p, size_t bytes)
     GC_heapsize += bytes;
 
     /* Normally the caller calculates a new GC_collect_at_heapsize,
-     * but this is also called directly from GC_scratch_recycle_inner, so
+     * but this is also called directly from alloc_mark_stack, so
      * adjust here. It will be recalculated when called from
      * GC_expand_hp_inner.
      */
     GC_collect_at_heapsize += bytes;
     if (GC_collect_at_heapsize < GC_heapsize /* wrapped */)
-       GC_collect_at_heapsize = GC_WORD_MAX;
+       GC_collect_at_heapsize = (word)(-1);
 
     if ((word)p <= (word)GC_least_plausible_heap_addr
         || GC_least_plausible_heap_addr == 0) {
@@ -1307,7 +1307,7 @@ GC_INNER void GC_add_to_heap(struct hblk *p, size_t bytes)
   }
 #endif
 
-void * GC_least_plausible_heap_addr = (void *)GC_WORD_MAX;
+void * GC_least_plausible_heap_addr = (void *)ONES;
 void * GC_greatest_plausible_heap_addr = 0;
 
 GC_INLINE word GC_max(word x, word y)
@@ -1388,7 +1388,7 @@ GC_INNER GC_bool GC_expand_hp_inner(word n)
       GC_collect_at_heapsize =
          GC_heapsize + expansion_slop - 2*MAXHINCR*HBLKSIZE;
       if (GC_collect_at_heapsize < GC_heapsize /* wrapped */)
-         GC_collect_at_heapsize = GC_WORD_MAX;
+         GC_collect_at_heapsize = (word)(-1);
     if (GC_on_heap_resize)
       (*GC_on_heap_resize)(GC_heapsize);
 
@@ -1418,6 +1418,8 @@ GC_INNER unsigned GC_fail_count = 0;
 
 static word last_fo_entries = 0;
 static word last_bytes_finalized = 0;
+
+#define GC_WORD_MAX (~(word)0)
 
 /* Collect or expand heap in an attempt make the indicated number of    */
 /* free blocks available.  Should be called until the blocks are        */

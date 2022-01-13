@@ -156,12 +156,6 @@
 # define INIT_MANUAL_VDB_ALLOWED /* empty */
 #endif
 
-#ifdef TEST_PAGES_EXECUTABLE
-# define INIT_PAGES_EXECUTABLE GC_set_pages_executable(1)
-#else
-# define INIT_PAGES_EXECUTABLE (void)0
-#endif
-
 #define CHECK_GCLIB_VERSION \
             if (GC_get_version() != ((GC_VERSION_MAJOR<<16) \
                                     | (GC_VERSION_MINOR<<8) \
@@ -191,7 +185,7 @@
 #endif
 
 #define GC_COND_INIT() \
-    INIT_FORK_SUPPORT; INIT_MANUAL_VDB_ALLOWED; INIT_PAGES_EXECUTABLE; \
+    INIT_FORK_SUPPORT; INIT_MANUAL_VDB_ALLOWED; \
     GC_OPT_INIT; CHECK_GCLIB_VERSION; \
     INIT_PRINT_STATS; INIT_FIND_LEAK; INIT_PERF_MEASUREMENT
 
@@ -202,7 +196,7 @@
             }
 
 /* Define AO primitives for a single-threaded mode. */
-#ifndef AO_HAVE_compiler_barrier
+#ifndef AO_CLEAR
   /* AO_t not defined. */
 # define AO_t GC_word
 #endif
@@ -1469,8 +1463,6 @@ void run_one_test(void)
              GC_FREE(GC_MALLOC_ATOMIC(0));
              test_generic_malloc_or_special(GC_malloc_atomic(1));
              AO_fetch_and_add1(&atomic_count);
-             GC_FREE(GC_MALLOC_ATOMIC_IGNORE_OFF_PAGE(1));
-             GC_FREE(GC_MALLOC_IGNORE_OFF_PAGE(2));
            }
          }
 #   ifdef GC_GCJ_SUPPORT
@@ -1561,10 +1553,6 @@ void run_one_test(void)
 #     endif
 #   endif /* DBG_HDRS_ALL */
     tree_test();
-#   ifdef TEST_WITH_SYSTEM_MALLOC
-      free(calloc(1,1));
-      free(realloc(NULL, 64));
-#   endif
 #   ifndef NO_CLOCK
       if (print_stats) {
         CLOCK_TYPE tree_time;
@@ -1593,13 +1581,6 @@ void run_one_test(void)
       if (print_stats)
         GC_log_printf("Finished %p\n", (void *)&start_time);
 #   endif
-}
-
-/* Execute some tests after termination of other test threads (if any). */
-void run_single_threaded_test(void) {
-    GC_disable();
-    GC_FREE(GC_MALLOC(100));
-    GC_enable();
 }
 
 void GC_CALLBACK reachable_objs_counter(void *obj, size_t size,
@@ -1916,7 +1897,6 @@ void GC_CALLBACK warn_proc(char *msg, GC_word p)
 #   endif
     set_print_procs();
     run_one_test();
-    run_single_threaded_test();
     check_heap_stats();
 #   ifndef MSWINCE
       fflush(stdout);
@@ -1983,6 +1963,7 @@ void GC_CALLBACK warn_proc(char *msg, GC_word p)
        UNTESTED(GC_set_on_collection_event);
        UNTESTED(GC_set_on_heap_resize);
        UNTESTED(GC_set_oom_fn);
+       UNTESTED(GC_set_pages_executable);
        UNTESTED(GC_set_push_other_roots);
        UNTESTED(GC_set_start_callback);
        UNTESTED(GC_set_stop_func);
@@ -2009,7 +1990,6 @@ void GC_CALLBACK warn_proc(char *msg, GC_word p)
          UNTESTED(GC_gcj_malloc_ignore_off_page);
 #      endif
 #      ifndef NO_DEBUGGING
-         UNTESTED(GC_dump);
          UNTESTED(GC_dump_regions);
          UNTESTED(GC_is_tmp_root);
          UNTESTED(GC_print_free_list);
@@ -2224,7 +2204,6 @@ DWORD __stdcall thr_window(void * arg GC_ATTR_UNUSED)
     if (WaitForSingleObject(win_thr_h, INFINITE) != WAIT_OBJECT_0)
       FAIL;
 # endif
-  run_single_threaded_test();
   check_heap_stats();
 # if defined(CPPCHECK) && defined(GC_WIN32_THREADS)
     UNTESTED(GC_ExitThread);
@@ -2266,7 +2245,6 @@ int test(void)
         != PCR_ERes_okay || code != 0) {
         GC_printf("Thread 2 failed\n");
     }
-    run_single_threaded_test();
     check_heap_stats();
     return(0);
 }
@@ -2379,7 +2357,6 @@ int main(void)
         }
       }
 #   endif
-    run_single_threaded_test();
     check_heap_stats();
     (void)fflush(stdout);
     (void)pthread_attr_destroy(&attr);

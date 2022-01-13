@@ -22,7 +22,7 @@ instead of features.  In many cases, this is a mistake.
 Many of the tested configuration macros are at least somewhat defined in
 either include/private/gcconfig.h or in Makefile.direct.  Here is an attempt
 at documenting these macros:  (Thanks to Walter Bright for suggesting
-this.)
+this.  This is a work in progress)
 
 MACRO           EXPLANATION
 -----           -----------
@@ -56,10 +56,6 @@ _ENABLE_ARRAYNEW
                 #define'd by the Digital Mars C++ compiler when
                 operator new[] and delete[] are separately
                 overloadable. Used in gc_cpp.h.
-
-GC_NO_INLINE_STD_NEW    Tested by gc_cpp.cc and gc_cpp.h.  MS Windows only.
-                Define the system-wide new and delete operators in gccpp.dll
-                instead of providing an inline version of the operators.
 
 _DLL            Tested by gc_config_macros.h. Defined by Visual C++ if runtime
                 dynamic libraries are in use.  Used (only if none of GC_DLL,
@@ -208,11 +204,10 @@ DONT_ADD_BYTE_AT_END    Meaningful only with ALL_INTERIOR_POINTERS or
 
 NO_EXECUTE_PERMISSION   May cause some or all of the heap to not
   have execute permission, i.e. it may be impossible to execute
-  code from the heap.  Affects the incremental collector and memory unmapping.
-  It may greatly improve the performance, since this may avoid some expensive
-  cache synchronization.  Portable clients should call
-  GC_set_pages_executable(1) at the process initialization time if the
-  execute permission is required.
+  code from the heap.  Currently this only affects the incremental
+  collector on UNIX machines.  It may greatly improve its performance,
+  since this may avoid some expensive cache synchronization.  Alternatively,
+  GC_set_pages_executable can be called at the process initialization time.
 
 GC_NO_OPERATOR_NEW_ARRAY        Declares that the C++ compiler does not
   support the  new syntax "operator new[]" for allocating and deleting arrays.

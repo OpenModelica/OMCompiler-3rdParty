@@ -23,8 +23,6 @@
 #define GC_PMARK_H
 
 #if defined(HAVE_CONFIG_H) && !defined(GC_PRIVATE_H)
-  /* When gc_pmark.h is included from gc_priv.h, some of macros might   */
-  /* be undefined in gcconfig.h, so skip config.h in this case.         */
 # include "config.h"
 #endif
 
@@ -42,8 +40,13 @@
 # include "dbg_mlc.h"
 #endif
 
-#include "../gc_mark.h"
-#include "gc_priv.h"
+#ifndef GC_MARK_H
+# include "../gc_mark.h"
+#endif
+
+#ifndef GC_PRIVATE_H
+# include "gc_priv.h"
+#endif
 
 EXTERN_C_BEGIN
 
@@ -150,7 +153,7 @@ GC_INLINE mse * GC_push_obj(ptr_t obj, hdr * hhdr,  mse * mark_stack_top,
 /* Set mark bit, exit (using "break" statement) if it is already set.   */
 #ifdef USE_MARK_BYTES
 # if defined(PARALLEL_MARK) && defined(AO_HAVE_char_store) \
-     && !defined(BASE_ATOMIC_OPS_EMULATED)
+     && !defined(AO_USE_PTHREAD_DEFS)
     /* There is a race here, and we may set the bit twice in the        */
     /* concurrent case.  This can result in the object being pushed     */
     /* twice.  But that is only a performance issue.                    */
@@ -317,8 +320,7 @@ GC_INLINE mse * GC_push_contents_hdr(ptr_t current, mse * mark_stack_top,
           if ((low_prod >> 16) != 0)
 #       endif /* MARK_BIT_PER_OBJ */
         {
-#         if defined(MARK_BIT_PER_OBJ) \
-             && !defined(MARK_BIT_PER_GRANULE) /* for cppcheck */
+#         ifdef MARK_BIT_PER_OBJ
             size_t obj_displ;
 
             /* Accurate enough if HBLKSIZE <= 2**15.    */

@@ -196,12 +196,10 @@ STATIC ptr_t GC_stack_range_for(ptr_t *phi, thread_act_t thread, GC_thread p,
     /* else */ {
       mach_msg_type_number_t thread_state_count = GC_MACH_THREAD_STATE_COUNT;
 
-      /* Get the thread state (registers, etc.) */
-      do {
-        kern_result = thread_get_state(thread, GC_MACH_THREAD_STATE,
-                                       (natural_t *)&state,
-                                       &thread_state_count);
-      } while (kern_result == KERN_ABORTED);
+      /* Get the thread state (registers, etc) */
+      kern_result = thread_get_state(thread, GC_MACH_THREAD_STATE,
+                                     (natural_t *)&state,
+                                     &thread_state_count);
     }
 #   ifdef DEBUG_THREADS
       GC_log_printf("thread_get_state returns value = %d\n", kern_result);
@@ -658,8 +656,7 @@ GC_INLINE void GC_thread_resume(thread_act_t thread)
   kern_return_t kern_result;
 # if defined(DEBUG_THREADS) || defined(GC_ASSERTIONS)
     struct thread_basic_info info;
-    mach_msg_type_number_t outCount = THREAD_BASIC_INFO_COUNT;
-
+    mach_msg_type_number_t outCount = THREAD_INFO_MAX;
     kern_result = thread_info(thread, THREAD_BASIC_INFO,
                               (thread_info_t)&info, &outCount);
     if (kern_result != KERN_SUCCESS)

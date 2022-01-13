@@ -547,15 +547,11 @@ STATIC int GC_register_dynlib_callback(struct dl_phdr_info * info,
             if (load_segs[j].start2 != 0) {
               WARN("More than one GNU_RELRO segment per load one\n",0);
             } else {
-              GC_ASSERT((word)end <=
-                            (((word)load_segs[j].end + GC_page_size - 1) &
-                             ~(GC_page_size - 1)));
+              GC_ASSERT((word)end <= (word)load_segs[j].end);
               /* Remove from the existing load segment */
               load_segs[j].end2 = load_segs[j].end;
               load_segs[j].end = start;
               load_segs[j].start2 = end;
-              /* Note that start2 may be greater than end2 because of   */
-              /* p->p_memsz value multiple of page size.                */
             }
             break;
           }
@@ -623,10 +619,10 @@ STATIC GC_bool GC_register_dynamic_libraries_dl_iterate_phdr(void)
   } else {
       ptr_t datastart, dataend;
 #     ifdef DATASTART_IS_FUNC
-        static ptr_t datastart_cached = (ptr_t)GC_WORD_MAX;
+        static ptr_t datastart_cached = (ptr_t)(word)-1;
 
         /* Evaluate DATASTART only once.  */
-        if (datastart_cached == (ptr_t)GC_WORD_MAX) {
+        if (datastart_cached == (ptr_t)(word)-1) {
           datastart_cached = DATASTART;
         }
         datastart = datastart_cached;
@@ -1218,7 +1214,7 @@ GC_INNER void GC_register_dynamic_libraries(void)
 #endif /* HPUX */
 
 #ifdef AIX
-# include <alloca.h>
+# pragma alloca
 # include <sys/ldr.h>
 # include <sys/errno.h>
   GC_INNER void GC_register_dynamic_libraries(void)
