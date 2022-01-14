@@ -14,8 +14,7 @@
 #endif
 
 
-
-#ifndef WIN32
+#if !defined(_WIN32) && (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
 	#include <sys/types.h>
 	#include <sys/socket.h>
 	#include <netinet/in.h>
@@ -25,7 +24,7 @@
 	#include <errno.h>
 	#include <fcntl.h>
   	#include <unistd.h>
-#else
+#elif defined(_WIN32) || defined(__MINGW32__) || defined(__MINGW64__)
 	#ifdef ERROR
 		#undef ERROR
 	#endif
@@ -35,7 +34,8 @@
 	#ifndef vsnprintf
 		#define vsnprintf _vsnprintf
 	#endif
-
+#else
+# error "UNRECOGNISED PLATFORM")
 #endif
 
 #include <cstdio>
