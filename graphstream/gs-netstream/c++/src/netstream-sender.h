@@ -61,6 +61,7 @@ protected:
   int _getType(bool object);
   int _getType(int object);
   int _getType(long object);
+  int _getType(long long object);  
   int _getType(float object);
   int _getType(double object);
   int _getType(const string & object);
@@ -83,6 +84,7 @@ protected:
   void _encode(NetStreamStorage & event, bool value);
   void _encode(NetStreamStorage & event, int value);
   void _encode(NetStreamStorage & event, long value);
+  void _encode(NetStreamStorage & event, long long value);  
   void _encode(NetStreamStorage & event, float value);
   void _encode(NetStreamStorage & event, double value);
   void _encode(NetStreamStorage & event, const string & value);
@@ -91,6 +93,7 @@ protected:
   void _encode(NetStreamStorage & event, const vector<bool> & value);
   void _encode(NetStreamStorage & event, const vector<int> & value);
   void _encode(NetStreamStorage & event, const vector <long> & value);
+  void _encode(NetStreamStorage & event, const vector <long long> & value);  
   void _encode(NetStreamStorage & event, const vector <float> & value);
   void _encode(NetStreamStorage & event, const vector <double> & value);
   
