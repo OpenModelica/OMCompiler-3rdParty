@@ -96,8 +96,8 @@ public:
 	virtual int readInt() ;
 	virtual void writeInt(int) ;
 
-	virtual long readLong() ;
-	virtual void writeLong(long) ;
+	virtual int64_t readLong() ;
+	virtual void writeLong(int64_t) ;
 
 	virtual float readFloat() ;
 	virtual void writeFloat( float ) ;

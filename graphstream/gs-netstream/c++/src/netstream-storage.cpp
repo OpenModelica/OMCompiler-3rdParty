@@ -359,9 +359,9 @@ namespace netstream
 	*
 	* @return the unspoiled integer value (between -??? and ???)
 	*/
-	long NetStreamStorage::readLong() 
+	int64_t NetStreamStorage::readLong() 
 	{
-		long value = 0L;
+		int64_t value = 0L;
 		unsigned char *p_value = reinterpret_cast<unsigned char*>(&value);
 		readByEndianess(p_value, 8);
 		return value;
@@ -369,7 +369,7 @@ namespace netstream
 
 
 	// ----------------------------------------------------------------------
-	void NetStreamStorage::writeLong( long value ) 
+	void NetStreamStorage::writeLong( int64_t value ) 
 	{
 		unsigned char *p_value = reinterpret_cast<unsigned char*>(&value);
 		writeByEndianess(p_value, 8);

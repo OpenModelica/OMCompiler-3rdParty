@@ -74,21 +74,25 @@ int NetStreamSender::_getType(char object){
 }
 
 int NetStreamSender::_getType(bool object){
-if(debug){
-  cerr<<" NetStreamSender: _getType : bool"<<endl;
+  if(debug){
+    cerr<<" NetStreamSender: _getType : bool"<<endl;
+  }
+  return TYPE_BOOLEAN;
 }
-return TYPE_BOOLEAN;}
 
 int NetStreamSender::_getType(int object){
 if(debug){
   cerr<<" NetStreamSender: _getType : int"<<endl;
 }
 return TYPE_INT;}
-int NetStreamSender::_getType(long object){
-if(debug){
-  cerr<<" NetStreamSender: _getType : long"<<endl;
+
+int NetStreamSender::_getType(int64_t object){
+  if(debug){
+    cerr<<" NetStreamSender: _getType : long"<<endl;
+  }
+  return TYPE_LONG;
 }
-return TYPE_LONG;}
+
 int NetStreamSender::_getType(float object){
 if(debug){
   cerr<<" NetStreamSender: _getType : float"<<endl;
@@ -120,11 +124,14 @@ if(debug){
   cerr<<" NetStreamSender: _getType : int*"<<endl;
 }
 return TYPE_INT_ARRAY;}
-int NetStreamSender::_getType(const vector<long> & object){
-if(debug){
-  cerr<<" NetStreamSender: _getType : long*"<<endl;
+
+int NetStreamSender::_getType(const vector<int64_t> & object){
+  if(debug){
+    cerr<<" NetStreamSender: _getType : long*"<<endl;
+  }
+  return TYPE_LONG_ARRAY;
 }
-return TYPE_LONG_ARRAY;}
+
 int NetStreamSender::_getType(const vector<float> & object){
 if(debug){
   cerr<<" NetStreamSender: _getType : float*"<<endl;
@@ -149,9 +156,10 @@ void NetStreamSender::_encode(NetStreamStorage & event, bool value){
 void NetStreamSender::_encode(NetStreamStorage & event, int value){
   event.writeVarint(value);
 }
-void NetStreamSender::_encode(NetStreamStorage & event, long value){
+void NetStreamSender::_encode(NetStreamStorage & event, int64_t value){
   event.writeVarint(value);
 }
+
 void NetStreamSender::_encode(NetStreamStorage & event, float value){
   event.writeFloat(value);
 }
@@ -179,12 +187,13 @@ void NetStreamSender::_encode(NetStreamStorage & event, const vector<int> & valu
     event.writeVarint((*i));
   }
 }
-void NetStreamSender::_encode(NetStreamStorage & event, const vector<long> & value){
+void NetStreamSender::_encode(NetStreamStorage & event, const vector<int64_t> & value){
   event.writeUnsignedVarint(value.size());
-  for(vector<long>::const_iterator i = value.begin(); i != value.end(); i++){
+  for(vector<int64_t>::const_iterator i = value.begin(); i != value.end(); i++){
     event.writeVarint((*i));
   }  
 }
+
 void NetStreamSender::_encode(NetStreamStorage & event, const vector<float> & value){
   event.writeUnsignedVarint(value.size());
   for(vector<float>::const_iterator i = value.begin(); i != value.end(); i++){

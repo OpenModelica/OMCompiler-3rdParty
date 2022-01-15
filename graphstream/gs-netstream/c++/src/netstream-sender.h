@@ -60,15 +60,14 @@ protected:
   int _getType(char object);
   int _getType(bool object);
   int _getType(int object);
-  int _getType(long object);
-  int _getType(long long object);  
+  int _getType(int64_t object);
   int _getType(float object);
   int _getType(double object);
   int _getType(const string & object);
   int _getType( const vector<char> & object);
   int _getType( const vector<bool> & object);
   int _getType( const vector<int> & object);
-  int _getType( const vector<long> & object);
+  int _getType( const vector<int64_t> & object);
   int _getType( const vector<float> & object);
   int _getType( const vector<double> & object);
 
@@ -83,8 +82,7 @@ protected:
   void _encode(NetStreamStorage & event, char value);
   void _encode(NetStreamStorage & event, bool value);
   void _encode(NetStreamStorage & event, int value);
-  void _encode(NetStreamStorage & event, long value);
-  void _encode(NetStreamStorage & event, long long value);  
+  void _encode(NetStreamStorage & event, int64_t value);
   void _encode(NetStreamStorage & event, float value);
   void _encode(NetStreamStorage & event, double value);
   void _encode(NetStreamStorage & event, const string & value);
@@ -92,8 +90,7 @@ protected:
   void _encode(NetStreamStorage & event, const vector<char> & value);
   void _encode(NetStreamStorage & event, const vector<bool> & value);
   void _encode(NetStreamStorage & event, const vector<int> & value);
-  void _encode(NetStreamStorage & event, const vector <long> & value);
-  void _encode(NetStreamStorage & event, const vector <long long> & value);  
+  void _encode(NetStreamStorage & event, const vector <int64_t> & value);
   void _encode(NetStreamStorage & event, const vector <float> & value);
   void _encode(NetStreamStorage & event, const vector <double> & value);
   
