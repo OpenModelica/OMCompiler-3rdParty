@@ -80,11 +80,13 @@ int NetStreamSender::_getType(bool object){
   return TYPE_BOOLEAN;
 }
 
+
 int NetStreamSender::_getType(short object){
-if(debug){
-  cerr<<" NetStreamSender: _getType : short"<<endl;
+  if(debug){
+    cerr<<" NetStreamSender: _getType : short"<<endl;
+  }
+  return TYPE_SHORT;
 }
-return TYPE_SHORT;}
 
 int NetStreamSender::_getType(int object){
   if(debug){
@@ -97,15 +99,14 @@ int NetStreamSender::_getType(long object){
   if(debug){
     cerr<<" NetStreamSender: _getType : long"<<endl;
   }
-  return TYPE_INT;
+  return TYPE_LONG;
 }
-
 
 int NetStreamSender::_getType(long long object){
   if(debug){
     cerr<<" NetStreamSender: _getType : long long" <<endl;
   }
-  return TYPE_LONG;
+  return TYPE_LONGLONG;
 }
 
 int NetStreamSender::_getType(float object){
@@ -184,6 +185,7 @@ void NetStreamSender::_encode(NetStreamStorage & event, char value){
 void NetStreamSender::_encode(NetStreamStorage & event, bool value){
   event.writeByte(value?1:0);
 }
+
 void NetStreamSender::_encode(NetStreamStorage & event, short value){
   event.writeVarint(value);
 }
@@ -193,7 +195,6 @@ void NetStreamSender::_encode(NetStreamStorage & event, int value){
 void NetStreamSender::_encode(NetStreamStorage & event, long value){
   event.writeVarint(value);
 }
-
 void NetStreamSender::_encode(NetStreamStorage & event, long long value){
   event.writeVarint(value);
 }
@@ -219,6 +220,7 @@ void NetStreamSender::_encode(NetStreamStorage & event, const vector<bool> & val
     event.writeByte((*i));
   }
 }
+
 void NetStreamSender::_encode(NetStreamStorage & event, const vector<short> & value){
   event.writeUnsignedVarint(value.size());
   for(vector<short>::const_iterator i = value.begin(); i != value.end(); i++){

@@ -307,7 +307,7 @@ namespace netstream
 	{
 		short value = 0;
 		unsigned char *p_value = reinterpret_cast<unsigned char*>(&value);
-		readByEndianess(p_value, 2);
+		readByEndianess(p_value, sizeof(short));
 		return value;
 	}
 
@@ -322,7 +322,7 @@ namespace netstream
 
 		short svalue = static_cast<short>(value);
 		unsigned char *p_svalue = reinterpret_cast<unsigned char*>(&svalue);
-		writeByEndianess(p_svalue, 2);
+		writeByEndianess(p_svalue, sizeof(short));
 		
 	}
 
@@ -339,7 +339,7 @@ namespace netstream
 	{
 		int value = 0;
 		unsigned char *p_value = reinterpret_cast<unsigned char*>(&value);
-		readByEndianess(p_value, 4);
+		readByEndianess(p_value, sizeof(int));
 		return value;
 	}
 
@@ -348,7 +348,7 @@ namespace netstream
 	void NetStreamStorage::writeInt( int value ) 
 	{
 		unsigned char *p_value = reinterpret_cast<unsigned char*>(&value);
-		writeByEndianess(p_value, 4);
+		writeByEndianess(p_value, sizeof(int));
 	}
 
 	// ----------------------------------------------------------------------

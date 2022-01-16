@@ -106,7 +106,7 @@ protected:
   void _encode(NetStreamStorage & event, short value);
   void _encode(NetStreamStorage & event, int value);
   void _encode(NetStreamStorage & event, long value);
-  void _encode(NetStreamStorage & event, long long value);  
+  void _encode(NetStreamStorage & event, long long value);
   void _encode(NetStreamStorage & event, float value);
   void _encode(NetStreamStorage & event, double value);
   void _encode(NetStreamStorage & event, const string & value);
