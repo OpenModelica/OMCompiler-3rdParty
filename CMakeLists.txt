@@ -115,7 +115,7 @@ add_library(omc::3rd::libzmq ALIAS libzmq-static)
 
 
 # lpsolve55
-if(OMC_USE_LPSOLVE AND OMC_BUILD_LPSOLVE)
+if(OM_OMC_USE_LPSOLVE AND OM_OMC_BUILD_LPSOLVE)
   omc_add_subdirectory(lpsolve)
   add_library(omc::3rd::lpsolve55 ALIAS lpsolve55)
 endif()
