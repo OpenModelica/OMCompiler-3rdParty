@@ -3,7 +3,7 @@ OBJDIR=obj
 SRCDIR=src
 INCDIR=include
 
-ifeq (darwin,$(findstring darwin,$(shell $(CC) -v 2>&1 | grep ^Target)))
+ifeq ($(shell uname),Darwin)
 	AR=libtool
 	ARFLAGS=-static -o
 else
@@ -11,22 +11,25 @@ else
 	ARFLAGS=rcs
 endif
 
+CC = g++
 CWARN = -W -Wall -Wshadow -Wimplicit -Wreturn-type -Wcomment -Wtrigraphs -Wformat -Wparentheses -Wpointer-arith -Wuninitialized -O
 
 CDBG = -g $(CWARN) -fno-inline
+CFLAGS = -I$(INCDIR) -O3 
 DFLAGS = -I$(INCDIR) -g $(CWARN) -fno-inline -DDEBUG=1
 
-ifeq (MINGW,$(findstring MINGW,$(shell uname)))
+# https://stackoverflow.com/questions/714100/os-detecting-makefile
+ifeq ($(OS),Windows_NT)
 	SOCKET_LIB = -lwsock32
 else
-	SOCKET_LIB =
+	SOCKET_LIB = 
 endif
 
 
 CTAG = ctags
 CTAGFILE = filelist
 # src, object and bin files
-OUT_BINARY := netstream-main
+OUT_BINARY := netstream-main 
 OUT_LIBRARY := libnetstream.a
 
 HEADERS = $(INCDIR)/global.h
@@ -35,22 +38,22 @@ OBJS = \
     $(OBJDIR)/netstream-storage.o  \
 	$(OBJDIR)/netstream-socket.o \
     $(OBJDIR)/netstream-sender.o \
-	$(OBJDIR)/netstream-main.o
-
+	$(OBJDIR)/netstream-main.o 
+	 
 .SECONDARY:
 
 #-- Rules
 all: $(OUT_BINARY) $(OUT_LIBRARY)
 
 $(OUT_BINARY): $(OBJS)
-	$(CXX) $(CFLAGS) -I$(INCDIR) $(OBJS) -o $(OUT_BINARY) $(SOCKET_LIB)
+	$(CC) $(CFLAGS) $(OBJS) -o $(OUT_BINARY) $(SOCKET_LIB)
 
 $(OUT_LIBRARY): $(OBJS)
-	$(AR) $(ARFLAGS) $(OUT_LIBRARY)  $(OBJS)
+	$(AR) $(ARFLAGS) $(OUT_LIBRARY)  $(OBJS) 
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	mkdir -p $(OBJDIR)
-	$(CXX) $(CFLAGS) -c $? -o $@
+	$(CC) $(CFLAGS) -c $? -o $@
 
 .PHONY: clean depend fresh
 
@@ -64,8 +67,7 @@ clean:
 	-rm -f $(SRCDIR)/*.output $(LEX_C)
 	-rm -f */*~ *~ core
 	-rm -f $(BINDIR)/*
-	-rm -f $(OUT_BINARY) $(OUT_BINARY).exe
+	-rm -f $(OUT_BINARY)
 	-rm -f $(OUT_LIBRARY)
-	-rm -rf $(OBJDIR)
 
 fresh: clean all

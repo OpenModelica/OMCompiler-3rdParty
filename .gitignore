@@ -82,6 +82,7 @@ Ipopt-3.13.4/build
 
 FMIL/build/
 FMIL/install/
+FMIL/include/
 
 SuiteSparse/build/
 

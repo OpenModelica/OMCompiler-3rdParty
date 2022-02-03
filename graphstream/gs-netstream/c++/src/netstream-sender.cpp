@@ -10,31 +10,27 @@
  * @author Yoann Pigné
  */
 
-/* include unistd on *nix systems for sleep */ 
-#if !defined(__MINGW32__) && !defined(_MSC_VER) 
-#include <unistd.h> 
-#endif 
 
 #include "netstream-sender.h"
 
 namespace netstream{
   
-NetStreamSender::NetStreamSender(const GS_STRING & host, GS_INT port):
+NetStreamSender::NetStreamSender(const string & host, int port):
 _stream_name("default"),_host(host),_port(port),_stream(),_socket(host,port),debug(false)  {
   init();
 }
 
-NetStreamSender::NetStreamSender(GS_INT port):
+NetStreamSender::NetStreamSender(int port):
 _stream_name("default"),_host("localhost"),_port(port),_stream(),_socket("localhost",port),debug(false)  {
   init();
 }
 
-NetStreamSender::NetStreamSender(const GS_STRING & stream, const GS_STRING & host, GS_INT port):
+NetStreamSender::NetStreamSender(const string & stream, const string & host, int port): 
 _stream_name(stream),_host(host),_port(port),_stream(),_socket(host,port),debug(false)
 {
   init();
 }
-NetStreamSender::NetStreamSender(const GS_STRING & stream, const GS_STRING & host, GS_INT port, GS_BOOL debug):
+NetStreamSender::NetStreamSender(const string & stream, const string & host, int port, bool debug): 
 _stream_name(stream),_host(host),_port(port),_stream(),_socket(host,port),debug(debug)
 {
   init();
@@ -42,7 +38,7 @@ _stream_name(stream),_host(host),_port(port),_stream(),_socket(host,port),debug(
 
 
 void NetStreamSender::init() 
-{ 
+{
   _stream.writeString(_stream_name);
   
   int wait_for_server = 1;
@@ -58,7 +54,11 @@ void NetStreamSender::init()
       else
         std::cout<<"."<<std::flush;
       wait_for_server++;
-      sleep(1);
+      #ifdef WIN32
+        Sleep(1); //milliseconds
+      #else
+        usleep(1000);//microseconds
+      #endif
     }
   }
 }
@@ -66,82 +66,112 @@ void NetStreamSender::init()
 // ===========================================
 // = Values type guess (templates) =
 // ===========================================
-GS_INT NetStreamSender::_getType(GS_CHAR object){
+int NetStreamSender::_getType(char object){
   if(debug){
-    cerr<<"NetStreamSender: _getType : char"<<endl;
+    cerr<<" NetStreamSender: _getType : char"<<endl;
   }
   return TYPE_BYTE;
 }
 
-GS_INT NetStreamSender::_getType(GS_BOOL object){
-if(debug){
-  cerr<<"NetStreamSender: _getType : bool"<<endl;
+int NetStreamSender::_getType(bool object){
+  if(debug){
+    cerr<<" NetStreamSender: _getType : bool"<<endl;
+  }
+  return TYPE_BOOLEAN;
 }
-return TYPE_BOOLEAN;}
 
-GS_INT NetStreamSender::_getType(GS_INT object){
-if(debug){
-  cerr<<"NetStreamSender: _getType : int"<<endl;
+
+int NetStreamSender::_getType(short object){
+  if(debug){
+    cerr<<" NetStreamSender: _getType : short"<<endl;
+  }
+  return TYPE_SHORT;
 }
-return TYPE_INT;}
 
-GS_INT NetStreamSender::_getType(GS_LONG object){
-if(debug){
-  cerr<<"NetStreamSender: _getType : long"<<endl;
+int NetStreamSender::_getType(int object){
+  if(debug){
+    cerr<<" NetStreamSender: _getType : int"<<endl;
+  }
+  return TYPE_INT;
 }
-return TYPE_LONG;}
 
-GS_INT NetStreamSender::_getType(GS_FLOAT object){
+int NetStreamSender::_getType(long object){
+  if(debug){
+    cerr<<" NetStreamSender: _getType : long"<<endl;
+  }
+  return TYPE_LONG;
+}
+
+int NetStreamSender::_getType(long long object){
+  if(debug){
+    cerr<<" NetStreamSender: _getType : long long" <<endl;
+  }
+  return TYPE_LONGLONG;
+}
+
+int NetStreamSender::_getType(float object){
 if(debug){
-  cerr<<"NetStreamSender: _getType : float"<<endl;
+  cerr<<" NetStreamSender: _getType : float"<<endl;
 }
 return TYPE_FLOAT;}
-
-GS_INT NetStreamSender::_getType(GS_DOUBLE object){
+int NetStreamSender::_getType(double object){
 if(debug){
-  cerr<<"NetStreamSender: _getType : double"<<endl;
+  cerr<<" NetStreamSender: _getType : double"<<endl;
 }
 return TYPE_DOUBLE;}
-
-GS_INT NetStreamSender::_getType(const GS_STRING & object){
+int NetStreamSender::_getType(const string & object){
 if(debug){
-  cerr<<"NetStreamSender: _getType : string"<<endl;
+  cerr<<" NetStreamSender: _getType : string"<<endl;
 }
 return TYPE_STRING;}
-
-GS_INT NetStreamSender::_getType(const vector<GS_CHAR> & object){
+int NetStreamSender::_getType(const vector<char> & object){
 if(debug){
-  cerr<<"NetStreamSender: _getType : char* "<<endl;
+  cerr<<" NetStreamSender: _getType : char* "<<endl;
 }
 return TYPE_BYTE_ARRAY;}
 
-GS_INT NetStreamSender::_getType(const vector <GS_BOOL> & object){
+int NetStreamSender::_getType(const vector <bool> & object){
 if(debug){
-  cerr<<"NetStreamSender: _getType : bool*"<<endl;
+  cerr<<" NetStreamSender: _getType : bool*"<<endl;
 }
 return TYPE_BOOLEAN_ARRAY;}
 
-GS_INT NetStreamSender::_getType(const vector<GS_INT> & object){
-if(debug){
-  cerr<<"NetStreamSender: _getType : int*"<<endl;
+int NetStreamSender::_getType(const vector<short> & object){
+  if(debug){
+    cerr<<" NetStreamSender: _getType : short*"<<endl;
+  }
+  return TYPE_SHORT_ARRAY;
 }
-return TYPE_INT_ARRAY;}
 
-GS_INT NetStreamSender::_getType(const vector<GS_LONG> & object){
-if(debug){
-  cerr<<"NetStreamSender: _getType : long*"<<endl;
+int NetStreamSender::_getType(const vector<int> & object){
+  if(debug){
+    cerr<<" NetStreamSender: _getType : int*"<<endl;
+  }
+  return TYPE_INT_ARRAY;
 }
-return TYPE_LONG_ARRAY;}
 
-GS_INT NetStreamSender::_getType(const vector<GS_FLOAT> & object){
+int NetStreamSender::_getType(const vector<long> & object){
+  if(debug){
+    cerr<<" NetStreamSender: _getType : long*" <<endl;
+  }
+  return TYPE_LONG_ARRAY;
+}
+
+int NetStreamSender::_getType(const vector<long long> & object){
+  if(debug){
+    cerr<<" NetStreamSender: _getType : long long*" <<endl;
+  }
+  return TYPE_LONGLONG_ARRAY;
+}
+
+int NetStreamSender::_getType(const vector<float> & object){
 if(debug){
-  cerr<<"NetStreamSender: _getType : float*"<<endl;
+  cerr<<" NetStreamSender: _getType : float*"<<endl;
 }
 return TYPE_FLOAT_ARRAY;}
-
-GS_INT NetStreamSender::_getType(const vector <GS_DOUBLE> & object){
+int NetStreamSender::_getType(const vector <double> & object){
 if(debug){
-  cerr<<"NetStreamSender: _getType : double*"<<endl;
+  cerr<<" NetStreamSender: _getType : double*"<<endl;
 }
 return TYPE_DOUBLE_ARRAY;}
 
@@ -149,72 +179,82 @@ return TYPE_DOUBLE_ARRAY;}
 // =================
 // = data encoding =
 // =================
-void NetStreamSender::_encode(NetStreamStorage & event, GS_CHAR value){
-  event.writeByte((GS_INT)value);
+void NetStreamSender::_encode(NetStreamStorage & event, char value){
+  event.writeByte((int)value);
 }
-
-void NetStreamSender::_encode(NetStreamStorage & event, GS_BOOL value){
+void NetStreamSender::_encode(NetStreamStorage & event, bool value){
   event.writeByte(value?1:0);
 }
 
-void NetStreamSender::_encode(NetStreamStorage & event, GS_INT value){
-  event.writeInt(value);
+void NetStreamSender::_encode(NetStreamStorage & event, short value){
+  event.writeVarint(value);
+}
+void NetStreamSender::_encode(NetStreamStorage & event, int value){
+  event.writeVarint(value);
+}
+void NetStreamSender::_encode(NetStreamStorage & event, long value){
+  event.writeVarint(value);
+}
+void NetStreamSender::_encode(NetStreamStorage & event, long long value){
+  event.writeVarint(value);
 }
 
-void NetStreamSender::_encode(NetStreamStorage & event, GS_LONG value){
-  event.writeLong(value);
-}
-
-void NetStreamSender::_encode(NetStreamStorage & event, GS_FLOAT value){
+void NetStreamSender::_encode(NetStreamStorage & event, float value){
   event.writeFloat(value);
 }
-
-void NetStreamSender::_encode(NetStreamStorage & event, GS_DOUBLE value){
+void NetStreamSender::_encode(NetStreamStorage & event, double value){
   event.writeDouble(value);
 }
-
-void NetStreamSender::_encode(NetStreamStorage & event, const GS_STRING & value){
+void NetStreamSender::_encode(NetStreamStorage & event,const  string & value){
   event.writeString(value);
 }
-
-void NetStreamSender::_encode(NetStreamStorage & event, const vector<GS_CHAR> & value){
-  event.writeInt(value.size());
+void NetStreamSender::_encode(NetStreamStorage & event, const vector<char> & value){
+  event.writeUnsignedVarint(value.size());
   for(vector<char>::const_iterator i = value.begin(); i != value.end(); i++){
     event.writeByte((*i));
   }
 }
-
-void NetStreamSender::_encode(NetStreamStorage & event, const vector<GS_BOOL> & value){
-  event.writeInt(value.size());
+void NetStreamSender::_encode(NetStreamStorage & event, const vector<bool> & value){
+  event.writeUnsignedVarint(value.size());
   for(vector<bool>::const_iterator i = value.begin(); i != value.end(); i++){
     event.writeByte((*i));
   }
 }
 
-void NetStreamSender::_encode(NetStreamStorage & event, const vector<GS_INT> & value){
-  event.writeInt(value.size());
-  for(vector<int>::const_iterator i = value.begin(); i != value.end(); i++){
-    event.writeInt((*i));
+void NetStreamSender::_encode(NetStreamStorage & event, const vector<short> & value){
+  event.writeUnsignedVarint(value.size());
+  for(vector<short>::const_iterator i = value.begin(); i != value.end(); i++){
+    event.writeVarint((*i));
   }
 }
-
-void NetStreamSender::_encode(NetStreamStorage & event, const vector<GS_LONG> & value){
-  event.writeInt(value.size());
-  for(vector<GS_LONG>::const_iterator i = value.begin(); i != value.end(); i++){
-    event.writeLong((*i));
+void NetStreamSender::_encode(NetStreamStorage & event, const vector<int> & value){
+  event.writeUnsignedVarint(value.size());
+  for(vector<int>::const_iterator i = value.begin(); i != value.end(); i++){
+    event.writeVarint((*i));
+  }  
+}
+void NetStreamSender::_encode(NetStreamStorage & event, const vector<long> & value){
+  event.writeUnsignedVarint(value.size());
+  for(vector<long>::const_iterator i = value.begin(); i != value.end(); i++){
+    event.writeVarint((*i));
+  }  
+}
+void NetStreamSender::_encode(NetStreamStorage & event, const vector<long long> & value){
+  event.writeUnsignedVarint(value.size());
+  for(vector<long long>::const_iterator i = value.begin(); i != value.end(); i++){
+    event.writeVarint((*i));
   }  
 }
 
-void NetStreamSender::_encode(NetStreamStorage & event, const vector<GS_FLOAT> & value){
-  event.writeInt(value.size());
-  for(vector<GS_FLOAT>::const_iterator i = value.begin(); i != value.end(); i++){
+void NetStreamSender::_encode(NetStreamStorage & event, const vector<float> & value){
+  event.writeUnsignedVarint(value.size());
+  for(vector<float>::const_iterator i = value.begin(); i != value.end(); i++){
     event.writeFloat((*i));
   }
 }
-
-void NetStreamSender::_encode(NetStreamStorage & event, const vector<GS_DOUBLE> &  value){
-  event.writeInt(value.size());
-  for(vector<GS_DOUBLE>::const_iterator i = value.begin(); i != value.end(); i++){
+void NetStreamSender::_encode(NetStreamStorage & event, const vector<double> &  value){
+  event.writeUnsignedVarint(value.size());
+  for(vector<double>::const_iterator i = value.begin(); i != value.end(); i++){
     event.writeDouble((*i));
   }
 }
@@ -224,6 +264,13 @@ void NetStreamSender::_sendEvent(NetStreamStorage & event){
   
   if(debug){
     cout<<event<<endl;
+    /*
+    for(NetStreamStorage::NetStreamStorageType::const_iterator it = event.begin(); it != event.end();){
+      cout<<(int)(*it)<<",";
+      it++;
+    }
+    cout<<endl;
+    */
   }
   try{
     _socket.sendExact(_stream+event);
@@ -237,59 +284,54 @@ void NetStreamSender::_sendEvent(NetStreamStorage & event){
 // ==================
 // = Element events =
 // ================== 
-void NetStreamSender::addNode(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & node_id){
+void NetStreamSender::addNode(const string & source_id, long time_id, const string & node_id){
   NetStreamStorage event = NetStreamStorage();
   event.writeByte(EVENT_ADD_NODE);
   event.writeString(source_id);
-  event.writeUnsignedVarInt(time_id);
+  event.writeUnsignedVarint(time_id);
   event.writeString(node_id);
   _sendEvent(event);
 }
-
-void NetStreamSender::removeNode(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & node_id){
+void NetStreamSender::removeNode(const string & source_id, long time_id, const string & node_id){
   NetStreamStorage event = NetStreamStorage();
   event.writeByte(EVENT_DEL_NODE);
   event.writeString(source_id);
-  event.writeUnsignedVarInt(time_id);
+  event.writeUnsignedVarint(time_id);
   event.writeString(node_id);
   _sendEvent(event);
 }
-
-void NetStreamSender::addEdge(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & edge_id, const GS_STRING & from_node, const GS_STRING & to_node, GS_BOOL directed){
+void NetStreamSender::addEdge(const string & source_id, long time_id, const string & edge_id, const string & from_node, const string & to_node, bool directed){
   NetStreamStorage event = NetStreamStorage();
   event.writeByte(EVENT_ADD_EDGE);
   event.writeString(source_id);
-  event.writeUnsignedVarInt(time_id);
+  event.writeUnsignedVarint(time_id);
   event.writeString(edge_id);
   event.writeString(from_node);
   event.writeString(to_node);
   event.writeByte(directed?1:0);
   _sendEvent(event);
 }
-
-void NetStreamSender::removeEdge(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & edge_id){
+void NetStreamSender::removeEdge(const string & source_id, long time_id, const string & edge_id){
   NetStreamStorage event = NetStreamStorage();
   event.writeByte(EVENT_DEL_EDGE);
   event.writeString(source_id);
-  event.writeUnsignedVarInt(time_id);
+  event.writeUnsignedVarint(time_id);
   event.writeString(edge_id);
   _sendEvent(event);
 }
-
-void NetStreamSender::stepBegins(const GS_STRING & source_id, GS_LONG time_id, GS_DOUBLE timestamp){
+void NetStreamSender::stepBegins(const string & source_id, long time_id, double timestamp){
   NetStreamStorage event = NetStreamStorage();
   event.writeByte(EVENT_STEP);
   event.writeString(source_id);
-  event.writeUnsignedVarInt(time_id);
+  event.writeUnsignedVarint(time_id);
   event.writeDouble(timestamp);
   _sendEvent(event);
 }
-
-void NetStreamSender::graphClear(const GS_STRING & source_id, GS_LONG time_id){
+void NetStreamSender::graphClear(const string & source_id, long time_id){
   NetStreamStorage event = NetStreamStorage();
   event.writeByte(EVENT_CLEARED);
   event.writeString(source_id);
-  event.writeUnsignedVarInt(time_id);
+  event.writeUnsignedVarint(time_id);
   _sendEvent(event);  
 }
 
@@ -297,34 +339,30 @@ void NetStreamSender::graphClear(const GS_STRING & source_id, GS_LONG time_id){
 // = Attributes events =
 // ===================== 
 
-void NetStreamSender::removeNodeAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & node_id, const GS_STRING & attribute){
+void NetStreamSender::removeNodeAttribute(const string & source_id, long time_id, const string & node_id, const string & attribute){
   NetStreamStorage event = NetStreamStorage();
   event.writeByte(EVENT_DEL_NODE_ATTR);
   event.writeString(source_id);
-  event.writeUnsignedVarInt(time_id);
+  event.writeUnsignedVarint(time_id);
   event.writeString(node_id);
   event.writeString(attribute);
   _sendEvent(event);
 }
-
-void NetStreamSender::removeGraphAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & attribute){
+void NetStreamSender::removeGraphAttribute(const string & source_id, long time_id, const string & attribute){
   NetStreamStorage event = NetStreamStorage();
   event.writeByte(EVENT_DEL_GRAPH_ATTR);
   event.writeString(source_id);
-  event.writeUnsignedVarInt(time_id);
+  event.writeUnsignedVarint(time_id);
   event.writeString(attribute);
   _sendEvent(event);
 }
-
-void NetStreamSender::removeEdgeAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & edge_id, const GS_STRING & attribute){
+void NetStreamSender::removeEdgeAttribute(const string & source_id, long time_id, const string & edge_id, const string & attribute){
   NetStreamStorage event = NetStreamStorage();
   event.writeByte(EVENT_DEL_EDGE_ATTR);
   event.writeString(source_id);
-  event.writeUnsignedVarInt(time_id);
+  event.writeUnsignedVarint(time_id);
   event.writeString(edge_id);
   event.writeString(attribute);
   _sendEvent(event);
 }
-
 }
-
