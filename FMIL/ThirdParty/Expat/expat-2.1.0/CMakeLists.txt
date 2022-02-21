@@ -72,7 +72,7 @@ set(includedir "\${prefix}/include")
 configure_file(expat.pc.in ${CMAKE_CURRENT_BINARY_DIR}/expat.pc)
 
 install(FILES lib/expat.h lib/expat_external.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/expat.pc DESTINATION lib/pkgconfig)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/expat.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 
 
