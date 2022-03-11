@@ -67,10 +67,10 @@ add_library(omc::3rd::FMIL::expat ALIAS expat)
 # We use pthreads API even on Windows
 set(CMAKE_USE_PTHREADS_INIT ON)
 
-set(GC_BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries")
-set(enable_java_finalization OFF CACHE BOOL "Support for java finalization")
-set(enable_gcj_support OFF CACHE BOOL "Support for gcj")
-set(enable_large_config ON CACHE BOOL "Optimize for large heap or root set")
+option(GC_BUILD_SHARED_LIBS "Build shared libraries" OFF)
+option(enable_java_finalization "Support for java finalization" OFF)
+option(enable_gcj_support "Support for gcj" OFF)
+option(enable_large_config "Optimize for large heap or root set" ON)
 omc_add_subdirectory(gc)
 target_include_directories(omcgc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/gc/include)
 # make sure every target that links to gc-lib has its sources
@@ -137,12 +137,12 @@ omc_add_subdirectory(open62541)
 add_library(omc::3rd::opcua ALIAS opcua)
 
 # Intel TBB
-# set(TBB_BUILD_TESTS OFF CACHE BOOL "Build TBB tests and enable testing infrastructure")
-# set(TBB_BUILD_SHARED OFF CACHE BOOL "Build TBB shared library")
-# set(TBB_BUILD_TBBMALLOC OFF CACHE BOOL "Build TBB malloc library")
-# set(TBB_BUILD_TBBMALLOC_PROXY OFF CACHE BOOL "Build TBB malloc proxy library")
-# omc_add_subdirectory(tbb_cmake)
-# add_library(omc::3rd::tbb ALIAS tbb_static)
+option(TBB_BUILD_TESTS "Build TBB tests and enable testing infrastructure" OFF)
+option(TBB_BUILD_SHARED "Build TBB shared library" OFF)
+option(TBB_BUILD_TBBMALLOC "Build TBB malloc library" OFF)
+option(TBB_BUILD_TBBMALLOC_PROXY "Build TBB malloc proxy library" OFF)
+omc_add_subdirectory(tbb)
+add_library(omc::3rd::tbb ALIAS tbb_static)
 # add_library(omc::3rd::tbb::shared ALIAS tbb)
 
 
