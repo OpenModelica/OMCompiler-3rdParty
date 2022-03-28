@@ -29,7 +29,7 @@ using namespace std;
 
 
 namespace netstream{
-  
+
 class NetStreamSender{
 
 protected:
@@ -41,7 +41,7 @@ protected:
   GS_BOOL debug;
 
   void init();
-  
+
   template <typename T>
   GS_INT getType(T t)
   {
@@ -82,17 +82,17 @@ protected:
   void _encode(NetStreamStorage & event, GS_FLOAT value);
   void _encode(NetStreamStorage & event, GS_DOUBLE value);
   void _encode(NetStreamStorage & event, const GS_STRING & value);
-  
+
   void _encode(NetStreamStorage & event, const vector<GS_CHAR> & value);
   void _encode(NetStreamStorage & event, const vector<GS_BOOL> & value);
   void _encode(NetStreamStorage & event, const vector<GS_INT> & value);
   void _encode(NetStreamStorage & event, const vector <GS_LONG> & value);
   void _encode(NetStreamStorage & event, const vector <GS_FLOAT> & value);
   void _encode(NetStreamStorage & event, const vector <GS_DOUBLE> & value);
-  
-  
+
+
   void _sendEvent(NetStreamStorage &);
-  
+
 public:
 
   // ================
@@ -105,14 +105,14 @@ public:
 
   // ==================
   // = Element events =
-  // ================== 
+  // ==================
   void addNode(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & node_id);
   void removeNode(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & node_id);
   void addEdge(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & edge_id, const GS_STRING & from_node, const GS_STRING & to_node, GS_BOOL directed);
   void removeEdge(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & edge_id);
   void stepBegins(const GS_STRING & source_id, GS_LONG time_id, GS_DOUBLE timestamp);
   void graphClear(const GS_STRING & source_id, GS_LONG time_id);
-  
+
   // ====================
   // = Attribute events =
   // ====================
@@ -125,7 +125,7 @@ public:
     event.writeString(attribute);
     event.writeByte(getType(value));
     encode(event, value);
-   _sendEvent(event);    
+   _sendEvent(event);
   }
 
   template <typename T1, typename T2>
@@ -141,9 +141,9 @@ public:
      encode(event, newValue);
      _sendEvent(event);
   }
-  
+
   void removeGraphAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & attribute);
-  
+
   template <typename T>
   void addNodeAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & node_id, const GS_STRING & attribute, const T & value){
     NetStreamStorage event = NetStreamStorage();
@@ -171,9 +171,9 @@ public:
     encode(event, newValue);
     _sendEvent(event);
   }
-  
+
   void removeNodeAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & node_id, const GS_STRING & attribute);
-  
+
   template <typename T>
   void addEdgeAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & edge_id, const GS_STRING & attribute, const T & value){
     NetStreamStorage event = NetStreamStorage();
@@ -185,7 +185,7 @@ public:
     event.writeByte(getType(value));
     encode(event, value);
     _sendEvent(event);
-    
+
   }
 
   template <typename T1, typename T2>
@@ -202,9 +202,9 @@ public:
     encode(event, newValue);
     _sendEvent(event);
   }
-  
+
   void removeEdgeAttribute(const GS_STRING & source_id, GS_LONG time_id, const GS_STRING & edge_id, const GS_STRING & attribute);
-  
+
 };
 
 }
