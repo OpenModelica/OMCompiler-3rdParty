@@ -117,10 +117,10 @@ typedef struct ANTLR3_DEBUG_EVENT_LISTENER_struct
 	 */
 	void			(*exitRule)			(pANTLR3_DEBUG_EVENT_LISTENER delboy, const char * grammarFileName, const char * ruleName);
 
-	/** Track entry into any (...) subrule other EBNF construct 
+	/** Track entry into any (...) subrule other EBNF construct
 	 */
 	void			(*enterSubRule)		(pANTLR3_DEBUG_EVENT_LISTENER delboy, int decisionNumber);
-	
+
 	void			(*exitSubRule)		(pANTLR3_DEBUG_EVENT_LISTENER delboy, int decisionNumber);
 
 	/** Every decision, fixed k or arbitrary, has an enter/exit event
@@ -261,7 +261,7 @@ typedef struct ANTLR3_DEBUG_EVENT_LISTENER_struct
 	 */
 	void			(*endResync)			(pANTLR3_DEBUG_EVENT_LISTENER delboy);
 
-	/** A semantic predicate was evaluate with this result and action text 
+	/** A semantic predicate was evaluate with this result and action text
 	*/
 	void			(*semanticPredicate)	(pANTLR3_DEBUG_EVENT_LISTENER delboy, ANTLR3_BOOLEAN result, const char * predicate);
 
@@ -291,7 +291,7 @@ typedef struct ANTLR3_DEBUG_EVENT_LISTENER_struct
 
 	/** Input for a tree parser is an AST, but we know nothing for sure
 	 *  about a node except its type and text (obtained from the adaptor).
-	 *  This is the analog of the consumeToken method.  The ID is usually 
+	 *  This is the analog of the consumeToken method.  The ID is usually
 	 *  the memory address of the node.
 	 *  If the type is UP or DOWN, then
 	 *  the ID is not really meaningful as it's fixed--there is
@@ -334,7 +334,7 @@ typedef struct ANTLR3_DEBUG_EVENT_LISTENER_struct
 	void			(*errorNode)			(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE t);
 
 	/** Announce a new node built from token elements such as type etc...
-	 * 
+	 *
 	 *  If you are receiving this event over a socket via
 	 *  RemoteDebugEventSocketListener then only t.ID, type, text are
 	 *  set.
@@ -359,7 +359,7 @@ typedef struct ANTLR3_DEBUG_EVENT_LISTENER_struct
 	 *  The listener should assume that this event occurs
 	 *  only when the current subrule (or rule) subtree is
 	 *  being reset to newRootID.
-	 * 
+	 *
 	 *  If you are receiving this event over a socket via
 	 *  RemoteDebugEventSocketListener then only IDs are set.
 	 *
@@ -371,7 +371,7 @@ typedef struct ANTLR3_DEBUG_EVENT_LISTENER_struct
 	 *
 	 *  If you are receiving this event over a socket via
 	 *  RemoteDebugEventSocketListener then only IDs are set.
-	 * 
+	 *
 	 *  @see org.antlr.runtime.tree.TreeAdaptor.addChild()
 	 */
 	void			(*addChild)				(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE root, pANTLR3_BASE_TREE child);

@@ -1,4 +1,4 @@
-/** \file 
+/** \file
  * Base interface for any ANTLR3 lexer.
  *
  * An ANLTR3 lexer builds from two sets of components:
@@ -8,7 +8,7 @@
  *  - The generated rules and struutre of the actual lexer, which call upon the
  *    runtime components.
  *
- * A lexer class contains  a character input stream, a base recognizer interface 
+ * A lexer class contains  a character input stream, a base recognizer interface
  * (which it will normally implement) and a token source interface (which it also
  * implements. The Tokensource interface is called by a token consumer (such as
  * a parser, but in theory it can be anything that wants a set of abstract
@@ -19,11 +19,11 @@
  *  - Create a character stream (something which implements ANTLR3_INPUT_STREAM)
  *    and initialize it.
  *  - Create a lexer interface and tell it where it its input stream is.
- *    This will cause the creation of a base recognizer class, which it will 
+ *    This will cause the creation of a base recognizer class, which it will
  *    override with its own implementations of some methods. The lexer creator
- *    can also then in turn override anything it likes. 
+ *    can also then in turn override anything it likes.
  *  - The lexer token source interface is then passed to some interface that
- *    knows how to use it, byte calling for a next token. 
+ *    knows how to use it, byte calling for a next token.
  *  - When a next token is called, let ze lexing begin.
  *
  */
@@ -89,16 +89,16 @@ typedef	struct ANTLR3_LEXER_struct
     void	* ctx;
 
     /** A pointer to the character stream whence this lexer is receiving
-     *  characters. 
+     *  characters.
      *  TODO: I may come back to this and implement charstream outside
      *  the input stream as per the java implementation.
      */
     pANTLR3_INPUT_STREAM	input;
 
     /** Pointer to the implementation of a base recognizer, which the lexer
-     *  creates and then overrides with its own lexer oriented functions (the 
+     *  creates and then overrides with its own lexer oriented functions (the
      *  default implementation is parser oriented). This also contains a
-     *  token source interface, which the lexer instance will provide to anything 
+     *  token source interface, which the lexer instance will provide to anything
      *  that needs it, which is anything else that implements a base recognizer,
      *  such as a parser.
      */
@@ -108,9 +108,9 @@ typedef	struct ANTLR3_LEXER_struct
      *  causes it to  be reset.
      */
     void			(*setCharStream)    (struct ANTLR3_LEXER_struct * lexer, pANTLR3_INPUT_STREAM input);
-    
-    /** Pointer to a function that switches the current character input stream to 
-     *  a new one, saving the old one, which we will revert to at the end of this 
+
+    /** Pointer to a function that switches the current character input stream to
+     *  a new one, saving the old one, which we will revert to at the end of this
      *  new one.
      */
     void			(*pushCharStream)   (struct ANTLR3_LEXER_struct * lexer, pANTLR3_INPUT_STREAM input);
@@ -125,16 +125,16 @@ typedef	struct ANTLR3_LEXER_struct
      */
     void			(*emitNew)	    (struct ANTLR3_LEXER_struct * lexer, pANTLR3_COMMON_TOKEN token);
 
-    /** Pointer to a function that constructs a new token from the lexer stored information 
+    /** Pointer to a function that constructs a new token from the lexer stored information
      */
     pANTLR3_COMMON_TOKEN	(*emit)		    (struct ANTLR3_LEXER_struct * lexer);
 
     /** Pointer to the user provided (either manually or through code generation
-     *  function that causes the lexer rules to run the lexing rules and produce 
+     *  function that causes the lexer rules to run the lexing rules and produce
      *  the next token if there iss one. This is called from nextToken() in the
-     *  pANTLR3_TOKEN_SOURCE. Note that the input parameter for this funciton is 
+     *  pANTLR3_TOKEN_SOURCE. Note that the input parameter for this funciton is
      *  the generated lexer context (stored in ctx in this interface) it is a generated
-     *  function and expects the context to be the generated lexer. 
+     *  function and expects the context to be the generated lexer.
      */
     void	        (*mTokens)		    (void * ctx);
 
@@ -145,7 +145,7 @@ typedef	struct ANTLR3_LEXER_struct
     ANTLR3_BOOLEAN	(*matchs)	    (struct ANTLR3_LEXER_struct * lexer, ANTLR3_UCHAR * string);
 
     /** Pointer to a function that matches and consumes the specified character from the input stream.
-     *  As the input stream is required to provide characters via LA() as UTF32 characters it does not 
+     *  As the input stream is required to provide characters via LA() as UTF32 characters it does not
      *  need to provide an implementation if it is not sourced from 8 bit ASCII. The default lexer
      *  implementation is source encoding agnostic, unless for some reason it takes two 32 bit characters
      *  to specify a single character, in which case the input stream and the lexer rules would have to match

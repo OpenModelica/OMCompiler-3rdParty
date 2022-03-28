@@ -51,7 +51,7 @@ extern "C" {
 
 /** All the data elements required to track the current state
  *  of any recognizer (lexer, parser, tree parser).
- * May be share between multiple recognizers such that 
+ * May be share between multiple recognizers such that
  * grammar inheritance is easily supported.
  */
 typedef	struct ANTLR3_RECOGNIZER_SHARED_STATE_struct
@@ -85,7 +85,7 @@ typedef	struct ANTLR3_RECOGNIZER_SHARED_STATE_struct
      *  per error.
      */
     ANTLR3_BOOLEAN	errorRecovery;
-    
+
     /** The index into the input stream where the last error occurred.
      * 	This is used to prevent infinite loops where an error is found
      *  but no token is consumed during recovery...another error is found,
@@ -159,7 +159,7 @@ typedef	struct ANTLR3_RECOGNIZER_SHARED_STATE_struct
     /** The token type for the current token
      */
     ANTLR3_UINT32		type;
-    
+
     /** The input line (where it makes sense) on which the first character of the current
      *  token resides.
      */
@@ -176,7 +176,7 @@ typedef	struct ANTLR3_RECOGNIZER_SHARED_STATE_struct
      */
     ANTLR3_MARKER		tokenStartCharIndex;
 
-    /** Text for the current token. This can be overridden by setting this 
+    /** Text for the current token. This can be overridden by setting this
      *  variable directly or by using the SETTEXT() macro (preferred) in your
      *  lexer rules.
      */
@@ -188,7 +188,7 @@ typedef	struct ANTLR3_RECOGNIZER_SHARED_STATE_struct
 	ANTLR3_UINT32		user1, user2, user3;
 	void				* custom;
 
-    /** Input stream stack, which allows the C programmer to switch input streams 
+    /** Input stream stack, which allows the C programmer to switch input streams
      *  easily and allow the standard nextToken() implementation to deal with it
      *  as this is a common requirement.
      */
@@ -196,7 +196,7 @@ typedef	struct ANTLR3_RECOGNIZER_SHARED_STATE_struct
 
 	/// A stack of token/tree rewrite streams that are available for use
 	/// by a parser or tree parser that is using rewrites to generate
-	/// an AST. This saves each rule in the recongizer from having to 
+	/// an AST. This saves each rule in the recongizer from having to
 	/// allocate and deallocate rewtire streams on entry and exit. As
 	/// the parser recurses throgh the rules it will reach a steady state
 	/// of the maximum number of allocated streams, which instead of

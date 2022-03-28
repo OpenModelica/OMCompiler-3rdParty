@@ -40,9 +40,9 @@ static void				mismatch	    (pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_UINT32 t
 /* Tree parser API
  */
 static void			setTreeNodeStream	    (pANTLR3_TREE_PARSER parser, pANTLR3_COMMON_TREE_NODE_STREAM input);
-static pANTLR3_COMMON_TREE_NODE_STREAM	
+static pANTLR3_COMMON_TREE_NODE_STREAM
 					getTreeNodeStream	    (pANTLR3_TREE_PARSER parser);
-static void			freeParser				(pANTLR3_TREE_PARSER parser);    
+static void			freeParser				(pANTLR3_TREE_PARSER parser);
 static void *		getCurrentInputSymbol	(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM istream);
 static void *		getMissingSymbol		(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM	istream, pANTLR3_EXCEPTION	e,
 												ANTLR3_UINT32 expectedTokenType, pANTLR3_BITSET_LIST follow);
@@ -102,10 +102,10 @@ antlr3TreeParserNewStream(ANTLR3_UINT32 sizeHint, pANTLR3_COMMON_TREE_NODE_STREA
  * \brief
  * Creates a new Mismatched Tree Nde Exception and inserts in the recognizer
  * exception stack.
- * 
+ *
  * \param recognizer
  * Context pointer for this recognizer
- * 
+ *
  */
 ANTLR3_API	void
 antlr3MTNExceptionNew(pANTLR3_BASE_RECOGNIZER recognizer)
@@ -185,7 +185,7 @@ mismatch	    (pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_UINT32 ttype, pANTLR3_B
 // Default implementation is for parser and assumes a token stream as supplied by the runtime.
 // You MAY need override this function if the standard TOKEN_STREAM is not what you are using.
 //
-static void *				
+static void *
 getCurrentInputSymbol		(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM istream)
 {
 	pANTLR3_TREE_NODE_STREAM		tns;
@@ -200,7 +200,7 @@ getCurrentInputSymbol		(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM i
 // Default implementation is for parser and assumes a token stream as supplied by the runtime.
 // You MAY need override this function if the standard BASE_TREE is not what you are using.
 //
-static void *				
+static void *
 getMissingSymbol			(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM	istream, pANTLR3_EXCEPTION	e,
 									ANTLR3_UINT32 expectedTokenType, pANTLR3_BITSET_LIST follow)
 {
@@ -216,7 +216,7 @@ getMissingSymbol			(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM	istre
 	//
     tns	    = (pANTLR3_TREE_NODE_STREAM)(istream->super);
     ctns    = tns->ctns;
-    
+
 	// Create a new empty node, by stealing the current one, or the previous one if the current one is EOF
 	//
 	current	= tns->_LT(tns, 1);
@@ -244,7 +244,7 @@ getMissingSymbol			(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM	istre
 	text = token->getText	(token);
 	text->append8			(text, (const char *)recognizer->state->tokenNames[expectedTokenType]);
 	text->append8			(text, (const char *)">");
-	
+
 	// Finally return the pointer to our new node
 	//
 	return	node;

@@ -1,6 +1,6 @@
 /**
  * Contains the default implementation of the common token used within
- * java. Custom tokens should create this structure and then append to it using the 
+ * java. Custom tokens should create this structure and then append to it using the
  * custom pointer to install their own structure and API.
  */
 
@@ -107,7 +107,7 @@ antlr3TokenFactoryNew(pANTLR3_INPUT_STREAM input)
     factory->newToken	    =  newPoolToken;
     factory->close			=  factoryClose;
     factory->setInputStream = setInputStream;
-    
+
     /* Allocate the initial pool
      */
     factory->thisPool	= -1;
@@ -126,7 +126,7 @@ antlr3TokenFactoryNew(pANTLR3_INPUT_STREAM input)
     // Input stream
     //
     setInputStream(factory, input);
-    
+
     return  factory;
 
 }
@@ -163,13 +163,13 @@ newPool(pANTLR3_TOKEN_FACTORY factory)
     /* Allocate a new pool for the factory
      */
     factory->pools[factory->thisPool]	=
-			    (pANTLR3_COMMON_TOKEN) 
+			    (pANTLR3_COMMON_TOKEN)
 				ANTLR3_MALLOC((size_t)(sizeof(ANTLR3_COMMON_TOKEN) * ANTLR3_FACTORY_POOL_SIZE));
 
     /* Reset the counters
      */
     factory->nextToken	= 0;
-  
+
     /* Done
      */
     return;
@@ -231,7 +231,7 @@ factoryClose	    (pANTLR3_TOKEN_FACTORY factory)
 	/* Work out how many tokens we need to check in this pool.
 	 */
 	limit	= (poolCount == factory->thisPool ? factory->nextToken : ANTLR3_FACTORY_POOL_SIZE);
-	
+
 	/* Marginal condition, we might be at the start of a brand new pool
 	 * where the nextToken is 0 and nothing has been allocated.
 	 */
@@ -273,7 +273,7 @@ factoryClose	    (pANTLR3_TOKEN_FACTORY factory)
 }
 
 
-static	pANTLR3_COMMON_TOKEN	
+static	pANTLR3_COMMON_TOKEN
 newToken(void)
 {
     pANTLR3_COMMON_TOKEN    token;
@@ -351,7 +351,7 @@ static  pANTLR3_STRING  getText			(pANTLR3_COMMON_TOKEN token)
 			//
 			return	token->tokText.text;
 			break;
-    
+
 		case ANTLR3_TEXT_CHARP:
 
 			// We had a straight text pointer installed, now we
@@ -390,9 +390,9 @@ static  pANTLR3_STRING  getText			(pANTLR3_COMMON_TOKEN token)
 
 			if	(token->input != NULL)
 			{
-			
-				return	token->input->substr(	token->input, 
-												token->getStartIndex(token), 
+
+				return	token->input->substr(	token->input,
+												token->getStartIndex(token),
  												token->getStopIndex(token)
 											);
 			}
@@ -429,7 +429,7 @@ static  void		setText8		(pANTLR3_COMMON_TOKEN token, pANTLR3_UINT8 text)
 			break;
 	}
 
-	// We are done 
+	// We are done
 	//
 	return;
 }
@@ -447,7 +447,7 @@ static  void		setText			(pANTLR3_COMMON_TOKEN token, pANTLR3_STRING text)
 	token->textState	= ANTLR3_TEXT_STRING;
 	token->tokText.text	= text;
 
-	/* We are done 
+	/* We are done
 	*/
 	return;
 }
@@ -528,7 +528,7 @@ static  pANTLR3_STRING    toString		(pANTLR3_COMMON_TOKEN token)
     pANTLR3_STRING  outtext;
 
     text    =	token->getText(token);
-    
+
     if	(text == NULL)
     {
 		return NULL;

@@ -56,7 +56,7 @@ antlr3IntStreamNew()
 	return stream;
 }
 
-static	void	
+static	void
 freeStream    (pANTLR3_INT_STREAM stream)
 {
 	ANTLR3_FREE(stream);

@@ -68,7 +68,7 @@ typedef struct ANTLR3_PARSE_TREE_struct
     ANTLR3_UINT32	    (*getType)	(struct ANTLR3_PARSE_TREE_struct * tree);
 
     /** Return the string representation of the payload (must be installed
-     *  when the payload is added and point to a function that knwos how to 
+     *  when the payload is added and point to a function that knwos how to
      *  manifest a pANTLR3_STRING from a node.
      */
     pANTLR3_STRING	    (*toString)	(struct ANTLR3_PARSE_TREE_struct * payload);

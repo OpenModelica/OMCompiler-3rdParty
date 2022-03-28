@@ -100,7 +100,7 @@ typedef	struct ANTLR3_BASE_TREE_ADAPTOR_struct
     ANTLR3_UINT32			(*getType)				(struct ANTLR3_BASE_TREE_ADAPTOR_struct * adaptor, void * t);
 
     void					(*setType)				(struct ANTLR3_BASE_TREE_ADAPTOR_struct * adaptor, void * t, ANTLR3_UINT32 type);
-    
+
     pANTLR3_STRING			(*getText)				(struct ANTLR3_BASE_TREE_ADAPTOR_struct * adaptor, void * t);
 
     void					(*setText)				(struct ANTLR3_BASE_TREE_ADAPTOR_struct * adaptor, pANTLR3_STRING t);
@@ -118,7 +118,7 @@ typedef	struct ANTLR3_BASE_TREE_ADAPTOR_struct
 
     pANTLR3_COMMON_TOKEN    (*createToken)			(struct ANTLR3_BASE_TREE_ADAPTOR_struct * adaptor, ANTLR3_UINT32 tokenType, pANTLR3_UINT8 text);
     pANTLR3_COMMON_TOKEN    (*createTokenFromToken)	(struct ANTLR3_BASE_TREE_ADAPTOR_struct * adaptor, pANTLR3_COMMON_TOKEN fromToken);
-    pANTLR3_COMMON_TOKEN    (*getToken)				(struct ANTLR3_BASE_TREE_ADAPTOR_struct * adaptor, void * t);  
+    pANTLR3_COMMON_TOKEN    (*getToken)				(struct ANTLR3_BASE_TREE_ADAPTOR_struct * adaptor, void * t);
 
     void					(*setTokenBoundaries)	(struct ANTLR3_BASE_TREE_ADAPTOR_struct * adaptor, void * t, pANTLR3_COMMON_TOKEN startToken, pANTLR3_COMMON_TOKEN stopToken);
 
@@ -134,7 +134,7 @@ typedef	struct ANTLR3_BASE_TREE_ADAPTOR_struct
 
 	/// Replace from start to stop child index of parent with t, which might
 	/// be a list.  Number of children may be different
-	/// after this call.  
+	/// after this call.
 	///
 	/// If parent is null, don't do anything; must be at root of overall tree.
 	/// Can't replace whatever points to the parent externally.  Do nothing.

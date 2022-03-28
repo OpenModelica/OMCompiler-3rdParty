@@ -94,7 +94,7 @@
 
 #endif
 
-#ifdef	ANTLR3_WINDOWS 
+#ifdef	ANTLR3_WINDOWS
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define	WIN32_LEAN_AND_MEAN
@@ -102,8 +102,8 @@
 
 /* Allow VC 8 (vs2005) and above to use 'secure' versions of various functions such as sprintf
  */
-#ifndef	_CRT_SECURE_NO_DEPRECATE 
-#define	_CRT_SECURE_NO_DEPRECATE 
+#ifndef	_CRT_SECURE_NO_DEPRECATE
+#define	_CRT_SECURE_NO_DEPRECATE
 #endif
 
 #include    <windows.h>
@@ -175,7 +175,7 @@ typedef	struct stat ANTLR3_FSTAT_STRUCT;
 #define	ANTLR3_FUNC_PTR(ptr)		(void *)((ANTLR3_UINT64)(ptr))
 #define ANTLR3_UINT64_CAST(ptr)		(ANTLR3_UINT64)(ptr))
 #define	ANTLR3_UINT32_CAST(ptr)		(ANTLR3_UINT32)((ANTLR3_UINT64)(ptr))
-typedef ANTLR3_INT64				ANTLR3_MARKER;			
+typedef ANTLR3_INT64				ANTLR3_MARKER;
 typedef ANTLR3_UINT64				ANTLR3_INTKEY;
 #else
 #define	ANTLR3_FUNC_PTR(ptr)		(void *)((ANTLR3_UINT32)(ptr))
@@ -322,7 +322,7 @@ typedef struct sockaddr		ANTLR3_SOCKADDRC, * pANTLR3_SOCKADDRC;	// Type used for
 #define _stat   stat
 
 // SOCKET not defined on Unix
-// 
+//
 typedef	int				SOCKET;
 
 #define ANTLR3_API
@@ -340,7 +340,7 @@ typedef	int				SOCKET;
 
 #else
 
-# if defined(_AIX) || __GNUC__ > 3 
+# if defined(_AIX) || __GNUC__ > 3
 
    typedef	socklen_t	ANTLR3_SALENT;
 
@@ -412,7 +412,7 @@ typedef ANTLR3_UINT32				ANTLR3_INTKEY;
 #else
 #define ANTLR3_TRIE_DEPTH 31
 #endif
-/* Pre declare the typedefs for all the interfaces, then 
+/* Pre declare the typedefs for all the interfaces, then
  * they can be inter-dependant and we will let the linker
  * sort it out for us.
  */
@@ -465,7 +465,7 @@ extern long unsigned int szMemoryUsed;
 ///
 #define	ANTLR3_FREE(ptr)						free    ((void *)(ptr))
 #endif
-#ifndef ANTLR3_FREE_FUNC						
+#ifndef ANTLR3_FREE_FUNC
 /// Default definition of ANTLR3_FREE_FUNC						. You can override this before including
 /// antlr3.h if you wish to use your own implementation.
 ///
@@ -507,7 +507,7 @@ extern long unsigned int szMemoryUsed;
 #ifndef	ANTLR3_FPRINTF
 /// Default definition of fprintf, set this to something other than fprintf before including antlr3.h
 /// if your system does not have a fprintf. Note that you can define this to be <code>//</code>
-/// without harming the runtime. 
+/// without harming the runtime.
 ///
 #define	ANTLR3_FPRINTF							fprintf
 #endif
@@ -544,7 +544,7 @@ ANTLR3_API pANTLR3_TOPO                         antlr3TopoNew();
 ANTLR3_API pANTLR3_EXCEPTION				antlr3ExceptionNew					(ANTLR3_UINT32 exception, void * name, void * message, ANTLR3_BOOLEAN freeMessage);
 
 ANTLR3_API pANTLR3_INPUT_STREAM				antlr3AsciiFileStreamNew			(pANTLR3_UINT8 fileName);
-		
+
 ANTLR3_API pANTLR3_INPUT_STREAM				antlr3NewAsciiStringInPlaceStream   (pANTLR3_UINT8 inString, ANTLR3_UINT32 size, pANTLR3_UINT8 name);
 ANTLR3_API pANTLR3_INPUT_STREAM				antlr3NewUCS2StringInPlaceStream	(pANTLR3_UINT16 inString, ANTLR3_UINT32 size, pANTLR3_UINT16 name);
 ANTLR3_API pANTLR3_INPUT_STREAM				antlr3NewAsciiStringCopyStream		(pANTLR3_UINT8 inString, ANTLR3_UINT32 size, pANTLR3_UINT8 name);
@@ -594,25 +594,25 @@ ANTLR3_API pANTLR3_COMMON_TREE_NODE_STREAM  antlr3CommonTreeNodeStreamNewStream	
 ANTLR3_API pANTLR3_TREE_NODE_STREAM         antlr3TreeNodeStreamNew				();
 ANTLR3_API void				fillBufferExt					(pANTLR3_COMMON_TOKEN_STREAM tokenStream);
 
-ANTLR3_API pANTLR3_REWRITE_RULE_TOKEN_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_TOKEN_STREAM
 	    antlr3RewriteRuleTOKENStreamNewAE	(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description);
-ANTLR3_API pANTLR3_REWRITE_RULE_TOKEN_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_TOKEN_STREAM
 	    antlr3RewriteRuleTOKENStreamNewAEE	(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description, void * oneElement);
-ANTLR3_API pANTLR3_REWRITE_RULE_TOKEN_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_TOKEN_STREAM
 	    antlr3RewriteRuleTOKENStreamNewAEV	(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description, pANTLR3_VECTOR vector);
 
-ANTLR3_API pANTLR3_REWRITE_RULE_NODE_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_NODE_STREAM
 	    antlr3RewriteRuleNODEStreamNewAE	(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description);
-ANTLR3_API pANTLR3_REWRITE_RULE_NODE_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_NODE_STREAM
 	    antlr3RewriteRuleNODEStreamNewAEE	(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description, void * oneElement);
-ANTLR3_API pANTLR3_REWRITE_RULE_NODE_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_NODE_STREAM
 	    antlr3RewriteRuleNODEStreamNewAEV	(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description, pANTLR3_VECTOR vector);
 
-ANTLR3_API pANTLR3_REWRITE_RULE_SUBTREE_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_SUBTREE_STREAM
 	    antlr3RewriteRuleSubtreeStreamNewAE	(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description);
-ANTLR3_API pANTLR3_REWRITE_RULE_SUBTREE_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_SUBTREE_STREAM
 	    antlr3RewriteRuleSubtreeStreamNewAEE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description, void * oneElement);
-ANTLR3_API pANTLR3_REWRITE_RULE_SUBTREE_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_SUBTREE_STREAM
 	    antlr3RewriteRuleSubtreeStreamNewAEV(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description, pANTLR3_VECTOR vector);
 
 ANTLR3_API pANTLR3_DEBUG_EVENT_LISTENER		antlr3DebugListenerNew				();

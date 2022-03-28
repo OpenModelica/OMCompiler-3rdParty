@@ -71,15 +71,15 @@ typedef	struct ANTLR3_BASE_RECOGNIZER_struct
     /// are called back from here.
     ///
     void	      * super;
-    
+
 	/// Indicates the type of recognizer that we are an instance of.
-    /// The programmer may set this to anything of course, but the default 
+    /// The programmer may set this to anything of course, but the default
     /// implementations of the interface only really understand the built in
     /// types, so new error handlers etc would probably be required to as well.
-    /// 
+    ///
     ///  Valid types are:
     ///
-    ///   - #ANTLR3_TYPE_LEXER  
+    ///   - #ANTLR3_TYPE_LEXER
 	///	  - #ANTLR3_TYPE_PARSER
     ///   - #ANTLR3_TYPE_TREE_PARSER
     ///
@@ -123,8 +123,8 @@ typedef	struct ANTLR3_BASE_RECOGNIZER_struct
     /// regardless of what it actually is.
     ///
     void		(*matchAny)	(struct ANTLR3_BASE_RECOGNIZER_struct * recognizer);
-    
-	/// Pointer to a function that decides if the token ahead of the current one is the 
+
+	/// Pointer to a function that decides if the token ahead of the current one is the
 	/// one we were loking for, in which case the curernt one is very likely extraneous
 	/// and can be reported that way.
 	///
@@ -132,7 +132,7 @@ typedef	struct ANTLR3_BASE_RECOGNIZER_struct
 				(*mismatchIsUnwantedToken)	(struct ANTLR3_BASE_RECOGNIZER_struct * recognizer, pANTLR3_INT_STREAM input, ANTLR3_UINT32 ttype);
 
 	/// Pointer to a function that decides if the current token is one that can logically
-	/// follow the one we were looking for, in which case the one we were looking for is 
+	/// follow the one we were looking for, in which case the one we were looking for is
 	/// probably missing from the input.
 	///
 	ANTLR3_BOOLEAN
@@ -146,7 +146,7 @@ typedef	struct ANTLR3_BASE_RECOGNIZER_struct
 
     /** Pointer to a function to call to report a recognition problem. You may override
      *  this function with your own function, but refer to the standard implementation
-     *  in antlr3baserecognizer.c for guidance. The function should recognize whether 
+     *  in antlr3baserecognizer.c for guidance. The function should recognize whether
      *  error recovery is in force, so that it does not print out more than one error messages
      *  for the same error. From the java comments in BaseRecognizer.java:
      *
@@ -210,7 +210,7 @@ typedef	struct ANTLR3_BASE_RECOGNIZER_struct
      */
     pANTLR3_BITSET	(*computeErrorRecoverySet)  (struct ANTLR3_BASE_RECOGNIZER_struct * recognizer);
 
-    /** Pointer to a function that computes the context-sensitive FOLLOW set for the 
+    /** Pointer to a function that computes the context-sensitive FOLLOW set for the
      *  current rule.
      * \see antlr3ComputeCSRuleFollow() for details.
      */
@@ -219,9 +219,9 @@ typedef	struct ANTLR3_BASE_RECOGNIZER_struct
     /** Pointer to a function to combine follow bitsets.
      * \see antlr3CombineFollows() for details.
      */
-    pANTLR3_BITSET	(*combineFollows)	    (struct ANTLR3_BASE_RECOGNIZER_struct * recognizer, 
+    pANTLR3_BITSET	(*combineFollows)	    (struct ANTLR3_BASE_RECOGNIZER_struct * recognizer,
 							    ANTLR3_BOOLEAN exact);
- 
+
     /** Pointer to a function that recovers from a mismatched token in the input stream.
      * \see antlr3RecoverMismatch() for details.
      */
@@ -241,7 +241,7 @@ typedef	struct ANTLR3_BASE_RECOGNIZER_struct
     ANTLR3_BOOLEAN	(*recoverFromMismatchedElement)
 						    (struct ANTLR3_BASE_RECOGNIZER_struct * recognizer,
 							    pANTLR3_BITSET_LIST	follow);
-    
+
     /** Pointer to function that consumes input until the next token matches
      *  the given token.
      */
@@ -271,7 +271,7 @@ typedef	struct ANTLR3_BASE_RECOGNIZER_struct
     pANTLR3_HASH_TABLE	(*toStrings)			(struct ANTLR3_BASE_RECOGNIZER_struct * recognizer,
 								pANTLR3_HASH_TABLE);
 
-    /** Pointer to a function to return whether the rule has parsed input starting at the supplied 
+    /** Pointer to a function to return whether the rule has parsed input starting at the supplied
      *  start index before. If the rule has not parsed input starting from the supplied start index,
      *  then it will return ANTLR3_MEMO_RULE_UNKNOWN. If it has parsed from the suppled start point
      *  then it will return the point where it last stopped parsing after that start point.
@@ -286,7 +286,7 @@ typedef	struct ANTLR3_BASE_RECOGNIZER_struct
     ANTLR3_BOOLEAN	(*alreadyParsedRule)		(struct ANTLR3_BASE_RECOGNIZER_struct * recognizer,
 								ANTLR3_MARKER	ruleIndex);
 
-    /** Pointer to function that records whether the rule has parsed the input at a 
+    /** Pointer to function that records whether the rule has parsed the input at a
      *  current position successfully or not.
      */
     void		(*memoize)			(struct ANTLR3_BASE_RECOGNIZER_struct * recognizer,
@@ -303,7 +303,7 @@ typedef	struct ANTLR3_BASE_RECOGNIZER_struct
 	/// This is ignored for lexers and the lexer implementation of this
 	/// function should return NULL.
 	///
-	void *		(*getCurrentInputSymbol)	(	struct ANTLR3_BASE_RECOGNIZER_struct * recognizer, 
+	void *		(*getCurrentInputSymbol)	(	struct ANTLR3_BASE_RECOGNIZER_struct * recognizer,
 												pANTLR3_INT_STREAM istream);
 
 	/// Conjure up a missing token during error recovery.
@@ -334,7 +334,7 @@ typedef	struct ANTLR3_BASE_RECOGNIZER_struct
     /** Pointer to a function that returns whether the supplied grammar function
      *  will parse the current input stream or not. This is the way that syntactic
      *  predicates are evaluated. Unlike java, C is perfectly happy to invoke code
-     *  via a pointer to a function (hence that's what all the ANTLR3 C interfaces 
+     *  via a pointer to a function (hence that's what all the ANTLR3 C interfaces
      *  do.
      */
     ANTLR3_BOOLEAN	(*synpred)			(	struct ANTLR3_BASE_RECOGNIZER_struct * recognizer,  void * ctx,

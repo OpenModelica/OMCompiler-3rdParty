@@ -186,7 +186,7 @@ typedef	struct	ANTLR3_INPUT_STREAM_struct
      *  is obviously in the same form as the input stream.
      *  \remark
      *    - Note taht this function wil lbe inaccurate if setLine is called as there
-     *      is no way at the moment to position the input stream at a particular line 
+     *      is no way at the moment to position the input stream at a particular line
      *	    number offset.
      */
     void	  *	(*getLineBuf)	(struct ANTLR3_INPUT_STREAM_struct * input);
@@ -211,13 +211,13 @@ typedef	struct	ANTLR3_INPUT_STREAM_struct
      *     current line offset is reset to 0. The Pointer for the line of input we are consuming
      *     is updated to point to the next character after this one in the input stream (which means it
      *     may become invlaid if the last newline character in the file is seen (so watch out).
-     *   - If for some reason you do not want teh counters and pointesr to be restee, yu can set the 
+     *   - If for some reason you do not want teh counters and pointesr to be restee, yu can set the
      *     chracter to some impossible charater such as '\0' or whatever.
      *   - This is a single character only, so choose the last chracter in a sequence of two or more.
      *   - This is only a simple aid to error reporting - if you have a complicated binary inptu structure
      *     it may not be adequate, but you can always override every function in the input stream with your
      *     own of course, and can even write your own complete input stream set if you like.
-     *   - It is your responsiblity to set a valid cahracter for the input stream type. Ther is no point 
+     *   - It is your responsiblity to set a valid cahracter for the input stream type. Ther is no point
      *     setting this to 0xFFFFFFFF if the input stream is 8 bit ASCII as this will just be truncated and never
      *	   trigger as the comparison will be (INT32)0xFF == (INT32)0xFFFFFFFF
      */
@@ -257,7 +257,7 @@ typedef	struct	ANTLR3_LEX_STATE_struct
 }
     ANTLR3_LEX_STATE;
 
-    /* Prototypes 
+    /* Prototypes
      */
     void	    antlr3AsciiSetupStream	(pANTLR3_INPUT_STREAM input, ANTLR3_UINT32 type);
     void	    antlr3UCS2SetupStream	(pANTLR3_INPUT_STREAM input, ANTLR3_UINT32 type);

@@ -102,11 +102,11 @@ antlr3LexerNew(ANTLR3_UINT32 sizeHint, pANTLR3_RECOGNIZER_SHARED_STATE state)
 
 	/* Now install the token source interface
 	*/
-	if	(lexer->rec->state->tokSource == NULL) 
+	if	(lexer->rec->state->tokSource == NULL)
 	{
 		lexer->rec->state->tokSource	= (pANTLR3_TOKEN_SOURCE)ANTLR3_MALLOC(sizeof(ANTLR3_TOKEN_SOURCE));
 
-		if	(lexer->rec->state->tokSource == NULL) 
+		if	(lexer->rec->state->tokSource == NULL)
 		{
 			lexer->rec->free(lexer->rec);
 			lexer->free(lexer);
@@ -143,7 +143,7 @@ antlr3LexerNew(ANTLR3_UINT32 sizeHint, pANTLR3_RECOGNIZER_SHARED_STATE state)
     lexer->getCharPositionInLine    =  getCharPositionInLine;
     lexer->getText					=  getText;
     lexer->free						=  freeLexer;
-    
+
     /* Initialise the eof token
      */
     specialT				= &(lexer->rec->state->tokSource->eofToken);
@@ -187,18 +187,18 @@ reset	(pANTLR3_BASE_RECOGNIZER rec)
 ///
 /// \brief
 /// Returns the next available token from the current input stream.
-/// 
+///
 /// \param toksource
-/// Points to the implementation of a token source. The lexer is 
+/// Points to the implementation of a token source. The lexer is
 /// addressed by the super structure pointer.
-/// 
+///
 /// \returns
 /// The next token in the current input stream or the EOF token
 /// if there are no more tokens.
-/// 
+///
 /// \remarks
 /// Write remarks for nextToken here.
-/// 
+///
 /// \see nextToken
 ///
 ANTLR3_INLINE static pANTLR3_COMMON_TOKEN
@@ -261,7 +261,7 @@ nextTokenStr	    (pANTLR3_TOKEN_SOURCE toksource)
 				//
 				lexer->rec->state->failed	    = ANTLR3_TRUE;
 				lexer->rec->reportError(lexer->rec);
-				lexer->recover(lexer); 
+				lexer->recover(lexer);
 			}
 			else
 			{
@@ -278,7 +278,7 @@ nextTokenStr	    (pANTLR3_TOKEN_SOURCE toksource)
 					//
 					continue;
 				}
-				
+
 				// Good token, not skipped, not EOF token
 				//
 				return  lexer->rec->state->token;
@@ -290,20 +290,20 @@ nextTokenStr	    (pANTLR3_TOKEN_SOURCE toksource)
 /**
  * \brief
  * Default implementation of the nextToken() call for a lexer.
- * 
+ *
  * \param toksource
- * Points to the implementation of a token source. The lexer is 
+ * Points to the implementation of a token source. The lexer is
  * addressed by the super structure pointer.
- * 
+ *
  * \returns
  * The next token in the current input stream or the EOF token
  * if there are no more tokens in any input stream in the stack.
- * 
+ *
  * Write detailed description for nextToken here.
- * 
+ *
  * \remarks
  * Write remarks for nextToken here.
- * 
+ *
  * \see nextTokenStr
  */
 static pANTLR3_COMMON_TOKEN
@@ -347,12 +347,12 @@ nextToken	    (pANTLR3_TOKEN_SOURCE toksource)
 		{
 			// There were no more streams on the input stack
 			// so this EOF is the 'real' logical EOF for
-			// the input stream. So we just exit the loop and 
+			// the input stream. So we just exit the loop and
 			// return the EOF we have found.
 			//
 			break;
 		}
-		
+
 	}
 
 	// return whatever token we have, which may be EOF
@@ -369,7 +369,7 @@ antlr3LexerNewStream(ANTLR3_UINT32 sizeHint, pANTLR3_INPUT_STREAM input, pANTLR3
     //
     lexer   = antlr3LexerNew(sizeHint, state);
 
-    if	(lexer != NULL) 
+    if	(lexer != NULL)
     {
 		// Install the input stream and reset the lexer
 		//
@@ -387,7 +387,7 @@ static void mTokens	    (pANTLR3_LEXER lexer)
     }
 }
 
-static void			
+static void
 reportError		    (pANTLR3_BASE_RECOGNIZER rec)
 {
     // Indicate this recognizer had an error while processing.
@@ -403,7 +403,7 @@ reportError		    (pANTLR3_BASE_RECOGNIZER rec)
 
 /** Default lexer error handler (works for 8 bit streams only!!!)
  */
-static void			
+static void
 displayRecognitionError	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 * tokenNames)
 {
     pANTLR3_LEXER			lexer;
@@ -426,7 +426,7 @@ displayRecognitionError	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 *
     }
 
     ANTLR3_FPRINTF(stderr, "%d) ", recognizer->state->exception->line);
-    ANTLR3_FPRINTF(stderr, ": lexer error %d :\n\t%s at offset %d, ", 
+    ANTLR3_FPRINTF(stderr, ": lexer error %d :\n\t%s at offset %d, ",
 						ex->type,
 						(pANTLR3_UINT8)	   (ex->message),
 					    ex->charPositionInLine+1
@@ -437,7 +437,7 @@ displayRecognitionError	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 *
 		width	= ANTLR3_UINT32_CAST(( (pANTLR3_UINT8)(lexer->input->data) + (lexer->input->size(lexer->input) )) - (pANTLR3_UINT8)(ex->index));
 
 		if	(width >= 1)
-		{			
+		{
 			if	(isprint(ex->c))
 			{
 				ANTLR3_FPRINTF(stderr, "near '%c' :\n", ex->c);
@@ -451,7 +451,7 @@ displayRecognitionError	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 *
 		else
 		{
 			ANTLR3_FPRINTF(stderr, "(end of input).\n\t This indicates a poorly specified lexer RULE\n\t or unterminated input element such as: \"STRING[\"]\n");
-			ANTLR3_FPRINTF(stderr, "\t The lexer was matching from line %d, offset %d, which\n\t ", 
+			ANTLR3_FPRINTF(stderr, "\t The lexer was matching from line %d, offset %d, which\n\t ",
 								(ANTLR3_UINT32)(lexer->rec->state->tokenStartLine),
 								(ANTLR3_UINT32)(lexer->rec->state->tokenStartCharPositionInLine)
 								);
@@ -478,7 +478,7 @@ static void setCharStream   (pANTLR3_LEXER lexer,  pANTLR3_INPUT_STREAM input)
     /* We may need a token factory for the lexer; we don't destroy any existing factory
      * until the lexer is destroyed, as people may still be using the tokens it produced.
      * TODO: Later I will provide a dup() method for a token so that it can extract itself
-     * out of the factory. 
+     * out of the factory.
      */
     if	(lexer->rec->state->tokFactory == NULL)
     {
@@ -529,15 +529,15 @@ static void setCharStream   (pANTLR3_LEXER lexer,  pANTLR3_INPUT_STREAM input)
 /*!
  * \brief
  * Change to a new input stream, remembering the old one.
- * 
+ *
  * \param lexer
  * Pointer to the lexer instance to switch input streams for.
- * 
+ *
  * \param input
  * New input stream to install as the current one.
- * 
- * Switches the current character input stream to 
- * a new one, saving the old one, which we will revert to at the end of this 
+ *
+ * Switches the current character input stream to
+ * a new one, saving the old one, which we will revert to at the end of this
  * new one.
  */
 static void
@@ -576,10 +576,10 @@ pushCharStream  (pANTLR3_LEXER lexer,  pANTLR3_INPUT_STREAM input)
  * \brief
  * Stops using the current input stream and reverts to any prior
  * input stream on the stack.
- * 
+ *
  * \param lexer
  * Description of parameter lexer.
- * 
+ *
  * Pointer to a function that abandons the current input stream, whether it
  * is empty or not and reverts to the previous stacked input stream.
  *
@@ -664,7 +664,7 @@ emit	    (pANTLR3_LEXER lexer)
 /**
  * Free the resources allocated by a lexer
  */
-static void 
+static void
 freeLexer    (pANTLR3_LEXER lexer)
 {
 	// This may have ben a delegate or delegator lexer, in which case the
@@ -697,7 +697,7 @@ freeLexer    (pANTLR3_LEXER lexer)
 }
 
 /** Implementation of matchs for the lexer, overrides any
- *  base implementation in the base recognizer. 
+ *  base implementation in the base recognizer.
  *
  *  \remark
  *  Note that the generated code lays down arrays of ints for constant
@@ -740,7 +740,7 @@ matchs(pANTLR3_LEXER lexer, ANTLR3_UCHAR * string)
 }
 
 /** Implementation of matchc for the lexer, overrides any
- *  base implementation in the base recognizer. 
+ *  base implementation in the base recognizer.
  *
  *  \remark
  *  Note that the generated code lays down arrays of ints for constant
@@ -780,7 +780,7 @@ matchc(pANTLR3_LEXER lexer, ANTLR3_UCHAR c)
 }
 
 /** Implementation of match range for the lexer, overrides any
- *  base implementation in the base recognizer. 
+ *  base implementation in the base recognizer.
  *
  *  \remark
  *  Note that the generated code lays down arrays of ints for constant
@@ -806,7 +806,7 @@ matchRange(pANTLR3_LEXER lexer, ANTLR3_UCHAR low, ANTLR3_UCHAR high)
 
 	return	ANTLR3_TRUE;
     }
-    
+
     /* Failed to match, execption and recovery time.
      */
 
@@ -863,20 +863,20 @@ getText	    (pANTLR3_LEXER lexer)
 
 	}
 	return  lexer->input->substr(
-									lexer->input, 
+									lexer->input,
 									lexer->rec->state->tokenStartCharIndex,
 									lexer->getCharIndex(lexer) - lexer->input->charByteSize
 							);
 
 }
 
-static void *				
+static void *
 getCurrentInputSymbol		(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM istream)
 {
 	return NULL;
 }
 
-static void *				
+static void *
 getMissingSymbol			(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM	istream, pANTLR3_EXCEPTION	e,
 									ANTLR3_UINT32 expectedTokenType, pANTLR3_BITSET_LIST follow)
 {

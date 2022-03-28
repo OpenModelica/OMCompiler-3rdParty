@@ -96,7 +96,7 @@ antlr3BitsetNew(ANTLR3_UINT32 numBits)
 	}
 
 	// No we need to allocate the memory for the number of bits asked for
-	// in multiples of ANTLR3_UINT64. 
+	// in multiples of ANTLR3_UINT64.
 	//
 	numelements	= ((numBits -1) >> ANTLR3_BITSET_LOG_BITS) + 1;
 
@@ -236,19 +236,19 @@ antlr3BitsetList(pANTLR3_HASH_TABLE list)
 ///
 /// \param[in] bset
 /// A variable number of bits to add to the set, ending in -1 (impossible bit).
-/// 
+///
 /// \returns
 /// A new bit set with all of the specified bitmaps in it and the API
 /// initialized.
-/// 
+///
 /// Call as:
 ///  - pANTLR3_BITSET = antlrBitsetLoad(bset, bset11, ..., -1);
-///  - pANTLR3_BITSET = antlrBitsetOf(-1);  Create empty bitset 
+///  - pANTLR3_BITSET = antlrBitsetOf(-1);  Create empty bitset
 ///
 /// \remarks
 /// Stdargs function - must supply -1 as last paremeter, which is NOT
 /// added to the set.
-/// 
+///
 ///
 ANTLR3_API pANTLR3_BITSET
 antlr3BitsetLoad(pANTLR3_BITSET_LIST inBits)
@@ -259,7 +259,7 @@ antlr3BitsetLoad(pANTLR3_BITSET_LIST inBits)
 	// Allocate memory for the bitset structure itself
 	// the input parameter is the bit number (0 based)
 	// to include in the bitset, so we need at at least
-	// bit + 1 bits. If any arguments indicate a 
+	// bit + 1 bits. If any arguments indicate a
 	// a bit higher than the default number of bits (0 means default size)
 	// then Add() will take care
 	// of it.
@@ -297,21 +297,21 @@ antlr3BitsetLoad(pANTLR3_BITSET_LIST inBits)
 /// \brief
 /// Creates a new bitset with at least one element, but as
 /// many elements are required.
-/// 
+///
 /// \param[in] bit
 /// A variable number of bits to add to the set, ending in -1 (impossible bit).
-/// 
+///
 /// \returns
 /// A new bit set with all of the specified elements added into it.
-/// 
+///
 /// Call as:
 ///  - pANTLR3_BITSET = antlrBitsetOf(n, n1, n2, -1);
-///  - pANTLR3_BITSET = antlrBitsetOf(-1);  Create empty bitset 
+///  - pANTLR3_BITSET = antlrBitsetOf(-1);  Create empty bitset
 ///
 /// \remarks
 /// Stdargs function - must supply -1 as last paremeter, which is NOT
 /// added to the set.
-/// 
+///
 ///
 ANTLR3_API pANTLR3_BITSET
 antlr3BitsetOf(ANTLR3_INT32 bit, ...)
@@ -323,7 +323,7 @@ antlr3BitsetOf(ANTLR3_INT32 bit, ...)
     // Allocate memory for the bitset structure itself
     // the input parameter is the bit number (0 based)
     // to include in the bitset, so we need at at least
-    // bit + 1 bits. If any arguments indicate a 
+    // bit + 1 bits. If any arguments indicate a
     // a bit higher than the default number of bits (0 menas default size)
     // then Add() will take care
     // of it.
@@ -368,7 +368,7 @@ antlr3BitsetOR(pANTLR3_BITSET bitset1, pANTLR3_BITSET bitset2)
     // Allocate memory for the newly ordered bitset structure itself.
     //
     bitset  = antlr3BitsetClone(bitset1);
-    
+
     antlr3BitsetORInPlace(bitset, bitset2);
 
     return  bitset;
@@ -455,7 +455,7 @@ antlr3BitsetORInPlace(pANTLR3_BITSET bitset, pANTLR3_BITSET bitset2)
     {
 		growToInclude(bitset, (bitset2->blist.length * sizeof(ANTLR3_BITWORD)));
     }
-    
+
     // Or the miniimum number of bits after any resizing went on
     //
     if	(bitset->blist.length < bitset2->blist.length)
@@ -485,7 +485,7 @@ antlr3BitsetSize(pANTLR3_BITSET bitset)
     ANTLR3_UINT32   degree;
     ANTLR3_INT32   i;
     ANTLR3_INT8    bit;
-    
+
     // TODO: Come back to this, it may be faster to & with 0x01
     // then shift right a copy of the 4 bits, than shift left a constant of 1.
     // But then again, the optimizer might just work this out
@@ -578,7 +578,7 @@ antlr3BitsetMember(pANTLR3_BITSET bitset, ANTLR3_UINT32 bit)
     {
 		return	ANTLR3_FALSE;
     }
-    
+
     if	((bitset->blist.bits[wordNo] & bitMask(bit)) == 0)
     {
 		return	ANTLR3_FALSE;
@@ -613,7 +613,7 @@ antlr3BitsetIsNil(pANTLR3_BITSET bitset)
 			return ANTLR3_FALSE;
        }
    }
-   
+
    return   ANTLR3_TRUE;
 }
 
@@ -642,7 +642,7 @@ antlr3BitsetNumBits(pANTLR3_BITSET bitset)
  *
  *  The first entry is the number of elements following in the list.
  */
-static	pANTLR3_INT32	
+static	pANTLR3_INT32
 antlr3BitsetToIntList	(pANTLR3_BITSET bitset)
 {
     ANTLR3_UINT32   numInts;	    // How many integers we will need
@@ -654,7 +654,7 @@ antlr3BitsetToIntList	(pANTLR3_BITSET bitset)
 
     numInts = bitset->size(bitset) + 1;
     numBits = bitset->numBits(bitset);
- 
+
     intList = (pANTLR3_INT32)ANTLR3_MALLOC(numInts * sizeof(ANTLR3_INT32));
 
     if	(intList == NULL)

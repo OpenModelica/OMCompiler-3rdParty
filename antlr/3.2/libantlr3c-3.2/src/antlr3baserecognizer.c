@@ -2,7 +2,7 @@
  * Contains the base functions that all recognizers require.
  * Any function can be overridden by a lexer/parser/tree parser or by the
  * ANTLR3 programmer.
- * 
+ *
  * \addtogroup pANTLR3_BASE_RECOGNIZER
  * @{
  */
@@ -96,7 +96,7 @@ antlr3BaseRecognizerNew(ANTLR3_UINT32 type, ANTLR3_UINT32 sizeHint, pANTLR3_RECO
 		return	NULL;
     }
 
-	
+
 	// If we have been supplied with a pre-existing recognizer state
 	// then we just install it, otherwise we must create one from scratch
 	//
@@ -148,7 +148,7 @@ antlr3BaseRecognizerNew(ANTLR3_UINT32 type, ANTLR3_UINT32 sizeHint, pANTLR3_RECO
 		//
 		recognizer->state = state;
 	}
-		
+
     // Install the BR API
     //
     recognizer->alreadyParsedRule           = alreadyParsedRule;
@@ -194,7 +194,7 @@ antlr3BaseRecognizerNew(ANTLR3_UINT32 type, ANTLR3_UINT32 sizeHint, pANTLR3_RECO
 
     return  recognizer;
 }
-static void	
+static void
 freeBR	    (pANTLR3_BASE_RECOGNIZER recognizer)
 {
     pANTLR3_EXCEPTION thisE;
@@ -245,10 +245,10 @@ freeBR	    (pANTLR3_BASE_RECOGNIZER recognizer)
 /**
  * Creates a new Mismatched Token Exception and inserts in the recognizer
  * exception stack.
- * 
+ *
  * \param recognizer
  * Context pointer for this recognizer
- * 
+ *
  */
 ANTLR3_API	void
 antlr3MTExceptionNew(pANTLR3_BASE_RECOGNIZER recognizer)
@@ -327,7 +327,7 @@ antlr3RecognitionExceptionNew(pANTLR3_BASE_RECOGNIZER recognizer)
 		NULL,
 		ANTLR3_FALSE);
 
-	/* Rest of information depends on the base type of the 
+	/* Rest of information depends on the base type of the
 	 * input stream.
 	 */
 	switch  (is->type & ANTLR3_INPUT_MASK)
@@ -403,7 +403,7 @@ antlr3RecognitionExceptionNew(pANTLR3_BASE_RECOGNIZER recognizer)
 
 
 /// Match current input symbol against ttype.  Upon error, do one token
-/// insertion or deletion if possible.  
+/// insertion or deletion if possible.
 /// To turn off single token insertion or deletion error
 /// recovery, override mismatchRecover() and have it call
 /// plain mismatch(), which does not recover.  Then any error
@@ -439,7 +439,7 @@ match(	pANTLR3_BASE_RECOGNIZER recognizer,
 			break;
 
 		default:
-		    
+
 			ANTLR3_FPRINTF(stderr, "Base recognizer function 'match' called by unknown parser type - provide override for this function\n");
 			return ANTLR3_FALSE;
 
@@ -511,7 +511,7 @@ matchAny(pANTLR3_BASE_RECOGNIZER recognizer)
 			break;
 
 		default:
-		    
+
 			ANTLR3_FPRINTF(stderr, "Base recognizer function 'matchAny' called by unknown parser type - provide override for this function\n");
 			return;
 
@@ -558,7 +558,7 @@ mismatchIsMissingToken(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM is
 	if	(follow == NULL)
 	{
 		// There is no information about the tokens that can follow the last one
-		// hence we must say that the current one we found is not a member of the 
+		// hence we must say that the current one we found is not a member of the
 		// follow set and does not indicate a missing token. We will just consume this
 		// single token and see if the parser works it out from there.
 		//
@@ -661,7 +661,7 @@ mismatch(pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_UINT32 ttype, pANTLR3_BITSET
 			break;
 
 		default:
-		    
+
 			ANTLR3_FPRINTF(stderr, "Base recognizer function 'mismatch' called by unknown parser type - provide override for this function\n");
 			return;
 
@@ -673,7 +673,7 @@ mismatch(pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_UINT32 ttype, pANTLR3_BITSET
 		// Create a basic recognition exception structure
 		//
 	    antlr3RecognitionExceptionNew(recognizer);
-		
+
 		// Now update it to indicate this is an unwanted token exception
 		//
 		recognizer->state->exception->name		= ANTLR3_UNWANTED_TOKEN_EXCEPTION_NAME;
@@ -681,13 +681,13 @@ mismatch(pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_UINT32 ttype, pANTLR3_BITSET
 
 		return;
 	}
-	
+
 	if	(mismatchIsMissingToken(recognizer, is, follow))
 	{
 		// Create a basic recognition exception structure
 		//
 	    antlr3RecognitionExceptionNew(recognizer);
-		
+
 		// Now update it to indicate this is an unwanted token exception
 		//
 		recognizer->state->exception->name		= ANTLR3_MISSING_TOKEN_EXCEPTION_NAME;
@@ -717,7 +717,7 @@ mismatch(pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_UINT32 ttype, pANTLR3_BITSET
 ///
 /// If you override, make sure to update errorCount if you care about that.
 ///
-static void			
+static void
 reportError		    (pANTLR3_BASE_RECOGNIZER recognizer)
 {
     if	(recognizer->state->errorRecovery == ANTLR3_TRUE)
@@ -730,7 +730,7 @@ reportError		    (pANTLR3_BASE_RECOGNIZER recognizer)
     // Signal we are in error recovery now
     //
     recognizer->state->errorRecovery = ANTLR3_TRUE;
-	
+
 	// Indicate this recognizer had an error while processing.
 	//
 	recognizer->state->errorCount++;
@@ -757,7 +757,7 @@ endBacktrack		(pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_UINT32 level, ANTLR3_B
 		recognizer->debugger->endBacktrack(recognizer->debugger, level, successful);
 	}
 }
-static void			
+static void
 beginResync		    (pANTLR3_BASE_RECOGNIZER recognizer)
 {
 	if	(recognizer->debugger != NULL)
@@ -766,7 +766,7 @@ beginResync		    (pANTLR3_BASE_RECOGNIZER recognizer)
 	}
 }
 
-static void			
+static void
 endResync		    (pANTLR3_BASE_RECOGNIZER recognizer)
 {
 	if	(recognizer->debugger != NULL)
@@ -868,7 +868,7 @@ endResync		    (pANTLR3_BASE_RECOGNIZER recognizer)
 /// Like Grosch I implemented local FOLLOW sets that are combined
 /// at run-time upon error to avoid overhead during parsing.
 ///
-static pANTLR3_BITSET		
+static pANTLR3_BITSET
 computeErrorRecoverySet	    (pANTLR3_BASE_RECOGNIZER recognizer)
 {
     return   recognizer->combineFollows(recognizer, ANTLR3_FALSE);
@@ -928,7 +928,7 @@ computeErrorRecoverySet	    (pANTLR3_BASE_RECOGNIZER recognizer)
 /// a missing token in the input stream.  "Insert" one by just not
 /// throwing an exception.
 ///
-static pANTLR3_BITSET		
+static pANTLR3_BITSET
 computeCSRuleFollow	    (pANTLR3_BASE_RECOGNIZER recognizer)
 {
     return   recognizer->combineFollows(recognizer, ANTLR3_FALSE);
@@ -936,7 +936,7 @@ computeCSRuleFollow	    (pANTLR3_BASE_RECOGNIZER recognizer)
 
 /// Compute the current followset for the input stream.
 ///
-static pANTLR3_BITSET		
+static pANTLR3_BITSET
 combineFollows		    (pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_BOOLEAN exact)
 {
     pANTLR3_BITSET	followSet;
@@ -993,11 +993,11 @@ combineFollows		    (pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_BOOLEAN exact)
 ///
 /// Here we depart somewhat from the Java runtime as that has now split up a lot
 /// of the error display routines into spearate units. However, ther is little advantage
-/// to this in the C version as you will probably implement all such routines as a 
+/// to this in the C version as you will probably implement all such routines as a
 /// separate translation unit, rather than install them all as pointers to functions
 /// in the base recognizer.
 ///
-static void			
+static void
 displayRecognitionError	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 * tokenNames)
 {
 	pANTLR3_PARSER			parser;
@@ -1038,7 +1038,7 @@ displayRecognitionError	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 *
 	//
 
 	ANTLR3_FPRINTF(stderr, "%d) ", recognizer->state->exception->line);
-	ANTLR3_FPRINTF(stderr, " : error %d : %s", 
+	ANTLR3_FPRINTF(stderr, " : error %d : %s",
 										recognizer->state->exception->type,
 					(pANTLR3_UINT8)	   (recognizer->state->exception->message));
 
@@ -1144,7 +1144,7 @@ displayRecognitionError	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 *
 	case	ANTLR3_MISSING_TOKEN_EXCEPTION:
 
 		// Indicates that the recognizer detected that the token we just
-		// hit would be valid syntactically if preceeded by a particular 
+		// hit would be valid syntactically if preceeded by a particular
 		// token. Perhaps a missing ';' at line end or a missing ',' in an
 		// expression list, and such like.
 		//
@@ -1168,12 +1168,12 @@ displayRecognitionError	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 *
 	case	ANTLR3_RECOGNITION_EXCEPTION:
 
 		// Indicates that the recognizer received a token
-		// in the input that was not predicted. This is the basic exception type 
+		// in the input that was not predicted. This is the basic exception type
 		// from which all others are derived. So we assume it was a syntax error.
 		// You may get this if there are not more tokens and more are needed
 		// to complete a parse for instance.
 		//
-		ANTLR3_FPRINTF(stderr, " : syntax error...\n");    
+		ANTLR3_FPRINTF(stderr, " : syntax error...\n");
 		break;
 
 	case    ANTLR3_MISMATCHED_TOKEN_EXCEPTION:
@@ -1251,7 +1251,7 @@ displayRecognitionError	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 *
 					//
 					if  (tokenNames[bit])
 					{
-						ANTLR3_FPRINTF(stderr, "%s%s", count > 0 ? ", " : "", tokenNames[bit]); 
+						ANTLR3_FPRINTF(stderr, "%s%s", count > 0 ? ", " : "", tokenNames[bit]);
 						count++;
 					}
 				}
@@ -1309,7 +1309,7 @@ getNumberOfSyntaxErrors(pANTLR3_BASE_RECOGNIZER recognizer)
 /// NoViableAlt exceptions, but could be a mismatched token that
 /// the match() routine could not recover from.
 ///
-static void			
+static void
 recover			    (pANTLR3_BASE_RECOGNIZER recognizer)
 {
     // Used to compute the follow set of tokens
@@ -1338,7 +1338,7 @@ recover			    (pANTLR3_BASE_RECOGNIZER recognizer)
 	break;
 
     default:
-	    
+
 		ANTLR3_FPRINTF(stderr, "Base recognizer function recover called by unknown parser type - provide override for this function\n");
 		return;
 
@@ -1360,7 +1360,7 @@ recover			    (pANTLR3_BASE_RECOGNIZER recognizer)
     // Record error index position
     //
     recognizer->state->lastErrorIndex	 = is->index(is);
-    
+
     // Work out the follows set for error recovery
     //
     followSet	= recognizer->computeErrorRecoverySet(recognizer);
@@ -1373,7 +1373,7 @@ recover			    (pANTLR3_BASE_RECOGNIZER recognizer)
     //
     recognizer->consumeUntilSet(recognizer, followSet);
 
-    // End resync hook 
+    // End resync hook
     //
     recognizer->endResync(recognizer);
 
@@ -1421,7 +1421,7 @@ recover			    (pANTLR3_BASE_RECOGNIZER recognizer)
 /// sorted in the recognizer exception stack in the C version. To 'throw' it we set the
 /// error flag and rules cascade back when this is set.
 ///
-static void *	
+static void *
 recoverFromMismatchedToken  (pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_UINT32 ttype, pANTLR3_BITSET_LIST follow)
 {
 	pANTLR3_PARSER			  parser;
@@ -1493,7 +1493,7 @@ recoverFromMismatchedToken  (pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_UINT32 t
 		recognizer->beginResync(recognizer);
 		is->consume(is);
 		recognizer->endResync(recognizer);
-		// End resync hook 
+		// End resync hook
 		//
 		if	(recognizer->debugger != NULL)
 		{
@@ -1578,7 +1578,7 @@ recoverFromMismatchedSet	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_BITSET
 	break;
 
     default:
-	    
+
 		ANTLR3_FPRINTF(stderr, "Base recognizer function recoverFromMismatchedSet called by unknown parser type - provide override for this function\n");
 		return NULL;
 
@@ -1615,7 +1615,7 @@ recoverFromMismatchedSet	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_BITSET
 /// both.  No tokens are consumed to recover from insertions.  Return
 /// true if recovery was possible else return false.
 ///
-static ANTLR3_BOOLEAN	
+static ANTLR3_BOOLEAN
 recoverFromMismatchedElement	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_BITSET_LIST followBits)
 {
     pANTLR3_BITSET	    viableToksFollowingRule;
@@ -1643,7 +1643,7 @@ recoverFromMismatchedElement	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_BI
 	break;
 
     default:
-	    
+
 		ANTLR3_FPRINTF(stderr, "Base recognizer function recover called by unknown parser type - provide override for this function\n");
 		return ANTLR3_FALSE;
 
@@ -1654,7 +1654,7 @@ recoverFromMismatchedElement	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_BI
 
     if	(follow == NULL)
     {
-		/* The follow set is NULL, which means we don't know what can come 
+		/* The follow set is NULL, which means we don't know what can come
 		 * next, so we "hit and hope" by just signifying that we cannot
 		 * recover, which will just cause the next token to be consumed,
 		 * which might dig us out.
@@ -1662,7 +1662,7 @@ recoverFromMismatchedElement	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_BI
 		return	ANTLR3_FALSE;
     }
 
-    /* We have a bitmap for the follow set, hence we can compute 
+    /* We have a bitmap for the follow set, hence we can compute
      * what can follow this grammar element reference.
      */
     if	(follow->isMember(follow, ANTLR3_EOR_TOKEN_TYPE) == ANTLR3_TRUE)
@@ -1683,7 +1683,7 @@ recoverFromMismatchedElement	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_BI
     /* We can now see if the current token works with the set of tokens
      * that could follow the current grammar reference. If it looks like it
      * is consistent, then we can "insert" that token by not throwing
-     * an exception and assuming that we saw it. 
+     * an exception and assuming that we saw it.
      */
     if	( follow->isMember(follow, is->_LA(is, 1)) == ANTLR3_TRUE)
     {
@@ -1704,7 +1704,7 @@ recoverFromMismatchedElement	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_BI
 		follow->free(follow);
     }
 
-    /* We could not find anything viable to do, so this is going to 
+    /* We could not find anything viable to do, so this is going to
      * cause an exception.
      */
     return  ANTLR3_FALSE;
@@ -1712,7 +1712,7 @@ recoverFromMismatchedElement	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_BI
 
 /// Eat tokens from the input stream until we get one of JUST the right type
 ///
-static void		
+static void
 consumeUntil	(pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_UINT32 tokenType)
 {
     ANTLR3_UINT32			ttype;
@@ -1739,7 +1739,7 @@ consumeUntil	(pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_UINT32 tokenType)
 			break;
 
 		default:
-		    
+
 			ANTLR3_FPRINTF(stderr, "Base recognizer function 'consumeUntil' called by unknown parser type - provide override for this function\n");
 			return;
 
@@ -1762,7 +1762,7 @@ consumeUntil	(pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_UINT32 tokenType)
 /// Eat tokens from the input stream until we find one that
 /// belongs to the supplied set.
 ///
-static void		
+static void
 consumeUntilSet			    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_BITSET set)
 {
     ANTLR3_UINT32	    ttype;
@@ -1789,7 +1789,7 @@ consumeUntilSet			    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_BITSET set)
 			break;
 
 		default:
-		    
+
 			ANTLR3_FPRINTF(stderr, "Base recognizer function 'consumeUntilSet' called by unknown parser type - provide override for this function\n");
 			return;
 
@@ -1811,16 +1811,16 @@ consumeUntilSet			    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_BITSET set)
 
 /** Return the rule invocation stack (how we got here in the parse.
  *  In the java version Ter just asks the JVM for all the information
- *  but in C we don't get this information, so I am going to do nothing 
+ *  but in C we don't get this information, so I am going to do nothing
  *  right now.
  */
-static pANTLR3_STACK	
+static pANTLR3_STACK
 getRuleInvocationStack		    (pANTLR3_BASE_RECOGNIZER recognizer)
 {
     return NULL;
 }
 
-static pANTLR3_STACK	
+static pANTLR3_STACK
 getRuleInvocationStackNamed	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UINT8 name)
 {
     return NULL;
@@ -1828,7 +1828,7 @@ getRuleInvocationStackNamed	    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_UIN
 
 /** Convenience method for template rewrites - NYI.
  */
-static pANTLR3_HASH_TABLE	
+static pANTLR3_HASH_TABLE
 toStrings			    (pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_HASH_TABLE tokens)
 {
     return NULL;
@@ -1841,7 +1841,7 @@ freeIntTrie    (void * trie)
 }
 
 
-/** Pointer to a function to return whether the rule has parsed input starting at the supplied 
+/** Pointer to a function to return whether the rule has parsed input starting at the supplied
  *  start index before. If the rule has not parsed input starting from the supplied start index,
  *  then it will return ANTLR3_MEMO_RULE_UNKNOWN. If it has parsed from the suppled start point
  *  then it will return the point where it last stopped parsing after that start point.
@@ -1851,7 +1851,7 @@ freeIntTrie    (void * trie)
  * issue (it probably won't, the hash tables are pretty quick) then we could make a special int only
  * version of the table.
  */
-static ANTLR3_MARKER	
+static ANTLR3_MARKER
 getRuleMemoization		    (pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_INTKEY ruleIndex, ANTLR3_MARKER ruleParseStart)
 {
     /* The rule memos are an ANTLR3_LIST of ANTLR3_LIST.
@@ -1867,7 +1867,7 @@ getRuleMemoization		    (pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_INTKEY ruleI
 
     if	(entry == NULL)
     {
-		/* Did not find it, so create a new one for it, with a bit depth based on the 
+		/* Did not find it, so create a new one for it, with a bit depth based on the
 		 * size of the input stream. We need the bit depth to incorporate the number if
 		 * bits required to represent the largest possible stop index in the input, which is the
 		 * last character. An int stream is free to return the largest 64 bit offset if it has
@@ -1914,7 +1914,7 @@ getRuleMemoization		    (pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_INTKEY ruleI
  *  this rule and successfully parsed before, then seek ahead to
  *  1 past the stop token matched for this rule last time.
  */
-static ANTLR3_BOOLEAN	
+static ANTLR3_BOOLEAN
 alreadyParsedRule		    (pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_MARKER ruleIndex)
 {
     ANTLR3_MARKER			stopIndex;
@@ -1952,7 +1952,7 @@ alreadyParsedRule		    (pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_MARKER ruleIn
 			break;
 
 		default:
-		    
+
 			ANTLR3_FPRINTF(stderr, "Base recognizer function 'alreadyParsedRule' called by unknown parser type - provide override for this function\n");
 			return ANTLR3_FALSE;
 
@@ -1985,7 +1985,7 @@ alreadyParsedRule		    (pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_MARKER ruleIn
 /** Record whether or not this rule parsed the input at this position
  *  successfully.
  */
-static void		
+static void
 memoize	(pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_MARKER ruleIndex, ANTLR3_MARKER ruleParseStart)
 {
     /* The rule memos are an ANTLR3_LIST of ANTLR3_LIST.
@@ -2025,13 +2025,13 @@ memoize	(pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_MARKER ruleIndex, ANTLR3_MAR
 			break;
 
 		default:
-		    
+
 			ANTLR3_FPRINTF(stderr, "Base recognizer function consumeUntilSet called by unknown parser type - provide override for this function\n");
 			return;
 
 			break;
     }
-    
+
     stopIndex	= recognizer->state->failed == ANTLR3_TRUE ? MEMO_RULE_FAILED : is->index(is) - 1;
 
     entry	= recognizer->state->ruleMemo->get(recognizer->state->ruleMemo, (ANTLR3_INTKEY)ruleIndex);
@@ -2051,7 +2051,7 @@ memoize	(pANTLR3_BASE_RECOGNIZER recognizer, ANTLR3_MARKER ruleIndex, ANTLR3_MAR
  *  the specified grammar fragment matches the current input stream.
  *  This resets the failed instance var afterwards.
  */
-static ANTLR3_BOOLEAN	
+static ANTLR3_BOOLEAN
 synpred	(pANTLR3_BASE_RECOGNIZER recognizer, void * ctx, void (*predicate)(void * ctx))
 {
     ANTLR3_MARKER   start;
@@ -2078,7 +2078,7 @@ synpred	(pANTLR3_BASE_RECOGNIZER recognizer, void * ctx, void (*predicate)(void 
 			break;
 
 		default:
-		    
+
 			ANTLR3_FPRINTF(stderr, "Base recognizer function 'synPred' called by unknown parser type - provide override for this function\n");
 			return ANTLR3_FALSE;
 
@@ -2141,7 +2141,7 @@ reset(pANTLR3_BASE_RECOGNIZER recognizer)
 			recognizer->state->ruleMemo = antlr3IntTrieNew(15);	/* 16 bit depth is enough for 32768 rules! */
 		}
 	}
-	
+
 
     // Install a new following set
     //
@@ -2152,7 +2152,7 @@ reset(pANTLR3_BASE_RECOGNIZER recognizer)
 // Default implementation is for parser and assumes a token stream as supplied by the runtime.
 // You MAY need override this function if the standard TOKEN_STREAM is not what you are using.
 //
-static void *				
+static void *
 getCurrentInputSymbol		(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM istream)
 {
 	return ((pANTLR3_TOKEN_STREAM)istream->super)->_LT((pANTLR3_TOKEN_STREAM)istream->super, 1);
@@ -2161,7 +2161,7 @@ getCurrentInputSymbol		(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM i
 // Default implementation is for parser and assumes a token stream as supplied by the runtime.
 // You MAY need override this function if the standard COMMON_TOKEN_STREAM is not what you are using.
 //
-static void *				
+static void *
 getMissingSymbol			(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM	istream, pANTLR3_EXCEPTION	e,
 									ANTLR3_UINT32 expectedTokenType, pANTLR3_BITSET_LIST follow)
 {
@@ -2175,7 +2175,7 @@ getMissingSymbol			(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM	istre
 	//
 	ts		= (pANTLR3_TOKEN_STREAM)istream->super;
 	cts		= (pANTLR3_COMMON_TOKEN_STREAM)ts->super;
-	
+
 	// Work out what to use as the current symbol to make a line and offset etc
 	// If we are at EOF, we use the token before EOF
 	//
@@ -2208,7 +2208,7 @@ getMissingSymbol			(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM	istre
     token->user3                    = current->user3;
     token->custom                   = current->custom;
     token->lineStart                = current->lineStart;
-    
+
 	// Create the token text that shows it has been inserted
 	//
 	token->setText8(token, (pANTLR3_UINT8)"<missing ");
@@ -2219,7 +2219,7 @@ getMissingSymbol			(pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM	istre
 		text->append8(text, (const char *)recognizer->state->tokenNames[expectedTokenType]);
 		text->append8(text, (const char *)">");
 	}
-	
+
 	// Finally return the pointer to our new token
 	//
 	return	token;

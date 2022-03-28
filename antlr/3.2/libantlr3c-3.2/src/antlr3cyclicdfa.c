@@ -53,7 +53,7 @@ static void
 noViableAlt(pANTLR3_BASE_RECOGNIZER rec, pANTLR3_CYCLIC_DFA cdfa, ANTLR3_UINT32	s)
 {
 	// In backtracking mode, we just set the failed flag so that the
-	// alt can just exit right now. If we are parsing though, then 
+	// alt can just exit right now. If we are parsing though, then
 	// we want the exception to be raised.
 	//
     if	(rec->state->backtracking > 0)
@@ -85,7 +85,7 @@ antlr3dfapredict (void * ctx, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_INT_STREAM is
 
     mark	= is->mark(is);	    /* Store where we are right now	*/
     s		= 0;		    /* Always start with state 0	*/
-    
+
 	for (;;)
 	{
 		/* Pick out any special state entry for this state
@@ -189,7 +189,7 @@ antlr3dfapredict (void * ctx, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_INT_STREAM is
 
 /** Default special state implementation
  */
-ANTLR3_API ANTLR3_INT32	
+ANTLR3_API ANTLR3_INT32
 antlr3dfaspecialStateTransition   (void * ctx, pANTLR3_BASE_RECOGNIZER recognizer, pANTLR3_INT_STREAM is, pANTLR3_CYCLIC_DFA dfa, ANTLR3_INT32 s)
 {
     return -1;

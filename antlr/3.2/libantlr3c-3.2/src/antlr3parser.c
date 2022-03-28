@@ -33,7 +33,7 @@
 
 #include    <antlr3parser.h>
 
-/* Parser API 
+/* Parser API
  */
 static void					setDebugListener	(pANTLR3_PARSER parser, pANTLR3_DEBUG_EVENT_LISTENER dbg);
 static void					setTokenStream		(pANTLR3_PARSER parser, pANTLR3_TOKEN_STREAM);
@@ -110,7 +110,7 @@ antlr3ParserNewStream	(ANTLR3_UINT32 sizeHint, pANTLR3_TOKEN_STREAM tstream, pAN
 		return	NULL;
     }
 
-    /* Everything seems to be hunky dory so we can install the 
+    /* Everything seems to be hunky dory so we can install the
      * token stream.
      */
     parser->setTokenStream(parser, tstream);
@@ -118,7 +118,7 @@ antlr3ParserNewStream	(ANTLR3_UINT32 sizeHint, pANTLR3_TOKEN_STREAM tstream, pAN
     return parser;
 }
 
-static void		
+static void
 freeParser			    (pANTLR3_PARSER parser)
 {
     if	(parser->rec != NULL)
@@ -142,7 +142,7 @@ freeParser			    (pANTLR3_PARSER parser)
     ANTLR3_FREE(parser);
 }
 
-static void					
+static void
 setDebugListener		(pANTLR3_PARSER parser, pANTLR3_DEBUG_EVENT_LISTENER dbg)
 {
 	// Set the debug listener. There are no methods to override
@@ -165,14 +165,14 @@ setDebugListener		(pANTLR3_PARSER parser, pANTLR3_DEBUG_EVENT_LISTENER dbg)
 	}
 }
 
-static void			
+static void
 setTokenStream		    (pANTLR3_PARSER parser, pANTLR3_TOKEN_STREAM tstream)
 {
     parser->tstream = tstream;
     parser->rec->reset(parser->rec);
 }
 
-static pANTLR3_TOKEN_STREAM	
+static pANTLR3_TOKEN_STREAM
 getTokenStream		    (pANTLR3_PARSER parser)
 {
     return  parser->tstream;

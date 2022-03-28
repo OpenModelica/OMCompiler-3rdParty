@@ -42,7 +42,7 @@
 // option to generate your code will produce code that just crashes, but then I presme you are smart
 // enough to realize that building the libraries without debugger support means you can't call the
 // debugger ;-)
-// 
+//
 #ifdef ANTLR3_NODEBUGGER
 ANTLR3_API pANTLR3_DEBUG_EVENT_LISTENER
 antlr3DebugListenerNew()
@@ -161,14 +161,14 @@ antlr3DebugListenerNewPort(ANTLR3_UINT32 port)
 //--------------------------------------------------------------------------------
 // Support functions for sending stuff over the socket interface
 //
-static int 
+static int
 sockSend(SOCKET sock, const char * ptr, int len)
 {
 	int		sent;
 	int		thisSend;
 
 	sent	= 0;
-		
+
 	while	(sent < len)
 	{
 		// Send as many bytes as we can
@@ -190,7 +190,7 @@ sockSend(SOCKET sock, const char * ptr, int len)
 	return	ANTLR3_TRUE;
 }
 
-static	ANTLR3_BOOLEAN	
+static	ANTLR3_BOOLEAN
 handshake				(pANTLR3_DEBUG_EVENT_LISTENER delboy)
 {
 	/// Connection structure with which to wait and accept a connection from
@@ -235,7 +235,7 @@ handshake				(pANTLR3_DEBUG_EVENT_LISTENER delboy)
 
 			err = WSAStartup( wVersionRequested, &wsaData );
 
-			if ( err != 0 ) 
+			if ( err != 0 )
 			{
 				// Tell the user that we could not find a usable
 				// WinSock DLL
@@ -300,7 +300,7 @@ handshake				(pANTLR3_DEBUG_EVENT_LISTENER delboy)
 		//
 		optVal	= 1;
 		setsockopt(delboy->socket, SOL_SOCKET, TCP_NODELAY, (const void *)&optVal, sizeof(optVal));
-		
+
 	}
 
 	// We now have a good socket connection with the debugging client, so we
@@ -390,7 +390,7 @@ serializeText(pANTLR3_STRING buffer, pANTLR3_STRING text)
 				break;
 
 			case	'\r':
-			
+
 				buffer->append(buffer, "%0D");
 				break;
 
@@ -402,7 +402,7 @@ serializeText(pANTLR3_STRING buffer, pANTLR3_STRING text)
 				// Other characters: The Song Remains the Same.
 				//
 			default:
-					
+
 				buffer->addc(buffer, character);
 				break;
 		}
@@ -410,7 +410,7 @@ serializeText(pANTLR3_STRING buffer, pANTLR3_STRING text)
 }
 
 // Given a token, create a stringified version of it, in the supplied
-// buffer. We create a string for this in the debug 'object', if there 
+// buffer. We create a string for this in the debug 'object', if there
 // is not one there already, and then reuse it here if asked to do this
 // again.
 //
@@ -423,7 +423,7 @@ serializeToken(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_COMMON_TOKEN t)
 	{
 		// No, so create one, using the string factory that
 		// the grammar name used, which is guaranteed to exist.
-		// 64 bytes will do us here for starters. 
+		// 64 bytes will do us here for starters.
 		//
 		delboy->tokenString = delboy->grammarFileName->factory->newSize(delboy->grammarFileName->factory, 64);
 	}
@@ -450,7 +450,7 @@ serializeToken(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_COMMON_TOKEN t)
 	serializeText(delboy->tokenString, t->getText(t));
 
 	// Finally, as the debugger is a Java program it will expect to get UTF-8
-	// encoded strings. We don't use UTF-8 internally to the C runtime, so we 
+	// encoded strings. We don't use UTF-8 internally to the C runtime, so we
 	// must force encode it. We have a method to do this in the string class, but
 	// it returns malloc space that we must free afterwards.
 	//
@@ -472,7 +472,7 @@ serializeNode(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE node)
 	{
 		// No, so create one, using the string factory that
 		// the grammar name used, which is guaranteed to exist.
-		// 64 bytes will do us here for starters. 
+		// 64 bytes will do us here for starters.
 		//
 		delboy->tokenString = delboy->grammarFileName->factory->newSize(delboy->grammarFileName->factory, 64);
 	}
@@ -534,7 +534,7 @@ serializeNode(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE node)
 	serializeText(delboy->tokenString, delboy->adaptor->getText(delboy->adaptor, node));
 
 	// Finally, as the debugger is a Java program it will expect to get UTF-8
-	// encoded strings. We don't use UTF-8 internally to the C runtime, so we 
+	// encoded strings. We don't use UTF-8 internally to the C runtime, so we
 	// must force encode it. We have a method to do this in the string class, but
 	// there is no utf8 string implementation as of yet
 	//
@@ -555,7 +555,7 @@ enterRule				(pANTLR3_DEBUG_EVENT_LISTENER delboy, const char * grammarFileName,
 	transmit(delboy, buffer);
 }
 
-static	void	
+static	void
 enterAlt				(pANTLR3_DEBUG_EVENT_LISTENER delboy, int alt)
 {
 	char	buffer[512];
@@ -566,7 +566,7 @@ enterAlt				(pANTLR3_DEBUG_EVENT_LISTENER delboy, int alt)
 	transmit(delboy, buffer);
 }
 
-static	void	
+static	void
 exitRule				(pANTLR3_DEBUG_EVENT_LISTENER delboy, const char * grammarFileName, const char * ruleName)
 {
 	char	buffer[512];
@@ -577,7 +577,7 @@ exitRule				(pANTLR3_DEBUG_EVENT_LISTENER delboy, const char * grammarFileName, 
 	transmit(delboy, buffer);
 }
 
-static	void	
+static	void
 enterSubRule			(pANTLR3_DEBUG_EVENT_LISTENER delboy, int decisionNumber)
 {
 	char	buffer[512];
@@ -588,7 +588,7 @@ enterSubRule			(pANTLR3_DEBUG_EVENT_LISTENER delboy, int decisionNumber)
 	transmit(delboy, buffer);
 }
 
-static	void	
+static	void
 exitSubRule				(pANTLR3_DEBUG_EVENT_LISTENER delboy, int decisionNumber)
 {
 	char	buffer[512];
@@ -599,7 +599,7 @@ exitSubRule				(pANTLR3_DEBUG_EVENT_LISTENER delboy, int decisionNumber)
 	transmit(delboy, buffer);
 }
 
-static	void	
+static	void
 enterDecision			(pANTLR3_DEBUG_EVENT_LISTENER delboy, int decisionNumber)
 {
 	char	buffer[512];
@@ -611,7 +611,7 @@ enterDecision			(pANTLR3_DEBUG_EVENT_LISTENER delboy, int decisionNumber)
 
 }
 
-static	void	
+static	void
 exitDecision			(pANTLR3_DEBUG_EVENT_LISTENER delboy, int decisionNumber)
 {
 	char	buffer[512];
@@ -622,7 +622,7 @@ exitDecision			(pANTLR3_DEBUG_EVENT_LISTENER delboy, int decisionNumber)
 	transmit(delboy, buffer);
 }
 
-static	void	
+static	void
 consumeToken			(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_COMMON_TOKEN t)
 {
 	pANTLR3_STRING msg;
@@ -642,7 +642,7 @@ consumeToken			(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_COMMON_TOKEN t)
 	transmit(delboy, (const char *)(msg->chars));
 }
 
-static	void	
+static	void
 consumeHiddenToken		(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_COMMON_TOKEN t)
 {
 	pANTLR3_STRING msg;
@@ -664,7 +664,7 @@ consumeHiddenToken		(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_COMMON_TOKEN t
 
 // Looking at the next token event.
 //
-static	void	
+static	void
 LT						(pANTLR3_DEBUG_EVENT_LISTENER delboy, int i, pANTLR3_COMMON_TOKEN t)
 {
 	pANTLR3_STRING msg;
@@ -692,7 +692,7 @@ LT						(pANTLR3_DEBUG_EVENT_LISTENER delboy, int i, pANTLR3_COMMON_TOKEN t)
 	}
 }
 
-static	void	
+static	void
 mark					(pANTLR3_DEBUG_EVENT_LISTENER delboy, ANTLR3_MARKER marker)
 {
 	char buffer[128];
@@ -704,7 +704,7 @@ mark					(pANTLR3_DEBUG_EVENT_LISTENER delboy, ANTLR3_MARKER marker)
 	transmit(delboy, buffer);
 }
 
-static	void	
+static	void
 rewindMark					(pANTLR3_DEBUG_EVENT_LISTENER delboy, ANTLR3_MARKER marker)
 {
 	char buffer[128];
@@ -717,13 +717,13 @@ rewindMark					(pANTLR3_DEBUG_EVENT_LISTENER delboy, ANTLR3_MARKER marker)
 
 }
 
-static	void	
+static	void
 rewindLast				(pANTLR3_DEBUG_EVENT_LISTENER delboy)
 {
 	transmit(delboy, (const char *)"rewind\n");
 }
 
-static	void	
+static	void
 beginBacktrack			(pANTLR3_DEBUG_EVENT_LISTENER delboy, int level)
 {
 	char buffer[128];
@@ -735,7 +735,7 @@ beginBacktrack			(pANTLR3_DEBUG_EVENT_LISTENER delboy, int level)
 	transmit(delboy, buffer);
 }
 
-static	void	
+static	void
 endBacktrack			(pANTLR3_DEBUG_EVENT_LISTENER delboy, int level, ANTLR3_BOOLEAN successful)
 {
 	char buffer[128];
@@ -747,7 +747,7 @@ endBacktrack			(pANTLR3_DEBUG_EVENT_LISTENER delboy, int level, ANTLR3_BOOLEAN s
 	transmit(delboy, buffer);
 }
 
-static	void	
+static	void
 location				(pANTLR3_DEBUG_EVENT_LISTENER delboy, int line, int pos)
 {
 	char buffer[128];
@@ -759,7 +759,7 @@ location				(pANTLR3_DEBUG_EVENT_LISTENER delboy, int line, int pos)
 	transmit(delboy, buffer);
 }
 
-static	void	
+static	void
 recognitionException	(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_EXCEPTION e)
 {
 	char	buffer[256];
@@ -771,19 +771,19 @@ recognitionException	(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_EXCEPTION e)
 	transmit(delboy, buffer);
 }
 
-static	void	
+static	void
 beginResync				(pANTLR3_DEBUG_EVENT_LISTENER delboy)
 {
 	transmit(delboy, (const char *)"beginResync\n");
 }
 
-static	void	
+static	void
 endResync				(pANTLR3_DEBUG_EVENT_LISTENER delboy)
 {
 	transmit(delboy, (const char *)"endResync\n");
 }
 
-static	void	
+static	void
 semanticPredicate		(pANTLR3_DEBUG_EVENT_LISTENER delboy, ANTLR3_BOOLEAN result, const char * predicate)
 {
 	unsigned char * buffer;
@@ -802,7 +802,7 @@ semanticPredicate		(pANTLR3_DEBUG_EVENT_LISTENER delboy, ANTLR3_BOOLEAN result, 
 				switch(*predicate)
 				{
 					case	'\n':
-						
+
 						*out++	= '%';
 						*out++	= '0';
 						*out++	= 'A';
@@ -846,7 +846,7 @@ semanticPredicate		(pANTLR3_DEBUG_EVENT_LISTENER delboy, ANTLR3_BOOLEAN result, 
 #pragma warning (disable : 4100)
 #endif
 
-static	void	
+static	void
 commence				(pANTLR3_DEBUG_EVENT_LISTENER delboy)
 {
 	// Nothing to see here
@@ -857,7 +857,7 @@ commence				(pANTLR3_DEBUG_EVENT_LISTENER delboy)
 #pragma warning	(pop)
 #endif
 
-static	void	
+static	void
 terminate				(pANTLR3_DEBUG_EVENT_LISTENER delboy)
 {
 	// Terminate sequence
@@ -868,7 +868,7 @@ terminate				(pANTLR3_DEBUG_EVENT_LISTENER delboy)
 //----------------------------------------------------------------
 // Tree parsing events
 //
-static	void	
+static	void
 consumeNode				(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE t)
 {
 	pANTLR3_STRING	buffer;
@@ -885,7 +885,7 @@ consumeNode				(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE t)
 	transmit		(delboy, (const char *)(delboy->tokenString->toUTF8(delboy->tokenString)->chars));
 }
 
-static	void	
+static	void
 LTT						(pANTLR3_DEBUG_EVENT_LISTENER delboy, int i, pANTLR3_BASE_TREE t)
 {
 	pANTLR3_STRING	buffer;
@@ -904,7 +904,7 @@ LTT						(pANTLR3_DEBUG_EVENT_LISTENER delboy, int i, pANTLR3_BASE_TREE t)
 	transmit		(delboy, (const char *)(delboy->tokenString->toUTF8(delboy->tokenString)->chars));
 }
 
-static	void	
+static	void
 nilNode					(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE t)
 {
 	char	buffer[128];
@@ -912,7 +912,7 @@ nilNode					(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE t)
 	transmit(delboy, buffer);
 }
 
-static	void	
+static	void
 createNode				(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE t)
 {
 	// Do we already have a serialization buffer?
@@ -921,7 +921,7 @@ createNode				(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE t)
 	{
 		// No, so create one, using the string factory that
 		// the grammar name used, which is guaranteed to exist.
-		// 64 bytes will do us here for starters. 
+		// 64 bytes will do us here for starters.
 		//
 		delboy->tokenString = delboy->grammarFileName->factory->newSize(delboy->grammarFileName->factory, 64);
 	}
@@ -948,7 +948,7 @@ createNode				(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE t)
 	delboy->tokenString->addc(delboy->tokenString, '\n');
 
 	// Finally, as the debugger is a Java program it will expect to get UTF-8
-	// encoded strings. We don't use UTF-8 internally to the C runtime, so we 
+	// encoded strings. We don't use UTF-8 internally to the C runtime, so we
 	// must force encode it. We have a method to do this in the string class, but
 	// there is no utf8 string implementation as of yet
 	//
@@ -964,7 +964,7 @@ errorNode				(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE t)
 	{
 		// No, so create one, using the string factory that
 		// the grammar name used, which is guaranteed to exist.
-		// 64 bytes will do us here for starters. 
+		// 64 bytes will do us here for starters.
 		//
 		delboy->tokenString = delboy->grammarFileName->factory->newSize(delboy->grammarFileName->factory, 64);
 	}
@@ -991,7 +991,7 @@ errorNode				(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE t)
 	delboy->tokenString->addc(delboy->tokenString, '\n');
 
 	// Finally, as the debugger is a Java program it will expect to get UTF-8
-	// encoded strings. We don't use UTF-8 internally to the C runtime, so we 
+	// encoded strings. We don't use UTF-8 internally to the C runtime, so we
 	// must force encode it. We have a method to do this in the string class, but
 	// there is no utf8 string implementation as of yet
 	//
@@ -999,7 +999,7 @@ errorNode				(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE t)
 
 }
 
-static	void	
+static	void
 createNodeTok			(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE node, pANTLR3_COMMON_TOKEN token)
 {
 	char	buffer[128];
@@ -1009,7 +1009,7 @@ createNodeTok			(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE node, pA
 	transmit(delboy, buffer);
 }
 
-static	void	
+static	void
 becomeRoot				(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE newRoot, pANTLR3_BASE_TREE oldRoot)
 {
 	char	buffer[128];
@@ -1021,7 +1021,7 @@ becomeRoot				(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE newRoot, p
 }
 
 
-static	void	
+static	void
 addChild				(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE root, pANTLR3_BASE_TREE child)
 {
 	char	buffer[128];
@@ -1032,7 +1032,7 @@ addChild				(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE root, pANTLR
 	transmit(delboy, buffer);
 }
 
-static	void	
+static	void
 setTokenBoundaries		(pANTLR3_DEBUG_EVENT_LISTENER delboy, pANTLR3_BASE_TREE t, ANTLR3_MARKER tokenStartIndex, ANTLR3_MARKER tokenStopIndex)
 {
 	char	buffer[128];

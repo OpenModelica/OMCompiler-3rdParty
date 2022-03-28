@@ -1,6 +1,6 @@
 /** \file
  * Defines the the class interface for an antlr3 INTSTREAM.
- * 
+ *
  * Certain functionality (such as DFAs for instance) abstract the stream of tokens
  * or characters in to a steam of integers. Hence this structure should be included
  * in any stream that is able to provide the output as a stream of integers (which is anything
@@ -11,15 +11,15 @@
  * the signature in this interface which abstracts the base immplementation. In essence though
  * the base stream provides a pointer to this interface, within which it installs its
  * normal match() functions and so on. Interaces such as DFA are then passed the pANTLR3_INT_STREAM
- * and can treat any input as an int stream. 
+ * and can treat any input as an int stream.
  *
  * For instance, a lexer implements a pANTLR3_BASE_RECOGNIZER, within which there is a pANTLR3_INT_STREAM.
  * However, a pANTLR3_INPUT_STREAM also provides a pANTLR3_INT_STREAM, which it has constructed from
  * it's normal interface when it was created. This is then pointed at by the pANTLR_BASE_RECOGNIZER
  * when it is intialized with a pANTLR3_INPUT_STREAM.
  *
- * Similarly if a pANTLR3_BASE_RECOGNIZER is initialized with a pANTLR3_TOKEN_STREAM, then the 
- * pANTLR3_INT_STREAM is taken from the pANTLR3_TOKEN_STREAM. 
+ * Similarly if a pANTLR3_BASE_RECOGNIZER is initialized with a pANTLR3_TOKEN_STREAM, then the
+ * pANTLR3_INT_STREAM is taken from the pANTLR3_TOKEN_STREAM.
  *
  * If a pANTLR3_BASE_RECOGNIZER is initialized with a pANTLR3_TREENODE_STREAM, then guess where
  * the pANTLR3_INT_STREAM comes from?
@@ -120,7 +120,7 @@ typedef	struct ANTLR3_INT_STREAM_struct
      */
     void		    (*consume)	    (struct ANTLR3_INT_STREAM_struct * intStream);
 
-    /** Get ANTLR3_UINT32 at current input pointer + i ahead where i=1 is next ANTLR3_UINT32 
+    /** Get ANTLR3_UINT32 at current input pointer + i ahead where i=1 is next ANTLR3_UINT32
      */
     ANTLR3_UINT32	    (*_LA)	    (struct ANTLR3_INT_STREAM_struct * intStream, ANTLR3_INT32 i);
 
@@ -130,7 +130,7 @@ typedef	struct ANTLR3_INT_STREAM_struct
      *  rewind(mark()) should not affect the input cursor.
      */
     ANTLR3_MARKER	    (*mark)	    (struct ANTLR3_INT_STREAM_struct * intStream);
-    
+
     /** Return the current input symbol index 0..n where n indicates the
      *  last symbol has been read.
      */
