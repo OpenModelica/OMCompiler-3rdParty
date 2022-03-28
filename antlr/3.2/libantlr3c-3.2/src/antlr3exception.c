@@ -40,31 +40,31 @@ static    void	antlr3ExceptionFree (pANTLR3_EXCEPTION ex);
 /**
  * \brief
  * Creates a new ANTLR3 exception structure
- * 
+ *
  * \param[in] exception
  * One of the ANTLR3_xxx_EXCEPTION indicators such as #ANTLR3_RECOGNITION_EXCEPTION
- * 
+ *
  * \param[in] message
- * Pointer to message string 
- * 
+ * Pointer to message string
+ *
  * \param[in] freeMessage
- * Set to ANTLR3_TRUE if the message parameter should be freed by a call to 
+ * Set to ANTLR3_TRUE if the message parameter should be freed by a call to
  * ANTLR3_FREE() when the exception is destroyed.
- * 
+ *
  * \returns
  * Pointer to newly initialized exception structure, or an ANTLR3_ERR_xx defined value
  * upon failure.
- * 
+ *
  * An exception is 'thrown' by a recognizer  when input is seen that is not predicted by
  * the grammar productions or when some other error condition occurs. In C we do not have
- * the luxury of try and catch blocks, so exceptions are added in the order they occur to 
+ * the luxury of try and catch blocks, so exceptions are added in the order they occur to
  * a list in the baserecognizer structure. The last one to be thrown is inserted at the head of
  * the list and the one currently installed is pointed to by the newly installed exception.
- * 
+ *
  * \remarks
  * After an exception is created, you may add a pointer to your own structure and a pointer
  * to a function to free this structure when the exception is destroyed.
- * 
+ *
  * \see
  * ANTLR3_EXCEPTION
  */
@@ -88,7 +88,7 @@ antlr3ExceptionNew(ANTLR3_UINT32 exception, void * name, void * message, ANTLR3_
 	ex->type		= exception;	/* Install the exception number	*/
 	ex->message		= message;	/* Install message string	*/
 
-	/* Indicate whether the string should be freed if exception is destroyed    
+	/* Indicate whether the string should be freed if exception is destroyed
 	*/
 	ex->freeMessage	= freeMessage;
 
@@ -103,14 +103,14 @@ antlr3ExceptionNew(ANTLR3_UINT32 exception, void * name, void * message, ANTLR3_
 /**
  * \brief
  * Prints out the message in all the exceptions in the supplied chain.
- * 
+ *
  * \param[in] ex
  * Pointer to the exception structure to print.
- * 
+ *
  * \remarks
  * You may wish to override this function by installing a pointer to a new function
  * in the base recognizer context structure.
- * 
+ *
  * \see
  * ANTLR3_BASE_RECOGNIZER
  */
@@ -143,10 +143,10 @@ antlr3ExceptionPrint(pANTLR3_EXCEPTION ex)
 /**
  * \brief
  * Frees up a chain of ANTLR3 exceptions
- * 
+ *
  * \param[in] ex
  * Pointer to the first exception in the chain to free.
- * 
+ *
  * \see
  * ANTLR3_EXCEPTION
  */

@@ -56,7 +56,7 @@ static	    pANTLR3_STRING	antlr3UCS2Substr	(pANTLR3_INPUT_STREAM input, ANTLR3_M
 ///    of stream is very common.
 ///    Take it to mean, therefore, a straight 16 bit uncomplicated encoding of Unicode code points.
 ///
-void 
+void
 antlr3UCS2SetupStream	(pANTLR3_INPUT_STREAM input, ANTLR3_UINT32 type)
 {
     // Build a string factory for this stream. This is a 16 bit string "UCS2" factory which is a standard
@@ -76,11 +76,11 @@ antlr3UCS2SetupStream	(pANTLR3_INPUT_STREAM input, ANTLR3_UINT32 type)
     input->istream->_LA		    =  antlr3UCS2LA;		    // Return the UTF32 character at offset n (1 based)
     input->istream->index	    =  antlr3UCS2Index;		    // Calculate current index in input stream, 16 bit based
     input->istream->seek	    =  antlr3UCS2Seek;		    // How to seek to a specific point in the stream
-    
+
     // Charstream API overrides for UCS2
     //
     input->substr		    =  antlr3UCS2Substr;	    // Return a string from the input stream
-        
+
 	input->charByteSize				= 2;				// Size in bytes of characters in this stream.
 
 }
@@ -97,7 +97,7 @@ antlr3UCS2Consume(pANTLR3_INT_STREAM is)
 	input   = ((pANTLR3_INPUT_STREAM) (is->super));
 
 	if	((pANTLR3_UINT16)(input->nextChar) < (((pANTLR3_UINT16)input->data) + input->sizeBuf))
-	{	
+	{
 		// Indicate one more character in this line
 		//
 		input->charPositionInLine++;
@@ -124,7 +124,7 @@ antlr3UCS2Consume(pANTLR3_INT_STREAM is)
 ///
 /// \return Next input character in internal ANTLR3 encoding (UTF32)
 ///
-static ANTLR3_UCHAR 
+static ANTLR3_UCHAR
 antlr3UCS2LA(pANTLR3_INT_STREAM is, ANTLR3_INT32 la)
 {
 	pANTLR3_INPUT_STREAM input;
@@ -145,7 +145,7 @@ antlr3UCS2LA(pANTLR3_INT_STREAM is, ANTLR3_INT32 la)
 /// \brief Calculate the current index in the output stream.
 /// \param[in] input Input stream context pointer
 ///
-static ANTLR3_MARKER 
+static ANTLR3_MARKER
 antlr3UCS2Index(pANTLR3_INT_STREAM is)
 {
     pANTLR3_INPUT_STREAM input;

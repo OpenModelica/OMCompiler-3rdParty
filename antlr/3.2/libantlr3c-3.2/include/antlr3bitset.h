@@ -1,9 +1,9 @@
 /**
  * \file
- * Defines the basic structures of an ANTLR3 bitset. this is a C version of the 
+ * Defines the basic structures of an ANTLR3 bitset. this is a C version of the
  * cut down Bitset class provided with the java version of antlr 3.
- * 
- * 
+ *
+ *
  */
 #ifndef	_ANTLR3_BITSET_H
 #define	_ANTLR3_BITSET_H
@@ -55,7 +55,7 @@
 /** We will often need to do a mod operator (i mod nbits).
  *  For powers of two, this mod operation is the
  *  same as:
- *   - (i & (nbits-1)).  
+ *   - (i & (nbits-1)).
  *
  * Since mod is relatively slow, we use an easily
  * precomputed mod mask to do the mod instead.
@@ -69,7 +69,7 @@ extern "C" {
 typedef struct ANTLR3_BITSET_LIST_struct
 {
 	/// Pointer to the allocated array of bits for this bit set, which
-    /// is an array of 64 bit elements (of the architecture). If we find a 
+    /// is an array of 64 bit elements (of the architecture). If we find a
     /// machine/C compiler that does not know anything about 64 bit values
     ///	then it should be easy enough to produce a 32 bit (or less) version
     /// of the bitset code. Note that the pointer here may be static if laid down

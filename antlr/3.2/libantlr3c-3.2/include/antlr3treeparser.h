@@ -67,7 +67,7 @@ typedef	struct	ANTLR3_TREE_PARSER_struct
     /** Return a pointer to the input stream
      */
     pANTLR3_COMMON_TREE_NODE_STREAM (*getTreeNodeStream)    (struct ANTLR3_TREE_PARSER_struct * parser);
-    
+
     /** Pointer to a function that knows how to free resources of an ANTLR3 tree parser.
      */
     void			    (*free)		    (struct ANTLR3_TREE_PARSER_struct * parser);

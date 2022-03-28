@@ -1,7 +1,7 @@
 /** \file
  * This is the standard tree adaptor used by the C runtime unless the grammar
  * source file says to use anything different. It embeds a BASE_TREE to which
- * it adds its own implementation of anything that the base tree is not 
+ * it adds its own implementation of anything that the base tree is not
  * good for, plus a number of methods that any other adaptor type
  * needs to implement too.
  * \ingroup pANTLR3_COMMON_TREE_ADAPTOR
@@ -73,7 +73,7 @@ static	void		ctaFree			(pANTLR3_BASE_TREE_ADAPTOR adaptor);
 
 /** Create a new tree adaptor. Note that despite the fact that this is
  *  creating a new COMMON_TREE adaptor, we return the address of the
- *  BASE_TREE interface, as should any other adaptor that wishes to be 
+ *  BASE_TREE interface, as should any other adaptor that wishes to be
  *  used as the tree element of a tree parse/build. It needs to be given the
  *  address of a valid string factory as we do not know what the originating
  *  input stream encoding type was. This way we can rely on just using
@@ -105,9 +105,9 @@ ANTLR3_TREE_ADAPTORNew(pANTLR3_STRING_FACTORY strFactory)
 													dupNode;
 	cta->baseAdaptor.create					=  (void * (*) (pANTLR3_BASE_TREE_ADAPTOR, pANTLR3_COMMON_TOKEN))
 													create;
-	cta->baseAdaptor.createToken			=  
+	cta->baseAdaptor.createToken			=
 													createToken;
-	cta->baseAdaptor.createTokenFromToken   =  
+	cta->baseAdaptor.createTokenFromToken   =
 													createTokenFromToken;
 	cta->baseAdaptor.setTokenBoundaries	    =  (void   (*) (pANTLR3_BASE_TREE_ADAPTOR, void *, pANTLR3_COMMON_TOKEN, pANTLR3_COMMON_TOKEN))
 													setTokenBoundaries;
@@ -137,7 +137,7 @@ ANTLR3_TREE_ADAPTORNew(pANTLR3_STRING_FACTORY strFactory)
                                                     getChildIndex;
 	cta->baseAdaptor.free					=  (void  (*) (pANTLR3_BASE_TREE_ADAPTOR))
                                                     ctaFree;
-	cta->baseAdaptor.setDebugEventListener	=  
+	cta->baseAdaptor.setDebugEventListener	=
 													setDebugEventListener;
 	cta->baseAdaptor.replaceChildren		=  (void   (*) (pANTLR3_BASE_TREE_ADAPTOR, void *, ANTLR3_INT32, ANTLR3_INT32, void *))
                                                     replaceChildren;
@@ -181,7 +181,7 @@ ANTLR3_TREE_ADAPTORDebugNew(pANTLR3_STRING_FACTORY strFactory, pANTLR3_DEBUG_EVE
 	// Create a normal one first
 	//
 	ta	= ANTLR3_TREE_ADAPTORNew(strFactory);
-	
+
 	if	(ta != NULL)
 	{
 		// Reinitialize as a debug version
@@ -259,7 +259,7 @@ static	pANTLR3_BASE_TREE
 create		(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_COMMON_TOKEN payload)
 {
     pANTLR3_BASE_TREE	ct;
-    
+
     /* Create a new common tree as this is what this adaptor deals with
      */
     ct = ((pANTLR3_COMMON_TREE_ADAPTOR)(adaptor->super))->arboretum->newFromToken(((pANTLR3_COMMON_TREE_ADAPTOR)(adaptor->super))->arboretum, payload);
@@ -295,7 +295,7 @@ createToken		(pANTLR3_BASE_TREE_ADAPTOR adaptor, ANTLR3_UINT32 tokenType, pANTLR
     newToken	= adaptor->tokenFactory->newToken(adaptor->tokenFactory);
 
     if	(newToken != NULL)
-    {	
+    {
 		newToken->textState		= ANTLR3_TEXT_CHARP;
 		newToken->tokText.chars = (pANTLR3_UCHAR)text;
 		newToken->setType(newToken, tokenType);
@@ -329,7 +329,7 @@ createTokenFromToken	(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_COMMON_TOKEN fr
     pANTLR3_COMMON_TOKEN    newToken;
 
     newToken	= adaptor->tokenFactory->newToken(adaptor->tokenFactory);
-    
+
     if	(newToken != NULL)
     {
 		// Create the text using our own string factory to avoid complicating
@@ -416,13 +416,13 @@ dbgSetTokenBoundaries	(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_TREE t, p
 	}
 }
 
-static	ANTLR3_MARKER   
+static	ANTLR3_MARKER
 getTokenStartIndex	(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_TREE t)
 {
     return  ((pANTLR3_COMMON_TREE)(t->super))->startIndex;
 }
 
-static	ANTLR3_MARKER   
+static	ANTLR3_MARKER
 getTokenStopIndex	(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_TREE t)
 {
     return  ((pANTLR3_COMMON_TREE)(t->super))->stopIndex;
@@ -440,7 +440,7 @@ getType		(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_TREE t)
     return  t->getType(t);
 }
 
-static	void					
+static	void
 replaceChildren
 (pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_TREE parent, ANTLR3_INT32 startChildIndex, ANTLR3_INT32 stopChildIndex, pANTLR3_BASE_TREE t)
 {

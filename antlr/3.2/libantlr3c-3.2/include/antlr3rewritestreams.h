@@ -40,9 +40,9 @@ extern "C" {
 #endif
 
 /// A generic list of elements tracked in an alternative to be used in
-/// a -> rewrite rule.  
+/// a -> rewrite rule.
 ///
-/// In the C implementation, all tree oriented streams return a pointer to 
+/// In the C implementation, all tree oriented streams return a pointer to
 /// the same type: pANTLR3_BASE_TREE. Anything that has subclassed from this
 /// still passes this type, within which there is a super pointer, which points
 /// to it's own data and methods. Hence we do not need to implement this as
@@ -52,7 +52,7 @@ extern "C" {
 /// Once you start next()ing, do not try to add more elements.  It will
 /// break the cursor tracking I believe.
 ///
-/// 
+///
 /// \see #pANTLR3_REWRITE_RULE_NODE_STREAM
 /// \see #pANTLR3_REWRITE_RULE_ELEMENT_STREAM
 /// \see #pANTLR3_REWRITE_RULE_SUBTREE_STREAM
@@ -67,11 +67,11 @@ typedef struct ANTLR3_REWRITE_RULE_ELEMENT_STREAM_struct
     ///
     ANTLR3_UINT32		  cursor;
 
-    /// Track single elements w/o creating a list.  Upon 2nd add, alloc list 
+    /// Track single elements w/o creating a list.  Upon 2nd add, alloc list
     ///
     void			* singleElement;
 
-    /// The list of tokens or subtrees we are tracking 
+    /// The list of tokens or subtrees we are tracking
     ///
     pANTLR3_VECTOR		  elements;
 
@@ -100,12 +100,12 @@ typedef struct ANTLR3_REWRITE_RULE_ELEMENT_STREAM_struct
 	//
 	pANTLR3_BASE_RECOGNIZER		rec;
 
-    //   Methods 
+    //   Methods
 
     /// Reset the condition of this stream so that it appears we have
     ///  not consumed any of its elements.  Elements themselves are untouched.
     ///
-    void		(*reset)				(struct ANTLR3_REWRITE_RULE_ELEMENT_STREAM_struct * stream); 
+    void		(*reset)				(struct ANTLR3_REWRITE_RULE_ELEMENT_STREAM_struct * stream);
 
     /// Add a new pANTLR3_BASE_TREE to this stream
     ///
@@ -141,7 +141,7 @@ typedef struct ANTLR3_REWRITE_RULE_ELEMENT_STREAM_struct
     /// must dup the type node, but ID has been added.
     ///
     /// Referencing to a rule result twice is ok; dup entire tree as
-    /// we can't be adding trees; e.g., expr expr. 
+    /// we can't be adding trees; e.g., expr expr.
     ///
     pANTLR3_BASE_TREE	(*nextNode)		(struct ANTLR3_REWRITE_RULE_ELEMENT_STREAM_struct * stream);
 

@@ -1,6 +1,6 @@
 /** \file
  * Simple string interface allows indiscriminate allocation of strings
- * such that they can be allocated all over the place and released in 
+ * such that they can be allocated all over the place and released in
  * one chunk via a string factory - saves lots of hassle in remembering what
  * strings were allocated where.
  */
@@ -86,7 +86,7 @@ typedef	struct ANTLR3_STRING_struct
      *  8 bit.
      */
     pANTLR3_UINT8   (*set)	(struct ANTLR3_STRING_struct * string, const char * chars);
-   
+
     /** Pointer to function that sets the string value to a specific 8 bit string in the default encoding
      *  for this string. For instance, if this is a 16 bit string, then this function is the same as set8
      *  but if the encoding is 16 bit, then the pointer is assumed to point to 8 bit characters that must
@@ -111,7 +111,7 @@ typedef	struct ANTLR3_STRING_struct
      *  offset in the current string in the default encoding for this string. For instance, if this is an 8
      *  bit string, then this is the same as insert8, but if this is a 16 bit string, then the poitner
      *  must point to 16 bit characters.
-     *  
+     *
      */
     pANTLR3_UINT8   (*insert)	(struct ANTLR3_STRING_struct * string, ANTLR3_UINT32 point, const char * newbit);
 
@@ -121,7 +121,7 @@ typedef	struct ANTLR3_STRING_struct
      */
     pANTLR3_UINT8   (*insert8)	(struct ANTLR3_STRING_struct * string, ANTLR3_UINT32 point, const char * newbit);
 
-    /** Pointer to function that sets the string value to a copy of the supplied string (strings must be in the 
+    /** Pointer to function that sets the string value to a copy of the supplied string (strings must be in the
      *  same encoding.
      */
     pANTLR3_UINT8   (*setS)	(struct ANTLR3_STRING_struct * string, struct ANTLR3_STRING_struct * chars);
@@ -195,12 +195,12 @@ typedef	struct ANTLR3_STRING_struct
 
 	/// Pointer to a function that yields a UT8 encoded string of the current string,
 	/// regardless of the current encoding of the string. Because there is currently no UTF8
-	/// handling in the string class, it creates therefore, a string that is useful only for read only 
+	/// handling in the string class, it creates therefore, a string that is useful only for read only
 	/// applications as it will not contain methods that deal with UTF8 at the moment.
 	///
 	struct ANTLR3_STRING_struct *
 					(*toUTF8)	(struct ANTLR3_STRING_struct * string);
-	
+
 }
     ANTLR3_STRING;
 
@@ -237,7 +237,7 @@ typedef struct	ANTLR3_STRING_FACTORY_struct
      */
     pANTLR3_STRING  (*newPtr8)	(struct ANTLR3_STRING_FACTORY_struct * factory, pANTLR3_UINT8 string, ANTLR3_UINT32 size);
 
-    /** Pointer to function that manufactures a string from a given pointer and works out the length. The pointer is 
+    /** Pointer to function that manufactures a string from a given pointer and works out the length. The pointer is
      *  assumed to point to characters in the same encoding as the string itself, i.e. 16 bit if a 16 bit
      *  string and so on.
      */

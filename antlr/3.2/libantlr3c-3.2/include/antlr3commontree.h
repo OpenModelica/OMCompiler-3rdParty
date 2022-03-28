@@ -72,7 +72,7 @@ typedef struct ANTLR3_COMMON_TREE_struct
 	/// belongs to?
 	///
 	ANTLR3_INT32			  childIndex;
-	
+
 	/// Pointer to the tree factory that manufactured this
 	/// token. This can be used by duplication methods and so on
 	/// to manufacture another auto-tracked common tree structure
@@ -81,11 +81,11 @@ typedef struct ANTLR3_COMMON_TREE_struct
 
     /// An encapsulated BASE TREE structure (NOT a pointer)
     /// that performs a lot of the dirty work of node management
-    /// To this we add just a few functions that are specific to the 
+    /// To this we add just a few functions that are specific to the
     /// payload. You can further abstract common tree so long
     /// as you always have a baseTree pointer in the top structure
-    /// and copy it from the next one down. 
-    /// So, lets say we have a structure JIMS_TREE. 
+    /// and copy it from the next one down.
+    /// So, lets say we have a structure JIMS_TREE.
     /// It needs an ANTLR3_BASE_TREE that will support all the
     /// general tree duplication stuff.
     /// It needs a ANTLR3_COMMON_TREE structure embedded or completely
@@ -100,9 +100,9 @@ typedef struct ANTLR3_COMMON_TREE_struct
     /// be initialized. You then call and you can override them or just init
     /// JIMS_TREE (note that the base tree in common tree will be ignored)
     /// just the top level base tree is used). Codegen will take care of the rest.
-    /// 
+    ///
     ANTLR3_BASE_TREE	    baseTree;
-     
+
 }
     ANTLR3_COMMON_TREE;
 

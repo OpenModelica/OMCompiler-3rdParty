@@ -37,7 +37,7 @@
 
 // Static support function forward declarations for the stream types.
 //
-static	void				reset			(pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream); 
+static	void				reset			(pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream);
 static	void				add				(pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream, void * el, void (ANTLR3_CDECL *freePtr)(void *));
 static	void *				next			(pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream);
 static	pANTLR3_BASE_TREE	nextTree		(pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream);
@@ -80,7 +80,7 @@ freeRS	(pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 			factory->returnVector(factory, stream->elements);
 
 			stream->elements = NULL;
-		} 
+		}
 		else
 		{
 			// Other vectors we clear and allow to be reused if they come off the
@@ -142,7 +142,7 @@ freeNodeRS(pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 			factory->returnVector(factory, stream->elements);
 
 			stream->elements = NULL;
-		} 
+		}
 		else
 		{
 			stream->elements->clear(stream->elements);
@@ -183,7 +183,7 @@ expungeRS(pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 
 // Functions for creating streams
 //
-static  pANTLR3_REWRITE_RULE_ELEMENT_STREAM 
+static  pANTLR3_REWRITE_RULE_ELEMENT_STREAM
 antlr3RewriteRuleElementStreamNewAE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description)
 {
 	pANTLR3_REWRITE_RULE_ELEMENT_STREAM	stream;
@@ -253,7 +253,7 @@ antlr3RewriteRuleElementStreamNewAE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_B
 	return stream;
 }
 
-static pANTLR3_REWRITE_RULE_ELEMENT_STREAM 
+static pANTLR3_REWRITE_RULE_ELEMENT_STREAM
 antlr3RewriteRuleElementStreamNewAEE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description, void * oneElement)
 {
 	pANTLR3_REWRITE_RULE_ELEMENT_STREAM	stream;
@@ -276,7 +276,7 @@ antlr3RewriteRuleElementStreamNewAEE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_
 	return stream;
 }
 
-static pANTLR3_REWRITE_RULE_ELEMENT_STREAM 
+static pANTLR3_REWRITE_RULE_ELEMENT_STREAM
 antlr3RewriteRuleElementStreamNewAEV(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description, pANTLR3_VECTOR vector)
 {
 	pANTLR3_REWRITE_RULE_ELEMENT_STREAM	stream;
@@ -305,7 +305,7 @@ antlr3RewriteRuleElementStreamNewAEV(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_
 
 // Token rewrite stream ...
 //
-ANTLR3_API pANTLR3_REWRITE_RULE_TOKEN_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_TOKEN_STREAM
 antlr3RewriteRuleTOKENStreamNewAE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description)
 {
 	pANTLR3_REWRITE_RULE_TOKEN_STREAM	stream;
@@ -329,7 +329,7 @@ antlr3RewriteRuleTOKENStreamNewAE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BAS
 	return stream;
 }
 
-ANTLR3_API pANTLR3_REWRITE_RULE_TOKEN_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_TOKEN_STREAM
 antlr3RewriteRuleTOKENStreamNewAEE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description, void * oneElement)
 {
 	pANTLR3_REWRITE_RULE_TOKEN_STREAM	stream;
@@ -348,7 +348,7 @@ antlr3RewriteRuleTOKENStreamNewAEE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BA
 	return stream;
 }
 
-ANTLR3_API pANTLR3_REWRITE_RULE_TOKEN_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_TOKEN_STREAM
 antlr3RewriteRuleTOKENStreamNewAEV(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description, pANTLR3_VECTOR vector)
 {
 	pANTLR3_REWRITE_RULE_TOKEN_STREAM	stream;
@@ -369,7 +369,7 @@ antlr3RewriteRuleTOKENStreamNewAEV(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BA
 
 // Subtree rewrite stream
 //
-ANTLR3_API pANTLR3_REWRITE_RULE_SUBTREE_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_SUBTREE_STREAM
 antlr3RewriteRuleSubtreeStreamNewAE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description)
 {
 	pANTLR3_REWRITE_RULE_SUBTREE_STREAM	stream;
@@ -391,7 +391,7 @@ antlr3RewriteRuleSubtreeStreamNewAE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_B
 	return stream;
 
 }
-ANTLR3_API pANTLR3_REWRITE_RULE_SUBTREE_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_SUBTREE_STREAM
 antlr3RewriteRuleSubtreeStreamNewAEE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description, void * oneElement)
 {
 	pANTLR3_REWRITE_RULE_SUBTREE_STREAM	stream;
@@ -414,7 +414,7 @@ antlr3RewriteRuleSubtreeStreamNewAEE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_
 	return stream;
 }
 
-ANTLR3_API pANTLR3_REWRITE_RULE_SUBTREE_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_SUBTREE_STREAM
 antlr3RewriteRuleSubtreeStreamNewAEV(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description, pANTLR3_VECTOR vector)
 {
 	pANTLR3_REWRITE_RULE_SUBTREE_STREAM	stream;
@@ -438,7 +438,7 @@ antlr3RewriteRuleSubtreeStreamNewAEV(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_
 }
 // Node rewrite stream ...
 //
-ANTLR3_API pANTLR3_REWRITE_RULE_NODE_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_NODE_STREAM
 antlr3RewriteRuleNODEStreamNewAE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description)
 {
 	pANTLR3_REWRITE_RULE_NODE_STREAM	stream;
@@ -462,7 +462,7 @@ antlr3RewriteRuleNODEStreamNewAE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE
 	return stream;
 }
 
-ANTLR3_API pANTLR3_REWRITE_RULE_NODE_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_NODE_STREAM
 antlr3RewriteRuleNODEStreamNewAEE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description, void * oneElement)
 {
 	pANTLR3_REWRITE_RULE_NODE_STREAM	stream;
@@ -481,7 +481,7 @@ antlr3RewriteRuleNODEStreamNewAEE(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BAS
 	return stream;
 }
 
-ANTLR3_API pANTLR3_REWRITE_RULE_NODE_STREAM 
+ANTLR3_API pANTLR3_REWRITE_RULE_NODE_STREAM
 antlr3RewriteRuleNODEStreamNewAEV(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BASE_RECOGNIZER rec, pANTLR3_UINT8 description, pANTLR3_VECTOR vector)
 {
 	pANTLR3_REWRITE_RULE_NODE_STREAM	stream;
@@ -496,17 +496,17 @@ antlr3RewriteRuleNODEStreamNewAEV(pANTLR3_BASE_TREE_ADAPTOR adaptor, pANTLR3_BAS
 	stream->toTree		= toTreeNode;
 	stream->nextNode	= nextNodeNode;
     stream->free        = freeNodeRS;
-    
+
 	return stream;
 }
 
 //----------------------------------------------------------------------
-// Static support functions 
+// Static support functions
 
 /// Reset the condition of this stream so that it appears we have
 /// not consumed any of its elements.  Elements themselves are untouched.
 ///
-static void		
+static void
 reset    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 {
 	stream->dirty	= ANTLR3_TRUE;
@@ -515,7 +515,7 @@ reset    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 
 // Add a new pANTLR3_BASE_TREE to this stream
 //
-static void		
+static void
 add	    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream, void * el, void (ANTLR3_CDECL *freePtr)(void *))
 {
 	if (el== NULL)
@@ -529,7 +529,7 @@ add	    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream, void * el, void (ANTLR3_CDE
 	if (stream->elements != NULL && stream->elements->count > 0)
 	{
 		// We already have >1 entries in the stream. So we can just add this new element to the existing
-		// collection. 
+		// collection.
 		//
 		stream->elements->add(stream->elements, el, freePtr);
 		return;
@@ -547,11 +547,11 @@ add	    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream, void * el, void (ANTLR3_CDE
 	{
         pANTLR3_VECTOR_FACTORY factory = ((pANTLR3_COMMON_TREE_ADAPTOR)(stream->adaptor->super))->arboretum->vFactory;
 
-        
+
 		stream->elements		= factory->newVector(factory);
 		stream->freeElements	= ANTLR3_TRUE;			// We 'ummed it, so we play it son.
 	}
-    
+
 	stream->elements->add	(stream->elements, stream->singleElement, freePtr);
 	stream->elements->add	(stream->elements, el, freePtr);
 	stream->singleElement	= NULL;
@@ -565,14 +565,14 @@ add	    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream, void * el, void (ANTLR3_CDE
 /// size==1.  If we've already used the element, dup (dirty bit set).
 ///
 static pANTLR3_BASE_TREE
-nextTree(pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream) 
+nextTree(pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 {
 	ANTLR3_UINT32		n;
 	void			*  el;
 
 	n = stream->size(stream);
 
-	if ( stream->dirty || (stream->cursor >=n && n==1) ) 
+	if ( stream->dirty || (stream->cursor >=n && n==1) )
 	{
 		// if out of elements and size is 1, dup
 		//
@@ -597,7 +597,7 @@ nextToken		(pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 /// Return the next element in the stream.  If out of elements, throw
 /// an exception unless size()==1.  If size is 1, then return elements[0].
 ///
-static void *	
+static void *
 next	    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 {
 	ANTLR3_UINT32   s;
@@ -662,7 +662,7 @@ _next    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 		return stream->toTree(stream, stream->singleElement);
 	}
 
-	// More than just a single element so we extract it from the 
+	// More than just a single element so we extract it from the
 	// vector.
 	//
 	t = stream->toTree(stream, stream->elements->get(stream->elements, stream->cursor));
@@ -678,7 +678,7 @@ _next    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 /// subtree.  Dup'ing a token means just creating another AST node
 /// around it.  For trees, you must call the adaptor.dupTree().
 ///
-static void *	
+static void *
 dupTok	    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream, void * el)
 {
 	ANTLR3_FPRINTF(stderr, "dup() cannot be called on a token rewrite stream!!");
@@ -692,7 +692,7 @@ dupTok	    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream, void * el)
 /// subtree.  Dup'ing a token means just creating another AST node
 /// around it.  For trees, you must call the adaptor.dupTree().
 ///
-static void *	
+static void *
 dupTree	    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream, void * element)
 {
 	return stream->adaptor->dupNode(stream->adaptor, (pANTLR3_BASE_TREE)element);
@@ -706,7 +706,7 @@ dupTree	    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream, void * element)
 /// subtree.  Dup'ing a token means just creating another AST node
 /// around it.  For trees, you must call the adaptor.dupTree().
 ///
-static void *	
+static void *
 dupTreeNode	    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream, void * element)
 {
 	ANTLR3_FPRINTF(stderr, "dup() cannot be called on a node rewrite stream!!!");
@@ -714,10 +714,10 @@ dupTreeNode	    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream, void * element)
 }
 
 
-/// We don;t explicitly convert to a tree unless the call goes to 
-/// nextTree, which means rewrites are heterogeneous 
+/// We don;t explicitly convert to a tree unless the call goes to
+/// nextTree, which means rewrites are heterogeneous
 ///
-static pANTLR3_BASE_TREE	
+static pANTLR3_BASE_TREE
 toTree   (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream, void * element)
 {
 	return (pANTLR3_BASE_TREE)element;
@@ -734,7 +734,7 @@ toTree   (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream, void * element)
 #pragma warning(disable : 4100)
 #endif
 
-static pANTLR3_BASE_TREE	
+static pANTLR3_BASE_TREE
 toTreeNode   (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream, void * element)
 {
 	return stream->adaptor->dupNode(stream->adaptor, (pANTLR3_BASE_TREE)element);
@@ -746,7 +746,7 @@ toTreeNode   (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream, void * element)
 
 /// Returns ANTLR3_TRUE if there is a next element available
 ///
-static ANTLR3_BOOLEAN	
+static ANTLR3_BOOLEAN
 hasNext  (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 {
 	if (	(stream->singleElement != NULL && stream->cursor < 1)
@@ -782,9 +782,9 @@ nextNodeNode(pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 /// must dup the type node, but ID has been added.
 ///
 /// Referencing to a rule result twice is ok; dup entire tree as
-/// we can't be adding trees; e.g., expr expr. 
+/// we can't be adding trees; e.g., expr expr.
 ///
-static pANTLR3_BASE_TREE	
+static pANTLR3_BASE_TREE
 nextNode (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 {
 
@@ -794,7 +794,7 @@ nextNode (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 	n = stream->size(stream);
 	if (stream->dirty == ANTLR3_TRUE || (stream->cursor > n && n == 1))
 	{
-		// We are out of elements and the size is 1, which means we just 
+		// We are out of elements and the size is 1, which means we just
 		// dup the node that we have
 		//
 		return	stream->adaptor->dupNode(stream->adaptor, el);
@@ -807,7 +807,7 @@ nextNode (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 
 /// Number of elements available in the stream
 ///
-static ANTLR3_UINT32	
+static ANTLR3_UINT32
 size	    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 {
 	ANTLR3_UINT32   n = 0;
@@ -832,7 +832,7 @@ size	    (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 
 /// Returns the description string if there is one available (check for NULL).
 ///
-static void *	
+static void *
 getDescription  (pANTLR3_REWRITE_RULE_ELEMENT_STREAM stream)
 {
 	if (stream->elementDescription == NULL)

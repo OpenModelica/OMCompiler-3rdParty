@@ -188,19 +188,19 @@ typedef	struct ANTLR3_COMMON_TOKEN_struct
 		tokText;
 
     /**  Because it is a bit more of a hassle to override an ANTLR3_COMMON_TOKEN
-     *   as the standard structure for a token, a number of user programmable 
+     *   as the standard structure for a token, a number of user programmable
      *	 elements are allowed in a token. This is one of them.
      */
     ANTLR3_UINT32   user1;
-    
+
     /**  Because it is a bit more of a hassle to override an ANTLR3_COMMON_TOKEN
-     *   as the standard structure for a token, a number of user programmable 
+     *   as the standard structure for a token, a number of user programmable
      *	 elements are allowed in a token. This is one of them.
      */
     ANTLR3_UINT32   user2;
 
     /**  Because it is a bit more of a hassle to override an ANTLR3_COMMON_TOKEN
-     *   as the standard structure for a token, a number of user programmable 
+     *   as the standard structure for a token, a number of user programmable
      *	 elements are allowed in a token. This is one of them.
      */
     ANTLR3_UINT32   user3;
@@ -209,13 +209,13 @@ typedef	struct ANTLR3_COMMON_TOKEN_struct
      */
     void    * custom;
 
-    /** Pointer to a function that knows how to free the custom structure when the 
+    /** Pointer to a function that knows how to free the custom structure when the
      *  token is destroyed.
      */
     void    (*freeCustom)(void * custom);
 
     /* ==============================
-     * API 
+     * API
      */
 
     /** Pointer to function that returns the text pointer of a token, use
@@ -258,7 +258,7 @@ typedef	struct ANTLR3_COMMON_TOKEN_struct
     void	    (*setLine)(struct ANTLR3_COMMON_TOKEN_struct * token, ANTLR3_UINT32 line);
 
     /** Pointer to a function that gets the offset in the line where this token exists
-     */ 
+     */
     ANTLR3_INT32    (*getCharPositionInLine)	(struct ANTLR3_COMMON_TOKEN_struct * token);
 
     /** Pointer to a function that sets the offset in the line where this token exists
@@ -291,7 +291,7 @@ typedef	struct ANTLR3_COMMON_TOKEN_struct
     /** Pointer to a function that sets the start index in the input stream for this token.
      */
     void			(*setStartIndex)	(struct ANTLR3_COMMON_TOKEN_struct * token, ANTLR3_MARKER index);
-    
+
     /** Pointer to a function that gets the stop index in the input stream for this token.
      */
     ANTLR3_MARKER   (*getStopIndex)	(struct ANTLR3_COMMON_TOKEN_struct * token);
@@ -300,9 +300,9 @@ typedef	struct ANTLR3_COMMON_TOKEN_struct
      */
     void			(*setStopIndex)	(struct ANTLR3_COMMON_TOKEN_struct * token, ANTLR3_MARKER index);
 
-    /** Pointer to a function that returns this token as a text representation that can be 
+    /** Pointer to a function that returns this token as a text representation that can be
      *  printed with embedded control codes such as \n replaced with the printable sequence "\\n"
-     *  This also yields a string structure that can be used more easily than the pointer to 
+     *  This also yields a string structure that can be used more easily than the pointer to
      *  the input stream in certain situations.
      */
     pANTLR3_STRING  (*toString)		(struct ANTLR3_COMMON_TOKEN_struct * token);

@@ -36,7 +36,7 @@
 
 /// \brief Create an in-place ASCII string stream as input to ANTLR 3.
 ///
-/// An in-place string steam is the preferred method of supplying strings to ANTLR as input 
+/// An in-place string steam is the preferred method of supplying strings to ANTLR as input
 /// for lexing and compiling. This is because we make no copies of the input string but
 /// read from it right where it is.
 ///
@@ -53,7 +53,7 @@
 ///  - String is slightly incorrect in that the passed in pointer can be to any
 ///    memory in C version of ANTLR3 of course.
 ////
-ANTLR3_API pANTLR3_INPUT_STREAM	
+ANTLR3_API pANTLR3_INPUT_STREAM
 antlr3NewAsciiStringInPlaceStream   (pANTLR3_UINT8 inString, ANTLR3_UINT32 size, pANTLR3_UINT8 name)
 {
 	// Pointer to the input stream we are going to create
@@ -90,7 +90,7 @@ antlr3NewAsciiStringInPlaceStream   (pANTLR3_UINT8 inString, ANTLR3_UINT32 size,
 
 /// \brief Create an in-place UCS2 string stream as input to ANTLR 3.
 ///
-/// An in-place string steam is the preferred method of supplying strings to ANTLR as input 
+/// An in-place string steam is the preferred method of supplying strings to ANTLR as input
 /// for lexing and compiling. This is because we make no copies of the input string but
 /// read from it right where it is.
 ///
@@ -107,7 +107,7 @@ antlr3NewAsciiStringInPlaceStream   (pANTLR3_UINT8 inString, ANTLR3_UINT32 size,
 ///  - String is slightly incorrect in that the passed in pointer can be to any
 ///    memory in C version of ANTLR3 of course.
 ////
-ANTLR3_API pANTLR3_INPUT_STREAM	
+ANTLR3_API pANTLR3_INPUT_STREAM
 antlr3NewUCS2StringInPlaceStream   (pANTLR3_UINT16 inString, ANTLR3_UINT32 size, pANTLR3_UINT16 name)
 {
 	// Pointer to the input stream we are going to create

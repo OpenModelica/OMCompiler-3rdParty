@@ -64,17 +64,17 @@ typedef	struct ANTLR3_PARSER_struct
     pANTLR3_TOKEN_STREAM			tstream;
 
 	/** A pointer to a function that installs a debugger object (it also
-	 *  installs the debugging versions of the parser methods. This means that 
+	 *  installs the debugging versions of the parser methods. This means that
 	 *  a non debug parser incurs no overhead because of the debugging stuff.
 	 */
 	void					(*setDebugListener)	(struct ANTLR3_PARSER_struct	* parser, pANTLR3_DEBUG_EVENT_LISTENER dbg);
 
-    /** A pointer to a function that installs a token stream 
+    /** A pointer to a function that installs a token stream
      * for the parser.
      */
     void					(*setTokenStream)	(struct ANTLR3_PARSER_struct	* parser, pANTLR3_TOKEN_STREAM);
 
-    /** A pointer to a function that returns the token stream for this 
+    /** A pointer to a function that returns the token stream for this
      *  parser.
      */
     pANTLR3_TOKEN_STREAM	(*getTokenStream)	(struct ANTLR3_PARSER_struct	* parser);

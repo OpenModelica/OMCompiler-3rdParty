@@ -52,9 +52,9 @@ extern "C" {
 
 typedef	struct ANTLR3_TREE_NODE_STREAM_struct
 {
-    /// Any interface that implements this interface (is a 
+    /// Any interface that implements this interface (is a
     ///  super structure containing this structure), may store the pointer
-    ///  to itself here in the super pointer, which is not used by 
+    ///  to itself here in the super pointer, which is not used by
     ///  the tree node stream. This will point to an implementation
     ///  of ANTLR3_COMMON_TREE_NODE_STREAM in this case.
     ///
@@ -143,9 +143,9 @@ typedef	struct ANTLR3_TREE_NODE_STREAM_struct
 
 typedef	struct ANTLR3_COMMON_TREE_NODE_STREAM_struct
 {
-    /// Any interface that implements this interface (is a 
+    /// Any interface that implements this interface (is a
     /// super structure containing this structure), may store the pointer
-    /// to itself here in the super pointer, which is not used by 
+    /// to itself here in the super pointer, which is not used by
     /// the common tree node stream.
     ///
     void						* super;
@@ -248,7 +248,7 @@ typedef	struct ANTLR3_COMMON_TREE_NODE_STREAM_struct
     ///
     ANTLR3_UINT32				lookAheadLength;
 
-    /// lookAhead[head] is the first symbol of lookahead, LT(1). 
+    /// lookAhead[head] is the first symbol of lookahead, LT(1).
     ///
     ANTLR3_UINT32				head;
 

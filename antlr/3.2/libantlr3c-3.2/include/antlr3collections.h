@@ -94,7 +94,7 @@ typedef struct	ANTLR3_HASH_BUCKET_struct
      * here.
      */
     pANTLR3_HASH_ENTRY	entries;
-    
+
 }
     ANTLR3_HASH_BUCKET;
 
@@ -126,7 +126,7 @@ typedef	struct	ANTLR3_HASH_TABLE_struct
     /** Pointer to function to completely delete this table
      */
     void				(*free)	    (struct ANTLR3_HASH_TABLE_struct * table);
-    
+
     /* String keyed hashtable functions */
     void				(*del)	    (struct ANTLR3_HASH_TABLE_struct * table, void * key);
     pANTLR3_HASH_ENTRY	(*remove)   (struct ANTLR3_HASH_TABLE_struct * table, void * key);
@@ -146,7 +146,7 @@ typedef	struct	ANTLR3_HASH_TABLE_struct
 
 /** Internal structure representing an enumeration of a table.
  *  This is returned by antlr3Enumeration()
- *  Allows the programmer to traverse the table in hash order without 
+ *  Allows the programmer to traverse the table in hash order without
  *  knowing what is in the actual table.
  *
  *  Note that it is up to the caller to ensure that the table
@@ -190,7 +190,7 @@ typedef	struct	ANTLR3_LIST_struct
     ANTLR3_INT32    (*add)		(struct ANTLR3_LIST_struct * list, void * element, void (ANTLR3_CDECL *freeptr)(void *));
     ANTLR3_INT32    (*put)		(struct ANTLR3_LIST_struct * list, ANTLR3_INTKEY key, void * element, void (ANTLR3_CDECL *freeptr)(void *));
     ANTLR3_UINT32   (*size)		(struct ANTLR3_LIST_struct * list);
-    
+
 }
     ANTLR3_LIST;
 
@@ -228,7 +228,7 @@ typedef struct ANTLR3_VECTOR_ELEMENT_struct
 /* Structure that represents a vector collection. A vector is a simple list
  * that contains a pointer to the element and a pointer to a function that
  * that can free the element if it is removed. It auto resizes but does not
- * use hash techniques as it is referenced by a simple numeric index. It is not a 
+ * use hash techniques as it is referenced by a simple numeric index. It is not a
  * sparse list, so if any element is deleted, then the ones following are moved
  * down in memory and the count is adjusted.
  */
@@ -300,7 +300,7 @@ typedef struct ANTLR3_VECTOR_FACTORY_struct
          */
         ANTLR3_VECTOR        unTruc;
 
-		/** Consumers from the factory can release a factory produced vector 
+		/** Consumers from the factory can release a factory produced vector
 		 * back to the factory so that it may be reused (and thus conserve memory)
 		 * by another caller. The available vectors are stored here. Note that
 		 * the only vectors avaible in the free chain are produced by this factory, so they
@@ -321,9 +321,9 @@ typedef struct ANTLR3_VECTOR_FACTORY_struct
 	void				(*returnVector)	(struct ANTLR3_VECTOR_FACTORY_struct * factory, pANTLR3_VECTOR vector);
 
 }
-ANTLR3_VECTOR_FACTORY; 
-    
-    
+ANTLR3_VECTOR_FACTORY;
+
+
 /* -------------- TRIE Interfaces ---------------- */
 
 
@@ -365,12 +365,12 @@ typedef struct ANTLR3_INT_TRIE_NODE_struct
  *
  *  If you find this code useful, please feel free to 'steal' it for any purpose
  *  as covered by the BSD license under which ANTLR is issued. You can cut the code
- *  but as the ANTLR library is only about 50K (Windows Vista), you might find it 
+ *  but as the ANTLR library is only about 50K (Windows Vista), you might find it
  *  easier to just link the library. Please keep all comments and licenses and so on
  *  in any version of this you create of course.
  *
  *  Jim Idle.
- *  
+ *
  */
 typedef struct ANTLR3_INT_TRIE_struct
 {
@@ -379,7 +379,7 @@ typedef struct ANTLR3_INT_TRIE_struct
     ANTLR3_UINT32			count;			/* Current entry count								*/
     ANTLR3_BOOLEAN			allowDups;		/* Whether this trie accepts duplicate keys			*/
 
-    
+
     pANTLR3_TRIE_ENTRY	(*get)	(struct ANTLR3_INT_TRIE_struct * trie, ANTLR3_INTKEY key);
     ANTLR3_BOOLEAN		(*del)	(struct ANTLR3_INT_TRIE_struct * trie, ANTLR3_INTKEY key);
     ANTLR3_BOOLEAN		(*add)	(struct ANTLR3_INT_TRIE_struct * trie, ANTLR3_INTKEY key, ANTLR3_UINT32 type, ANTLR3_INTKEY intVal, void * data, void (ANTLR3_CDECL *freeptr)(void *));
@@ -447,7 +447,7 @@ typedef struct ANTLR3_TOPO_struct
      * in cycle[0]...cycle[cycleMark-1]
      */
     ANTLR3_UINT32     cycleMark;
-    
+
     /**
      * One more than the largest node index that is contained in edges/sorted.
      */
@@ -491,7 +491,7 @@ typedef struct ANTLR3_TOPO_struct
      */
     pANTLR3_UINT32  (*sortToArray)      (struct ANTLR3_TOPO_struct * topo);
 
-    /** 
+    /**
      * A method that sorts the supplied ANTLR3_VECTOR in place based
      * on the previously supplied edge data.
      */
@@ -503,7 +503,7 @@ typedef struct ANTLR3_TOPO_struct
     void            (*free)             (struct ANTLR3_TOPO_struct * topo);
 }
     ANTLR3_TOPO;
-    
+
 #ifdef __cplusplus
 }
 #endif

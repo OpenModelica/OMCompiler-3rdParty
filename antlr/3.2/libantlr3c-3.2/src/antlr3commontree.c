@@ -137,20 +137,20 @@ newPool(pANTLR3_ARBORETUM factory)
     // Allocate a new pool for the factory
     //
     factory->pools[factory->thisPool]	=
-			    (pANTLR3_COMMON_TREE) 
+			    (pANTLR3_COMMON_TREE)
 				ANTLR3_MALLOC((size_t)(sizeof(ANTLR3_COMMON_TREE) * ANTLR3_FACTORY_POOL_SIZE));
 
 
     // Reset the counters
     //
     factory->nextTree	= 0;
-  
+
     // Done
     //
     return;
 }
 
-static	pANTLR3_BASE_TREE    
+static	pANTLR3_BASE_TREE
 newPoolTree	    (pANTLR3_ARBORETUM factory)
 {
 	pANTLR3_COMMON_TREE    tree;
@@ -208,7 +208,7 @@ newPoolTree	    (pANTLR3_ARBORETUM factory)
 }
 
 
-static pANTLR3_BASE_TREE	    
+static pANTLR3_BASE_TREE
 newFromTree(pANTLR3_ARBORETUM factory, pANTLR3_COMMON_TREE tree)
 {
 	pANTLR3_BASE_TREE	newTree;
@@ -228,7 +228,7 @@ newFromTree(pANTLR3_ARBORETUM factory, pANTLR3_COMMON_TREE tree)
 	return  newTree;
 }
 
-static pANTLR3_BASE_TREE	    
+static pANTLR3_BASE_TREE
 newFromToken(pANTLR3_ARBORETUM factory, pANTLR3_COMMON_TOKEN token)
 {
 	pANTLR3_BASE_TREE	newTree;
@@ -284,14 +284,14 @@ factoryClose	    (pANTLR3_ARBORETUM factory)
 }
 
 
-ANTLR3_API void 
+ANTLR3_API void
 antlr3SetCTAPI(pANTLR3_COMMON_TREE tree)
 {
     // Init base tree
     //
     antlr3BaseTreeNew(&(tree->baseTree));
 
-    // We need a pointer to ourselves for 
+    // We need a pointer to ourselves for
     // the payload and few functions that we
     // provide.
     //
@@ -315,7 +315,7 @@ antlr3SetCTAPI(pANTLR3_COMMON_TREE tree)
 	tree->baseTree.createChildrenList		= createChildrenList;
     tree->baseTree.reuse                    = reuse;
 	tree->baseTree.free						= NULL;	// Factory trees have no free function
-	
+
 	tree->baseTree.children	= NULL;
 
     tree->token				= NULL;	// No token as yet
@@ -347,7 +347,7 @@ antlr3CommonTreeNew()
 	return tree;
 }
 
-ANTLR3_API pANTLR3_COMMON_TREE	    
+ANTLR3_API pANTLR3_COMMON_TREE
 antlr3CommonTreeNewFromToken(pANTLR3_COMMON_TOKEN token)
 {
 	pANTLR3_COMMON_TREE	newTree;
@@ -375,11 +375,11 @@ createChildrenList  (pANTLR3_BASE_TREE tree)
 }
 
 
-static pANTLR3_COMMON_TOKEN 
+static pANTLR3_COMMON_TOKEN
 getToken			(pANTLR3_BASE_TREE tree)
 {
     // The token is the payload of the common tree or other implementor
-    // so it is stored within ourselves, which is the super pointer.Note 
+    // so it is stored within ourselves, which is the super pointer.Note
 	// that whatever the actual token is, it is passed around by its pointer
 	// to the common token implementation, which it may of course surround
 	// with its own super structure.
@@ -387,14 +387,14 @@ getToken			(pANTLR3_BASE_TREE tree)
     return  ((pANTLR3_COMMON_TREE)(tree->super))->token;
 }
 
-static pANTLR3_BASE_TREE    
+static pANTLR3_BASE_TREE
 dupNode			(pANTLR3_BASE_TREE tree)
 {
     // The node we are duplicating is in fact the common tree (that's why we are here)
     // so we use the super pointer to duplicate.
     //
     pANTLR3_COMMON_TREE	    theOld;
-    
+
 	theOld	= (pANTLR3_COMMON_TREE)(tree->super);
 
 	// The pointer we return is the base implementation of course
@@ -402,7 +402,7 @@ dupNode			(pANTLR3_BASE_TREE tree)
 	return  theOld->factory->newFromTree(theOld->factory, theOld);
 }
 
-static ANTLR3_BOOLEAN	    
+static ANTLR3_BOOLEAN
 isNilNode			(pANTLR3_BASE_TREE tree)
 {
 	// This is a Nil tree if it has no payload (Token in our case)
@@ -417,7 +417,7 @@ isNilNode			(pANTLR3_BASE_TREE tree)
 	}
 }
 
-static ANTLR3_UINT32	    
+static ANTLR3_UINT32
 getType			(pANTLR3_BASE_TREE tree)
 {
 	pANTLR3_COMMON_TREE    theTree;
@@ -434,7 +434,7 @@ getType			(pANTLR3_BASE_TREE tree)
 	}
 }
 
-static pANTLR3_STRING	    
+static pANTLR3_STRING
 getText			(pANTLR3_BASE_TREE tree)
 {
 	return	tree->toString(tree);
@@ -498,24 +498,24 @@ static pANTLR3_STRING	    toString			(pANTLR3_BASE_TREE tree)
 	return	((pANTLR3_COMMON_TREE)(tree->super))->token->getText(((pANTLR3_COMMON_TREE)(tree->super))->token);
 }
 
-static pANTLR3_BASE_TREE	
+static pANTLR3_BASE_TREE
 getParent				(pANTLR3_BASE_TREE tree)
 {
 	return & (((pANTLR3_COMMON_TREE)(tree->super))->parent->baseTree);
 }
 
-static void					
+static void
 setParent				(pANTLR3_BASE_TREE tree, pANTLR3_BASE_TREE parent)
 {
 	((pANTLR3_COMMON_TREE)(tree->super))->parent = parent == NULL ? NULL : ((pANTLR3_COMMON_TREE)(parent->super))->parent;
 }
 
-static void    				
+static void
 setChildIndex			(pANTLR3_BASE_TREE tree, ANTLR3_INT32 i)
 {
 	((pANTLR3_COMMON_TREE)(tree->super))->childIndex = i;
 }
-static	ANTLR3_INT32			
+static	ANTLR3_INT32
 getChildIndex			(pANTLR3_BASE_TREE tree )
 {
 	return ((pANTLR3_COMMON_TREE)(tree->super))->childIndex;
@@ -536,10 +536,10 @@ reuse                   (pANTLR3_BASE_TREE tree)
 
         if  (cTree->baseTree.children != NULL)
         {
-            
+
             cTree->baseTree.children->clear(cTree->baseTree.children);
         }
        cTree->factory->nilStack->push(cTree->factory->nilStack, tree, NULL);
-       
+
     }
 }
