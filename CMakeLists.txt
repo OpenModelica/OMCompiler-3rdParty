@@ -198,7 +198,7 @@ target_include_directories(sundials_interface INTERFACE ${sundials_BINARY_DIR}/i
 ## DLINK_SUNDIALS_STATIC to anything that links to the static sundials libs.
 add_library(sundials_interface_static INTERFACE)
 target_link_libraries(sundials_interface_static INTERFACE sundials_interface)
-target_compile_definitions(sundials_interface_static INTERFACE -DLINK_SUNDIALS_STATIC)
+target_compile_definitions(sundials_interface_static INTERFACE LINK_SUNDIALS_STATIC)
 
 ## Now that the includes and defines are attached to a utility interface library (sundials_interface_static) link it
 ## to the sundials static libs so they can be found when the sundials lib is linked-to from an external lib.
@@ -208,18 +208,24 @@ target_link_libraries(sundials_cvode_static PUBLIC sundials_interface_static)
 target_link_libraries(sundials_idas_static PUBLIC sundials_interface_static)
 target_link_libraries(sundials_kinsol_static PUBLIC sundials_interface_static)
 target_link_libraries(sundials_sunlinsolklu_static PUBLIC sundials_interface_static)
-target_link_libraries(sundials_sunlinsollapackdense_static PUBLIC sundials_interface_static)
+if(OM_OMC_ENABLE_FORTRAN)
+  target_link_libraries(sundials_sunlinsollapackdense_static PUBLIC sundials_interface_static)
+endif()
 
 ## Add aliases for the static libs. For readability.
 add_library(omc::3rd::sundials::cvode ALIAS sundials_cvode_static)
 add_library(omc::3rd::sundials::idas ALIAS sundials_idas_static)
 add_library(omc::3rd::sundials::kinsol ALIAS sundials_kinsol_static)
 add_library(omc::3rd::sundials::sunlinsolklu ALIAS sundials_sunlinsolklu_static)
-add_library(omc::3rd::sundials::sunlinsollapackdense ALIAS sundials_sunlinsollapackdense_static)
+if(OM_OMC_ENABLE_FORTRAN)
+  add_library(omc::3rd::sundials::sunlinsollapackdense ALIAS sundials_sunlinsollapackdense_static)
+endif()
+
 
 
 
 # Ipopt
+if(WITH_IPOPT)
 omc_add_subdirectory(Ipopt-3.13.4)
 ## Just like FMIL, Ipopt assumes it will be always installed before use. So it does not organize
 ## its header files properly. We deal with that here.
@@ -276,3 +282,5 @@ file(COPY ${IPOPT_ALL_HDRS} DESTINATION ${IpOpt_BINARY_DIR}/include/Ipopt)
 # We give this new directory as include dir ONLY for targets that depend on Ipopt (not Ipopt itslef).
 target_include_directories(ipopt INTERFACE ${IpOpt_BINARY_DIR}/include/)
 add_library(omc::3rd::ipopt ALIAS ipopt)
+
+endif() # WITH_IPOPT
