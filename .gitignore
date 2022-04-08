@@ -148,3 +148,7 @@ sundials-5.4.0/build_msvc/
 /libffi/install/
 /libffi/x86_64-*-gnu/
 /libffi/x86_64-w64-mingw32/
+
+tbb/build_cmake/
+
+zlib/build/
