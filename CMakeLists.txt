@@ -91,11 +91,6 @@ add_library(omc::3rd::omcgc ALIAS omcgc)
 
 
 
-# graphstream
-omc_add_subdirectory(graphstream)
-add_library(omc::3rd::netstream ALIAS netstream)
-
-
 #libffi
 omc_add_subdirectory(libffi)
 target_include_directories(ffi INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/libffi_cmake/include)

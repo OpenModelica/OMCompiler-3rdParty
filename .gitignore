@@ -91,8 +91,6 @@ antlr/3.2/libantlr3c-3.2/antlr3config.h
 antlr/3.2/libantlr3c-3.2/libtool
 antlr/3.2/libantlr3c-3.2/stamp-h1
 
-graphstream/gs-netstream/c++/netstream-main
-
 /metis-5.1.0/build/
 /metis-5.1.0/cmake_install.cmake
 /metis-5.1.0/CMakeCache.txt
