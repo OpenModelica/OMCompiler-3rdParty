@@ -177,7 +177,10 @@ option(SUNDIALS_BUILD_STATIC_LIBS "Build static libraries" ON)
 option(SUNDIALS_BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option(SUNDIALS_KLU_ENABLE "Enable KLU support" ON)
 option(SUNDIALS_EXAMPLES_ENABLE_C "Build SUNDIALS C examples" OFF)
-option(SUNDIALS_LAPACK_ENABLE "Enable Lapack support" ON)
+
+if(OM_OMC_ENABLE_FORTRAN)
+  option(SUNDIALS_LAPACK_ENABLE "Enable Lapack support" ON)
+endif()
 
 omc_add_subdirectory(sundials-5.4.0)
 

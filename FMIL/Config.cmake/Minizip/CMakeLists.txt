@@ -58,8 +58,12 @@ endif(WIN32)
 
 add_library(minizip ${SOURCE} ${HEADERS})
 
-target_link_libraries(minizip ${OMC_ZLIB_LIBRARY})
-target_include_directories(minizip PUBLIC ${OMC_ZLIB_INCLUDE_DIR})
+if(OPENMODELICA_NEW_CMAKE_BUILD)
+  target_link_libraries(minizip zlib)
+else()
+  target_link_libraries(minizip ${OMC_ZLIB_LIBRARY})
+  target_include_directories(minizip PUBLIC ${OMC_ZLIB_INCLUDE_DIR})
+endif()
 
 if(FMILIB_INSTALL_SUBLIBS)
 	install(TARGETS minizip
