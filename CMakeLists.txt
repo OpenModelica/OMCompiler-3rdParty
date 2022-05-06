@@ -74,15 +74,15 @@ option(enable_large_config "Optimize for large heap or root set" ON)
 omc_add_subdirectory(gc)
 target_include_directories(omcgc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/gc/include)
 # make sure every target that links to gc-lib has its sources
-# compiled with -DGC_WIN32_PTHREADS (for pthreads on Windows, i.e., our MingW)
+# compiled with -DGC_WIN32_PTHREADS (for pthreads on Windows, i.e., OMDev or MSVC)
 # Or -DGC_THREADS (for auto detection on other systems.)
-# On Windows with MinGW OM uses pthreads-win32. GC_WIN32_PTHREADS is required
+# Even on Windows OM uses pthreads. GC_WIN32_PTHREADS is required
 # to be set explicitly for use of pthreads API on Windows.
-if(MINGW)
+if(WIN32)
     target_compile_definitions(omcgc PUBLIC GC_WIN32_PTHREADS)
 else()
     target_compile_definitions(omcgc PUBLIC GC_THREADS)
-endif(MINGW)
+endif()
 
 # Finally add an alias for clarity purposes.
 add_library(omc::3rd::omcgc ALIAS omcgc)
