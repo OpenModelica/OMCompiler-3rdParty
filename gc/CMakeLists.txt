@@ -113,11 +113,17 @@ string(TOLOWER ${_HOST} HOST)
 message(STATUS "TARGET = ${HOST}")
 
 if (enable_threads)
-  find_package(Threads REQUIRED)
+  if(MSVC)
+    find_package(pthreads REQUIRED)
+    set(THREADDLLIBS PThreads4W::PThreads4W)
+  else()
+    find_package(Threads REQUIRED)
+    set(THREADDLLIBS ${CMAKE_THREAD_LIBS_INIT})
+  endif()
+
   message(STATUS "Thread library: ${CMAKE_THREAD_LIBS_INIT}")
   include_directories(libatomic_ops/src)
   include_directories(${Threads_INCLUDE_DIR})
-  set(THREADDLLIBS ${CMAKE_THREAD_LIBS_INIT})
   if (NOT (APPLE OR CYGWIN OR MSYS OR WIN32 OR HOST MATCHES mips-.*-irix6.*))
     set(THREADDLLIBS ${THREADDLLIBS} -ldl)
                                 # The predefined CMAKE_DL_LIBS may be broken.
@@ -130,8 +136,12 @@ if (CMAKE_USE_PTHREADS_INIT)
   if (HOST MATCHES .*-.*-hpux10.*)
     message(FATAL_ERROR "HP/UX 10 POSIX threads are not supported.")
   endif()
-  # Assume the compiler supports C11 (GCC) atomic intrinsics.
-  add_definitions("-DGC_BUILTIN_ATOMIC")
+
+  if(NOT MSVC)
+    # Assume the compiler supports C11 (GCC) atomic intrinsics.
+    add_definitions("-DGC_BUILTIN_ATOMIC")
+  endif()
+
   # Common defines for POSIX platforms.
   add_definitions("-DGC_THREADS -D_REENTRANT")
   if (enable_parallel_mark)
@@ -149,7 +159,7 @@ if (CMAKE_USE_PTHREADS_INIT)
     message("Only on NetBSD 2.0 or later.")
     add_definitions("-D_PTHREADS")
   endif()
-  if (ANDROID OR MSYS) # ANDROID variable is defined by CMake v3.7.0+.
+  if (ANDROID OR MSYS OR MINGW OR MSVC) # ANDROID variable is defined by CMake v3.7.0+.
     # Android NDK does not provide pthread_atfork.
   elseif (APPLE)
     if (enable_handle_fork AND NOT disable_handle_fork)
@@ -165,7 +175,7 @@ if (CMAKE_USE_PTHREADS_INIT)
   if (enable_sigrt_signals)
     add_definitions("-DGC_USESIGRT_SIGNALS")
   endif()
-  if (CYGWIN OR MSYS)
+  if (CYGWIN OR MSYS OR MINGW OR MSVC)
     set(SRC ${SRC} win32_threads.c)
   endif()
 elseif (CMAKE_USE_WIN32_THREADS_INIT)
@@ -420,7 +430,7 @@ endif()
 
 add_library(omcgc ${GC_LIBRARY_BUILD_TYPE} ${SRC})
 if (enable_threads)
-  target_link_libraries(omcgc PRIVATE ${THREADDLLIBS})
+  target_link_libraries(omcgc PUBLIC ${THREADDLLIBS})
 endif()
 
 if (enable_cplusplus)
