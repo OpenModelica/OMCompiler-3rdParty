@@ -223,7 +223,7 @@ endif()
 
 
 # Ipopt
-if(WITH_IPOPT)
+if(OM_OMC_ENABLE_IPOPT)
 omc_add_subdirectory(Ipopt-3.13.4)
 ## Just like FMIL, Ipopt assumes it will be always installed before use. So it does not organize
 ## its header files properly. We deal with that here.
@@ -281,4 +281,4 @@ file(COPY ${IPOPT_ALL_HDRS} DESTINATION ${IpOpt_BINARY_DIR}/include/Ipopt)
 target_include_directories(ipopt INTERFACE ${IpOpt_BINARY_DIR}/include/)
 add_library(omc::3rd::ipopt ALIAS ipopt)
 
-endif() # WITH_IPOPT
+endif() # OM_OMC_ENABLE_IPOPT
