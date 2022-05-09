@@ -39,7 +39,7 @@ include(CTest)
 
 # Customize the build by passing "-D<option_name>=ON|OFF" in the command line.
 option(GC_BUILD_SHARED_LIBS "Build shared libraries" ON)
-option(build_cord "Build cord library" ON)
+option(build_cord "Build cord library" OFF)
 option(build_tests "Build tests" OFF)
 option(enable_threads "Support threads" ON)
 option(enable_parallel_mark "Parallelize marking and free list construction" ON)
@@ -319,6 +319,12 @@ if (MSVC)
   set(SRC ${SRC} extra/msvc_dbg.c)
 endif()
 
+
+add_library(omcgc ${GC_LIBRARY_BUILD_TYPE} ${SRC})
+if (enable_threads)
+  target_link_libraries(omcgc PUBLIC ${THREADDLLIBS})
+endif()
+
 # Instruct check_c_source_compiles and similar CMake checks not to ignore
 # compiler warnings (like "implicit declaration of function").
 if (NOT BORLAND AND NOT MSVC AND NOT WATCOM)
@@ -329,7 +335,7 @@ if (NOT BORLAND AND NOT MSVC AND NOT WATCOM)
 endif()
 
 if (GC_BUILD_SHARED_LIBS)
-  add_definitions("-DGC_DLL")
+  target_compile_definitions(omcgc PUBLIC GC_DLL)
   # Pass -fvisibility=hidden option if supported.
   check_c_compiler_flag(-fvisibility=hidden HAVE_FLAG_F_VISIBILITY_HIDDEN)
   if (HAVE_FLAG_F_VISIBILITY_HIDDEN)
@@ -340,7 +346,7 @@ if (GC_BUILD_SHARED_LIBS)
   endif()
   check_c_compiler_flag(-Wl,--no-undefined HAVE_FLAG_WL_NO_UNDEFINED)
 else()
-  add_definitions("-DGC_NOT_DLL")
+  target_compile_definitions(omcgc PUBLIC GC_NOT_DLL)
   if (WIN32)
     # Do not require the clients to link with "user32" system library.
     add_definitions("-DDONT_USE_USER32_DLL")
@@ -426,11 +432,6 @@ int main(void) { Dl_info info; (void)dladdr(\"\", &info); return 0; }"
 if (HAVE_DLADDR)
   # Define to use 'dladdr' function.
   add_definitions("-DHAVE_DLADDR")
-endif()
-
-add_library(omcgc ${GC_LIBRARY_BUILD_TYPE} ${SRC})
-if (enable_threads)
-  target_link_libraries(omcgc PUBLIC ${THREADDLLIBS})
 endif()
 
 if (enable_cplusplus)
