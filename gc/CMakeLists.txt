@@ -106,28 +106,14 @@ set(SRC alloc.c reclaim.c allchblk.c misc.c mach_dep.c os_dep.c
         mark_rts.c headers.c mark.c obj_map.c blacklst.c finalize.c
         new_hblk.c dbg_mlc.c malloc.c dyn_load.c typd_mlc.c ptr_chck.c
         mallocx.c gc_dlopen.c)
-set(THREADDLLIBS)
 
 set(_HOST ${CMAKE_SYSTEM_PROCESSOR}-unknown-${CMAKE_SYSTEM})
 string(TOLOWER ${_HOST} HOST)
 message(STATUS "TARGET = ${HOST}")
 
 if (enable_threads)
-  if(MSVC)
-    find_package(pthreads REQUIRED)
-    set(THREADDLLIBS PThreads4W::PThreads4W)
-  else()
-    find_package(Threads REQUIRED)
-    set(THREADDLLIBS ${CMAKE_THREAD_LIBS_INIT})
-  endif()
-
   message(STATUS "Thread library: ${CMAKE_THREAD_LIBS_INIT}")
   include_directories(libatomic_ops/src)
-  include_directories(${Threads_INCLUDE_DIR})
-  if (NOT (APPLE OR CYGWIN OR MSYS OR WIN32 OR HOST MATCHES mips-.*-irix6.*))
-    set(THREADDLLIBS ${THREADDLLIBS} -ldl)
-                                # The predefined CMAKE_DL_LIBS may be broken.
-  endif()
 endif(enable_threads)
 
 # Thread support detection.
@@ -322,7 +308,7 @@ endif()
 
 add_library(omcgc ${GC_LIBRARY_BUILD_TYPE} ${SRC})
 if (enable_threads)
-  target_link_libraries(omcgc PUBLIC ${THREADDLLIBS})
+  target_link_libraries(omcgc PUBLIC OMCPThreads::OMCPThreads)
 endif()
 
 # Instruct check_c_source_compiles and similar CMake checks not to ignore
@@ -529,7 +515,7 @@ if (build_tests)
   endif(enable_cplusplus)
 
   add_executable(gctest WIN32 tests/test.c)
-  target_link_libraries(gctest PRIVATE omcgc ${THREADDLLIBS})
+  target_link_libraries(gctest PRIVATE omcgc)
   add_test(NAME gctest COMMAND gctest)
   if (WATCOM)
     # Suppress "conditional expression in if statement is always true/false"
@@ -583,21 +569,21 @@ if (build_tests)
     add_test(NAME test_atomic_ops COMMAND test_atomic_ops)
 
     add_executable(threadleaktest tests/thread_leak_test.c)
-    target_link_libraries(threadleaktest PRIVATE omcgc ${THREADDLLIBS})
+    target_link_libraries(threadleaktest PRIVATE omcgc)
     add_test(NAME threadleaktest COMMAND threadleaktest)
 
     if (NOT WIN32)
       add_executable(threadkey_test tests/threadkey_test.c)
-      target_link_libraries(threadkey_test PRIVATE omcgc ${THREADDLLIBS})
+      target_link_libraries(threadkey_test PRIVATE omcgc)
       add_test(NAME threadkey_test COMMAND threadkey_test)
     endif()
 
     add_executable(subthreadcreate_test tests/subthread_create.c)
-    target_link_libraries(subthreadcreate_test PRIVATE omcgc ${THREADDLLIBS})
+    target_link_libraries(subthreadcreate_test PRIVATE omcgc)
     add_test(NAME subthreadcreate_test COMMAND subthreadcreate_test)
 
     add_executable(initsecondarythread_test tests/initsecondarythread.c)
-    target_link_libraries(initsecondarythread_test PRIVATE omcgc ${THREADDLLIBS})
+    target_link_libraries(initsecondarythread_test PRIVATE omcgc)
     add_test(NAME initsecondarythread_test COMMAND initsecondarythread_test)
   endif(enable_threads)
 
@@ -613,11 +599,11 @@ if (build_tests)
     add_test(NAME disclaim_bench COMMAND disclaim_bench)
 
     add_executable(disclaim_test tests/disclaim_test.c)
-    target_link_libraries(disclaim_test PRIVATE omcgc ${THREADDLLIBS})
+    target_link_libraries(disclaim_test PRIVATE omcgc)
     add_test(NAME disclaim_test COMMAND disclaim_test)
 
     add_executable(disclaim_weakmap_test tests/disclaim_weakmap_test.c)
-    target_link_libraries(disclaim_weakmap_test PRIVATE omcgc ${THREADDLLIBS})
+    target_link_libraries(disclaim_weakmap_test PRIVATE omcgc)
     add_test(NAME disclaim_weakmap_test COMMAND disclaim_weakmap_test)
   endif()
 endif(build_tests)
