@@ -63,6 +63,10 @@ endif(BUILD_shared)
 
 add_library(expat ${_SHARED} ${expat_SRCS})
 
+if(NOT BUILD_shared)
+  target_compile_definitions(expat PUBLIC XML_STATIC)
+endif()
+
 install(TARGETS expat DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 set(prefix ${CMAKE_INSTALL_PREFIX})
