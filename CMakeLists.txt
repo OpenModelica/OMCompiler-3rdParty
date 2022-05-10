@@ -178,9 +178,18 @@ option(SUNDIALS_BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option(SUNDIALS_KLU_ENABLE "Enable KLU support" ON)
 option(SUNDIALS_EXAMPLES_ENABLE_C "Build SUNDIALS C examples" OFF)
 
-if(OM_OMC_ENABLE_FORTRAN)
-  option(SUNDIALS_LAPACK_ENABLE "Enable Lapack support" ON)
+# If Fortran support is not available for OpenModelica, manually set
+# the name mangling scheme for Fortand calls. Sundails wants to do its
+# own check of functionality of Lapack. And for that it wants to have either
+# a Fortran compiler available (to detect the scheme) OR the name mangling scheme
+# specified explicitly by the user.
+# I am guessing this is a good default option since almost all of the Fortan to
+# C converted functions I have seen are named lower case with one underscore.
+if(NOT OM_OMC_ENABLE_FORTRAN)
+  set(SUNDIALS_F77_FUNC_CASE "LOWER")
+  set(SUNDIALS_F77_FUNC_UNDERSCORES "ONE")
 endif()
+option(SUNDIALS_LAPACK_ENABLE "Enable Lapack support" ON)
 
 omc_add_subdirectory(sundials-5.4.0)
 
@@ -206,18 +215,14 @@ target_link_libraries(sundials_cvode_static PUBLIC sundials_interface_static)
 target_link_libraries(sundials_idas_static PUBLIC sundials_interface_static)
 target_link_libraries(sundials_kinsol_static PUBLIC sundials_interface_static)
 target_link_libraries(sundials_sunlinsolklu_static PUBLIC sundials_interface_static)
-if(OM_OMC_ENABLE_FORTRAN)
-  target_link_libraries(sundials_sunlinsollapackdense_static PUBLIC sundials_interface_static)
-endif()
+target_link_libraries(sundials_sunlinsollapackdense_static PUBLIC sundials_interface_static)
 
 ## Add aliases for the static libs. For readability.
 add_library(omc::3rd::sundials::cvode ALIAS sundials_cvode_static)
 add_library(omc::3rd::sundials::idas ALIAS sundials_idas_static)
 add_library(omc::3rd::sundials::kinsol ALIAS sundials_kinsol_static)
 add_library(omc::3rd::sundials::sunlinsolklu ALIAS sundials_sunlinsolklu_static)
-if(OM_OMC_ENABLE_FORTRAN)
-  add_library(omc::3rd::sundials::sunlinsollapackdense ALIAS sundials_sunlinsollapackdense_static)
-endif()
+add_library(omc::3rd::sundials::sunlinsollapackdense ALIAS sundials_sunlinsollapackdense_static)
 
 
 
