@@ -259,7 +259,11 @@ case "$THREADS" in
         if test "${enable_thread_local_alloc}" != no; then
           AC_DEFINE(THREAD_LOCAL_ALLOC)
         fi
-        THREADDLLIBS="-lpthread"
+        if test "$CC" != "clang"; then
+          THREADDLLIBS="-lpthread"
+        else
+          THREADDLLIBS=""
+        fi
         win32_threads=true
         ;;
       *-*-darwin*)
