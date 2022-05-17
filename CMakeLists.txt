@@ -67,7 +67,7 @@ add_library(omc::3rd::FMIL::expat ALIAS expat)
 # We use pthreads API even on Windows
 set(CMAKE_USE_PTHREADS_INIT ON)
 
-option(GC_BUILD_SHARED_LIBS "Build shared libraries" OFF)
+option(GC_BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(enable_java_finalization "Support for java finalization" OFF)
 option(enable_gcj_support "Support for gcj" OFF)
 option(enable_large_config "Optimize for large heap or root set" ON)
