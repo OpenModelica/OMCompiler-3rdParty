@@ -178,7 +178,7 @@
 
 # if defined(__MINGW32__) || defined(__CEGCC__)
 #   if defined(GC_BUILD) || defined(__MINGW32_DELAY_LOAD__)
-#     define GC_API __declspec(dllexport)
+#     define GC_API extern __declspec(dllexport)
 #   else
 #     define GC_API __declspec(dllimport)
 #   endif

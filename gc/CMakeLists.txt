@@ -289,7 +289,7 @@ if (enable_werror)
   endif()
 endif(enable_werror)
 
-if (enable_single_obj_compilation OR GC_BUILD_SHARED_LIBS)
+if (enable_single_obj_compilation)
   set(SRC extra/gc.c) # override SRC
   if (CMAKE_USE_PTHREADS_INIT)
     add_definitions("-DGC_PTHREAD_START_STANDALONE")
