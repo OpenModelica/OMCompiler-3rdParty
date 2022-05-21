@@ -46,7 +46,10 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CHECK_SIZEOF([size_t])
 
 AX_COMPILER_VENDOR
-AX_CC_MAXOPT
+# OpenModelica: Disable the setting of optimization flags automatically by libffi's
+# own decisions. For OpenModelica we want to pass the options and flags ourselves.
+# AX_CC_MAXOPT
+
 # The AX_CFLAGS_WARN_ALL macro doesn't currently work for sunpro
 # compiler.
 if test "$ax_cv_c_compiler_vendor" != "sun"; then
@@ -373,7 +376,7 @@ AC_ARG_ENABLE(purify-safety,
 AC_ARG_ENABLE(multi-os-directory,
 [  --disable-multi-os-directory
                           disable use of gcc --print-multi-os-directory to change the library installation directory])
-                          
+
 # These variables are only ever used when we cross-build to X86_WIN32.
 # And we only support this with GCC, so...
 if test "x$GCC" = "xyes"; then
