@@ -332,7 +332,12 @@ if (GC_BUILD_SHARED_LIBS)
   else()
     add_definitions("-DGC_NO_VISIBILITY")
   endif()
-  check_c_compiler_flag(-Wl,--no-undefined HAVE_FLAG_WL_NO_UNDEFINED)
+  ## check_c_compiler_flag does not seem to check linker flags.
+  ## So the check here would always succeed because nothing is
+  ## linked and the link flag is not checked.
+  ## The right cmake function is check_linker_flag which was introduced in
+  ## cmake 3.18.
+  # check_c_compiler_flag(-Wl,--no-undefined HAVE_FLAG_WL_NO_UNDEFINED)
 else()
   if (WIN32)
     target_compile_definitions(omcgc PUBLIC GC_NOT_DLL)
@@ -439,20 +444,25 @@ if (build_cord)
   install(TARGETS omccord EXPORT cordExports)
 endif()
 
-if (GC_BUILD_SHARED_LIBS AND HAVE_FLAG_WL_NO_UNDEFINED)
-  # Declare that the libraries do not refer to external symbols.
-  # TODO: use add_link_options() when cmake_minimum_required > 3.13
-  target_link_libraries(omcgc PRIVATE -Wl,--no-undefined)
-  if (enable_cplusplus)
-    target_link_libraries(omcgccpp PRIVATE -Wl,--no-undefined)
-    if (enable_throw_bad_alloc_library)
-      target_link_libraries(omcgctba PRIVATE -Wl,--no-undefined)
-    endif(enable_throw_bad_alloc_library)
-  endif(enable_cplusplus)
-  if (build_cord)
-    target_link_libraries(omccord PRIVATE -Wl,--no-undefined)
-  endif(build_cord)
-endif()
+## check_c_compiler_flag does not seem to check linker flags.
+## So the check above for HAVE_FLAG_WL_NO_UNDEFINED would always
+## succeed because nothing is linked and the link flag is not checked.
+## The right cmake function is check_linker_flag which was introduced in
+## cmake 3.18.
+# if (GC_BUILD_SHARED_LIBS AND HAVE_FLAG_WL_NO_UNDEFINED)
+#   # Declare that the libraries do not refer to external symbols.
+#   # TODO: use add_link_options() when cmake_minimum_required > 3.13
+#   target_link_libraries(omcgc PRIVATE -Wl,--no-undefined)
+#   if (enable_cplusplus)
+#     target_link_libraries(omcgccpp PRIVATE -Wl,--no-undefined)
+#     if (enable_throw_bad_alloc_library)
+#       target_link_libraries(omcgctba PRIVATE -Wl,--no-undefined)
+#     endif(enable_throw_bad_alloc_library)
+#   endif(enable_cplusplus)
+#   if (build_cord)
+#     target_link_libraries(omccord PRIVATE -Wl,--no-undefined)
+#   endif(build_cord)
+# endif()
 
 install(TARGETS omcgc EXPORT gcExports)
 
