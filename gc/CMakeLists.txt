@@ -464,7 +464,9 @@ endif()
 #   endif(build_cord)
 # endif()
 
-install(TARGETS omcgc EXPORT gcExports)
+install(TARGETS omcgc EXPORT gcExports
+        # Add omcgc to the 'omc' install component since it is needed to run omc itslef.
+        COMPONENT omc)
 
 if (enable_cplusplus)
   install(TARGETS omcgccpp EXPORT gccppExports)
