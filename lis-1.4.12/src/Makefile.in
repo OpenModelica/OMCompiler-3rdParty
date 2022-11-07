@@ -312,7 +312,8 @@ liblis@LIBSUFFIX@_la_LIBADD = matrix/libmatrix.la vector/libvector.la \
 	matvec/libmatvec.la precon/libprecon.la solver/libsolver.la \
 	esolver/libesolver.la system/libsystem.la \
 	precision/libprecision.la $(am__append_3) $(am__append_4)
-liblis@LIBSUFFIX@_la_SOURCES = 
+liblis@LIBSUFFIX@_la_SOURCES =
+liblis@LIBSUFFIX@_la_LDFLAGS = -no-undefined
 all: all-recursive
 
 .SUFFIXES:
@@ -378,8 +379,8 @@ clean-libLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-liblis@LIBSUFFIX@.la: $(liblis@LIBSUFFIX@_la_OBJECTS) $(liblis@LIBSUFFIX@_la_DEPENDENCIES) $(EXTRA_liblis@LIBSUFFIX@_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libdir) $(liblis@LIBSUFFIX@_la_OBJECTS) $(liblis@LIBSUFFIX@_la_LIBADD) $(LIBS)
+liblis@LIBSUFFIX@.la: $(liblis@LIBSUFFIX@_la_OBJECTS) $(liblis@LIBSUFFIX@_la_DEPENDENCIES) $(EXTRA_liblis@LIBSUFFIX@_la_DEPENDENCIES)
+	$(LINK) -rpath $(libdir) $(liblis@LIBSUFFIX@_la_LDFLAGS) $(liblis@LIBSUFFIX@_la_OBJECTS) $(liblis@LIBSUFFIX@_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
