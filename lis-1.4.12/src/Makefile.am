@@ -16,7 +16,7 @@ liblis@LIBSUFFIX@_la_LIBADD = matrix/libmatrix.la \
                    solver/libsolver.la \
                    esolver/libesolver.la \
                    system/libsystem.la \
-                   precision/libprecision.la 
+                   precision/libprecision.la
 if ENABLE_SAAMG
   liblis@LIBSUFFIX@_la_LIBADD += fortran/libfortran.la
   liblis@LIBSUFFIX@_la_LIBADD += fortran/amg/libsaamg.la
@@ -25,4 +25,5 @@ if ENABLE_FORTRAN
   liblis@LIBSUFFIX@_la_LIBADD += fortran/libfortran.la
 endif
 endif
-liblis@LIBSUFFIX@_la_SOURCES = 
+liblis@LIBSUFFIX@_la_SOURCES =
+liblis@LIBSUFFIX@_la_LDFLAGS = -no-undefined
