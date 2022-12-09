@@ -143,7 +143,7 @@ endif ()
 target_link_libraries(coinmumps PUBLIC ${LAPACK_LIBRARIES})
 
 if(THREADS_HAVE_PTHREAD_ARG)
-  target_compile_options(coinmumps PUBLIC pthread)
+  target_compile_options(coinmumps PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 endif()
 if(CMAKE_THREAD_LIBS_INIT)
   target_link_libraries(coinmumps PUBLIC ${CMAKE_THREAD_LIBS_INIT})
