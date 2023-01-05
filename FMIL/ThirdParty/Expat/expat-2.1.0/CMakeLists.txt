@@ -62,6 +62,7 @@ else(BUILD_shared)
 endif(BUILD_shared)
 
 add_library(expat ${_SHARED} ${expat_SRCS})
+target_include_directories(expat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 if(NOT BUILD_shared)
   target_compile_definitions(expat PUBLIC XML_STATIC)
