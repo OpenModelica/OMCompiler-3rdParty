@@ -1,6 +1,6 @@
 project(OMCompiler_3rdParty)
 
-# antlr
+# zlib
 omc_add_subdirectory(zlib)
 add_library(omc::3rd::zlib ALIAS zlib)
 
@@ -116,6 +116,12 @@ add_library(omc::3rd::lis ALIAS lis)
 
 
 # metis
+# If MSVC use the unofficial pcre from vcpkg since there is no
+# default regex support.
+if(MSVC)
+  option(METIS_GKLIB_PCRE "enable PCRE support" ON)
+endif()
+
 omc_add_subdirectory(metis-5.1.0)
 add_library(omc::3rd::metis ALIAS metis)
 target_include_directories(metis INTERFACE metis-5.1.0/include)
@@ -275,7 +281,7 @@ set(IPOPT_ALL_HDRS ${IPOPT_LINALG_HDRS} ${IPOPT_TMATRICES_HDRS} ${IPOPT_INTERFAC
 file(MAKE_DIRECTORY ${IpOpt_BINARY_DIR}/include/Ipopt)
 file(COPY ${IPOPT_ALL_HDRS} DESTINATION ${IpOpt_BINARY_DIR}/include/Ipopt)
 
-# We give this new directory as include dir ONLY for targets that depend on Ipopt (not Ipopt itslef).
+# We give this new directory as include dir ONLY for targets that depend on Ipopt (not Ipopt itself).
 target_include_directories(ipopt INTERFACE ${IpOpt_BINARY_DIR}/include/)
 add_library(omc::3rd::ipopt ALIAS ipopt)
 

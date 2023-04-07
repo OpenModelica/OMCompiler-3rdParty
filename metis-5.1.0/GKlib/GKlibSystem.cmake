@@ -9,7 +9,7 @@ option(ASSERT2 "additional assertions" OFF)
 option(DEBUG "add debugging support" OFF)
 option(GPROF "add gprof support" OFF)
 option(OPENMP "enable OpenMP support" OFF)
-option(PCRE "enable PCRE support" OFF)
+option(METIS_GKLIB_PCRE "enable PCRE support" OFF)
 option(GKREGEX "enable GKREGEX support" OFF)
 option(GKRAND "enable GKRAND support" OFF)
 
@@ -80,9 +80,9 @@ endif(NOT ASSERT2)
 
 
 # Add various options
-if(PCRE)
+if(METIS_GKLIB_PCRE)
   set(GKlib_COPTIONS "${GKlib_COPTIONS} -D__WITHPCRE__")
-endif(PCRE)
+endif(METIS_GKLIB_PCRE)
 
 if(GKREGEX)
   set(GKlib_COPTIONS "${GKlib_COPTIONS} -DUSE_GKREGEX")
