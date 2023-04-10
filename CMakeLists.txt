@@ -134,10 +134,12 @@ add_library(omc::3rd::tbb ALIAS tbb_static)
 # add_library(omc::3rd::tbb::shared ALIAS tbb)
 
 
-
 # regex
-omc_add_subdirectory(regex-0.12)
-add_library(omc::3rd::regex ALIAS omcregex)
+if(MSVC)
+  omc_add_subdirectory(regex-0.12)
+  add_library(omc::3rd::regex ALIAS omcregex)
+endif()
+
 
 # SuiteSparse
 omc_add_subdirectory(SuiteSparse-5.8.1)
