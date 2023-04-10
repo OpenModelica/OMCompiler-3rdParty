@@ -116,12 +116,6 @@ add_library(omc::3rd::lis ALIAS lis)
 
 
 # metis
-# If MSVC use the unofficial pcre from vcpkg since there is no
-# default regex support.
-if(MSVC)
-  option(METIS_GKLIB_PCRE "enable PCRE support" ON)
-endif()
-
 omc_add_subdirectory(metis-5.1.0)
 add_library(omc::3rd::metis ALIAS metis)
 target_include_directories(metis INTERFACE metis-5.1.0/include)
@@ -141,8 +135,9 @@ add_library(omc::3rd::tbb ALIAS tbb_static)
 
 
 
-# # regex
-# omc_add_subdirectory(regex-0.12)
+# regex
+omc_add_subdirectory(regex-0.12)
+add_library(omc::3rd::regex ALIAS omcregex)
 
 # SuiteSparse
 omc_add_subdirectory(SuiteSparse-5.8.1)
