@@ -65,7 +65,19 @@ function(merge_static_libs outlib )
 		string(TOUPPER "STATIC_LIBRARY_FLAGS_${CONFIG_TYPE}" PROPNAME)
 		set_target_properties(${outlib} PROPERTIES ${PROPNAME} "${flags}")
 	endforeach()
-	
+
+	find_program(MSVC_LIB_TOOL lib.exe)
+
+	if(NOT MSVC_LIB_TOOL)
+		message(FATAL_ERROR "LIB.EXE not found. fmil can not merge static libs.")
+	endif()
+
+	get_target_property(outfile ${outlib} LOCATION)
+	add_custom_command(TARGET ${outlib} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E remove ${outfile}
+		COMMAND ${MSVC_LIB_TOOL} /OUT:${outfile} ${libfiles}
+	)
+
   elseif(APPLE)
     # Use OSX's libtool to merge archives
 	if(multiconfig)
