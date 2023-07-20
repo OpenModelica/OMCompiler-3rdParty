@@ -10,18 +10,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 option(WITH_BLAS "enable blas support" OFF)
 option(WITH_CHOLMOD "enable cholmod support" OFF)
 
-find_file(SS_INSTALL README.md DOC "README.md in SuiteSparse folder"
-  HINTS "${CMAKE_PROJECT_SRC_DIR}" "${CMAKE_BINARY_DIR}/.."
-  NO_DEFAULT_PATH)
-if(SS_INSTALL)
-  get_filename_component(SS_DIR ${SS_INSTALL} PATH)
-  if(NOT EXISTS "${SS_DIR}/README.md")
-    message(FATAL_ERROR "please give absolute path to SuiteSparse_install.m")
-  endif()
-else()
-  set(SS_DIR "SuiteSparse-NOTFOUND")
-  message(FATAL_ERROR "could not find SuiteSparse/README.md")
-endif()
+set (SS_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(SS_DIR)
   if(NOT WITH_BLAS)
