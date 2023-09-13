@@ -152,3 +152,5 @@ sundials-5.4.0/build_msvc/
 tbb/build_cmake/
 
 zlib/build/
+
+ryu/ryu/tests/*.test
