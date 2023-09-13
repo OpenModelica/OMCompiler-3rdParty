@@ -1,5 +1,9 @@
 project(OMCompiler_3rdParty)
 
+# ryu
+omc_add_subdirectory(ryu)
+add_library(omc::3rd::ryu ALIAS ryu)
+
 # zlib
 omc_add_subdirectory(zlib)
 add_library(omc::3rd::zlib ALIAS zlib)
