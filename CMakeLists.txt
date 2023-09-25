@@ -97,7 +97,7 @@ add_library(omc::3rd::omcgc ALIAS omcgc)
 
 #libffi
 omc_add_subdirectory(libffi)
-target_include_directories(ffi INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/libffi_cmake/include)
+target_include_directories(ffi INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/libffi/include)
 # Currently the libffi setup puts the configure-generated headers in the
 # `build directory`/include folder
 target_include_directories(ffi INTERFACE ${libffi_BINARY_DIR}/include)
@@ -212,6 +212,7 @@ target_compile_definitions(sundials_interface_static INTERFACE LINK_SUNDIALS_STA
 ### Note! It should have been enough for the scope here to be INTERFACE instead of PUBLIC. However,
 ### that does not seem to work. This should be fine anyway.
 target_link_libraries(sundials_cvode_static PUBLIC sundials_interface_static)
+target_link_libraries(sundials_ida_static PUBLIC sundials_interface_static)
 target_link_libraries(sundials_idas_static PUBLIC sundials_interface_static)
 target_link_libraries(sundials_kinsol_static PUBLIC sundials_interface_static)
 target_link_libraries(sundials_sunlinsolklu_static PUBLIC sundials_interface_static)
@@ -219,6 +220,7 @@ target_link_libraries(sundials_sunlinsollapackdense_static PUBLIC sundials_inter
 
 ## Add aliases for the static libs. For readability.
 add_library(omc::3rd::sundials::cvode ALIAS sundials_cvode_static)
+add_library(omc::3rd::sundials::ida ALIAS sundials_ida_static)
 add_library(omc::3rd::sundials::idas ALIAS sundials_idas_static)
 add_library(omc::3rd::sundials::kinsol ALIAS sundials_kinsol_static)
 add_library(omc::3rd::sundials::sunlinsolklu ALIAS sundials_sunlinsolklu_static)
