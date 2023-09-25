@@ -23,7 +23,7 @@ endif()
 
 set(SOURCES_LIST
     src/closures.c
-    src/java_raw_api
+    src/java_raw_api.c
     src/prep_cif.c
     src/raw_api.c
     src/types.c)
