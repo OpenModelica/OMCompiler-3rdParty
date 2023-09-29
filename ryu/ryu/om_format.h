@@ -60,7 +60,7 @@ extern char* ryu_hr_tdzp(double r);
  * call this one from OMEdit or other clients to print doubles (without the trailing zero)!
  * the caller needs to provide the buffer (at least 32 chars)
  */
-extern void ryu_hr_tdzp_buf(double r, char* buf)
+extern void ryu_hr_tdzp_buf(double r, char* buf);
 
 #ifdef __cplusplus
 }
