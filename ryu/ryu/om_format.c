@@ -41,20 +41,20 @@
  * https://github.com/OpenModelica/OpenModelica/issues/7465
  * Takes the string output of Ryu's d2s() function as input and writes
  * the minimal decimal or exponential version of it to a buffer
- * str1: the string output from d2s()
+ * d2s_str: the string output from d2s()
  * buf: a character array (32 chars should be more than enough in all cases)
  * real_output: if true, decimal output of round numbers
  *              will have trailing .0, as in 1.0 or 1240.0
  *              if false it will be displayed as an integer 1 or 1240
  */
-void ryu_to_hr(const char *str1, char *buf, int real_output) 
+void ryu_to_hr(const char *d2s_str, char *buf, int real_output) 
 {
   int sign;  // Sign of the number
   char digits[32] = {0};  // Digits of the mantissa
   int ndec; // Number of digits after decimal point in the input
   int exp;  // Exponent in the input
   char str2[32] = {0}; // Stores the decimal output
-  const char *ptr1 = str1; // Movable pointer to the input
+  const char *ptr1 = d2s_str; // Movable pointer to the input
   char *ptr2 = str2; // Movable pointer to the decimal output
   char *ptr = digits; // Movable pointer to the digits string
   int skip_dec = 0; // If true, skip the decimal conversion
@@ -62,7 +62,7 @@ void ryu_to_hr(const char *str1, char *buf, int real_output)
 
   // Parse sign, digits, ndec, exp from input
 
-  if(!strchr(str1, 'E') && !strchr(str1, 'e')) {
+  if(!strpbrk(d2s_str, "eE")) {
     // The input string is not in (-)xx.xEyy format
     skip_dec = 1;
   } else {
@@ -119,16 +119,43 @@ void ryu_to_hr(const char *str1, char *buf, int real_output)
     if (exp >= ndec && real_output)  // Round decimal output, real output required
       strcat(str2, ".0");
   }
-  if(exp < -3 || exp > 5 || (exp > 0 && exp - ndec > 3) || skip_dec)
-  {
+  if(exp < -3 || exp > 5 || (exp > 0 && exp - ndec > 3) || skip_dec) {
     // use the exponential form (change 'e' to 'E')
     int i = 0;
-    while (str1[i])
-      buf[i] = str1[i] == 'E' ? 'e' : str1[i];
+    while (d2s_str[i] != '\0') {
+      buf[i] = d2s_str[i] == 'E' ? 'e' : d2s_str[i];
+      i++;
+    }
     buf[i] = '\0';
   }
   else
     strcpy(buf, str2); // use the decimal form
+}
+
+/*
+ * call this one from OMEdit or other clients to print doubles (without the trailing zero)!
+ * the caller needs to free the result.
+ */
+char* ryu_hr_tdzp(double d)
+{
+  char d2s_str[32] = {0};
+  char buf[32] = {0};
+  d2s_buffered(d, d2s_str);
+  // we don't need to have the trailing zero
+  ryu_to_hr(d2s_str, buf, 0);
+  return strdup(buf);
+}
+
+/*
+ * call this one from OMEdit or other clients to print doubles (without the trailing zero)!
+ * the caller needs to provide the buffer (at least 32 chars)
+ */
+void ryu_hr_tdzp_buf(double d, char* buf)
+{
+  char d2s_str[32] = {0};
+  d2s_buffered(d, d2s_str);
+  // we don't need to have the trailing zero
+  ryu_to_hr(d2s_str, buf, 0);
 }
 
 
@@ -242,31 +269,3 @@ int main()
   test_real("-Inf", "-Inf");
 }
 #endif // #if defined(TEST_RYU_TO_HR)
-
-/*
- * call this one from OMEdit or other clients to print doubles (without the trailing zero)!
- * the caller needs to free the result.
- */
-char* ryu_hr_tdzp(double r)
-{
-  char str1[32] = {0};
-  char buf[32] = {0};
-  d2s_buffered(r, str1);
-  // we don't need to have the trailing zero
-  ryu_to_hr(str1, buf, 0);
-  return strdup(buf);
-}
-
-/*
- * call this one from OMEdit or other clients to print doubles (without the trailing zero)!
- * the caller needs to provide the buffer (at least 32 chars)
- */
-void ryu_hr_tdzp_buf(double r, char* buf)
-{
-  char str1[32] = {0};
-  d2s_buffered(r, str1);
-  // we don't need to have the trailing zero
-  ryu_to_hr(str1, buf, 0);
-}
-
-
