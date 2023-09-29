@@ -48,19 +48,19 @@ extern "C" {
  *              will have trailing .0, as in 1.0 or 1240.0
  *              if false it will be displayed as an integer 1 or 1240
  */
-extern void ryu_to_hr(const char *str1, char *buf, int real_output);
+extern void ryu_to_hr(const char *d2s_str, char *buf, int real_output);
 
 /*
  * call this one from OMEdit or other clients to print doubles (without the trailing zero)!
  * the caller needs to free the result.
  */
-extern char* ryu_hr_tdzp(double r);
+extern char* ryu_hr_tdzp(double d);
 
 /*
  * call this one from OMEdit or other clients to print doubles (without the trailing zero)!
  * the caller needs to provide the buffer (at least 32 chars)
  */
-extern void ryu_hr_tdzp_buf(double r, char* buf);
+extern void ryu_hr_tdzp_buf(double d, char* buf);
 
 #ifdef __cplusplus
 }
