@@ -2,7 +2,7 @@
 # the lib as a dependency in non-Bazel projects (e.g. CMake).
 # Contributed by @gritzko. Supported on a best-effort basis.
 
-SRC=d2fixed.c d2s.c f2s.c generic_128.c om_format.c
+SRC=d2fixed.c d2s.c f2s.c om_format.c
 
 OBJ = $(SRC:.c=.o)
 
@@ -34,7 +34,7 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/lib/$(ALIB)
 	rm -f $(DESTDIR)$(PREFIX)/include/ryu.h
 
-TESTSRC=tests/common_test.cc tests/d2fixed_test.cc tests/d2s_intrinsics_test.cc tests/d2s_table_test.cc tests/d2s_test.cc tests/f2s_test.cc tests/generic_128_test.cc
+TESTSRC=tests/common_test.cc tests/d2fixed_test.cc tests/d2s_intrinsics_test.cc tests/d2s_table_test.cc tests/d2s_test.cc tests/f2s_test.cc
 
 TESTS = $(TESTSRC:.cc=.test)
 
