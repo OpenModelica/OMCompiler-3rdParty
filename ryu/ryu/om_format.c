@@ -45,20 +45,27 @@
  * buf: a character array (32 chars should be more than enough in all cases)
  * real_output: if true, decimal output of round numbers
  *              will have trailing .0, as in 1.0 or 1240.0
- *              if false it will be displayed as an integer 1 or 1240
+ *              if false it will be displayed as an integer 1 or 1240; additionally
+ *              in case d2s returns more than 12 digits after the decimal point in
+ *              the mantissa, it tries to round them to 12 digits and if there are
+ *              more than 4 trailing zeros, it returns the rounded value
  */
 void ryu_to_hr(const char *d2s_str, char *buf, int real_output) 
 {
-  int sign;  // Sign of the number
+  int sign;  // Sign of the input
+  int exp;      // Exponent in the input
+  double mant;  // Mantissa in the input
   char digits[32] = {0};  // Digits of the mantissa
-  int ndec; // Number of digits after decimal point in the input
-  int exp;  // Exponent in the input
+  int ndec = 0; // Number of digits after decimal point in the mantissa
   char str2[32] = {0}; // Stores the decimal output
+  char str3[32] = {0}; // Stores the rounded decimal output, if computed
   const char *ptr1 = d2s_str; // Movable pointer to the input
-  char *ptr2 = str2; // Movable pointer to the decimal output
   char *ptr = digits; // Movable pointer to the digits string
-  int skip_dec = 0; // If true, skip the decimal conversion
-  int i;
+  char *ptr2 = str2; // Movable pointer to the decimal output
+  char *ptr3 = str3; // Movable pointer to the rounded mantissa
+  int skip_dec = 0;  // If true, skip the decimal conversion
+  int nz = 0;        // Number of trailing zeros in the rounded mantissa
+  int i;  // for loop index
 
   // Parse sign, digits, ndec, exp from input
 
@@ -80,6 +87,32 @@ void ryu_to_hr(const char *d2s_str, char *buf, int real_output)
     ndec = strchr(digits, '.') ? strlen(digits) - 2 : 0;
     // Compute exp
     sscanf(++ptr1, "%d", &exp);
+    // If real output with trailing .0 for round numbers is not required and
+    // Ryu's mantissa has more than 12 digits after the decimal point and
+    // its rounded value has at least four trailing zeros, replace Ryu's output
+    // with the rounded mantissa without the trailing zeros
+    if(ndec > 12 && !real_output) {
+      // Compute the mantissa
+      sscanf(digits, "%lf", &mant);
+      // Print the rounded value of the mantissa with 12 digits after the 
+      // decimal point
+      sprintf(str3, "%.12f", mant);
+      // Remove trailing zeros from the rounded mantissa
+      ptr3 += strlen(str3) - 1;
+      while(*ptr3 == '0') {
+        nz++;
+        *ptr3-- = 0;
+      }
+      // Remove trailing decimal point if necessary
+      if(*ptr3 == '.')
+        *ptr3 = 0;
+      // Update digits string with rounded mantissa
+      if(nz > 3)
+        strcpy(digits, str3);
+      // Update ndec
+      ndec = strchr(digits, '.') ? strlen(digits) - 2 : 0;
+    }
+
   }
   if(exp > 5 || exp < -3) {
     // Decimal format too long, skip it (and avoid buffer overflow in str2
@@ -224,6 +257,12 @@ int main()
   test("NaN", "NaN");
   test("Inf", "Inf");
   test("-Inf", "-Inf");
+  test("9.499999999999999e2", "950");
+  test("1.000000000000002e0", "1");
+  test("1.0000000000000022e0", "1");
+  test("-9.499999999999999e2", "-950");
+  test("-1.000000000000002e0", "-1");
+  test("-1.0000000000000022e0", "-1");
 
   test_real("8e5", "8e5");
   test_real("8e4", "8e4");
@@ -267,5 +306,11 @@ int main()
   test_real("NaN", "NaN");
   test_real("Inf", "Inf");
   test_real("-Inf", "-Inf");
+  test_real("9.499999999999999e2", "949.9999999999999");
+  test_real("1.000000000000002e0", "1.000000000000002");
+  test_real("1.0000000000000022e0", "1.0000000000000022");
+  test_real("-9.499999999999999e2", "-949.9999999999999");
+  test_real("-1.000000000000002e0", "-1.000000000000002");
+  test_real("-1.0000000000000022e0", "-1.0000000000000022");
 }
 #endif // #if defined(TEST_RYU_TO_HR)
