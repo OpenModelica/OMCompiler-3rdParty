@@ -57,9 +57,10 @@ void ryu_to_hr(const char *d2s_str, char *buf, int real_output)
   double mant;  // Mantissa in the input
   char digits[32] = {0};  // Digits of the mantissa
   int ndec = 0; // Number of digits after decimal point in the mantissa
+  char str1[32] = {0}; // Stores a copy of the d2s_str input
   char str2[32] = {0}; // Stores the decimal output
   char str3[32] = {0}; // Stores the rounded decimal output, if computed
-  const char *ptr1 = d2s_str; // Movable pointer to the input
+  char *ptr1 = str1;  // Movable pointer to the input copy
   char *ptr = digits; // Movable pointer to the digits string
   char *ptr2 = str2; // Movable pointer to the decimal output
   char *ptr3 = str3; // Movable pointer to the rounded mantissa
@@ -67,9 +68,11 @@ void ryu_to_hr(const char *d2s_str, char *buf, int real_output)
   int nz = 0;        // Number of trailing zeros in the rounded mantissa
   int i;  // for loop index
 
-  // Parse sign, digits, ndec, exp from input
+  // copy d2s_str input in local str1 string
+  strcpy(str1, d2s_str);
 
-  if(!strpbrk(d2s_str, "eE")) {
+  // Parse sign, digits, ndec, exp from input
+  if(!strpbrk(str1, "eE")) {
     // The input string is not in (-)xx.xEyy format
     skip_dec = 1;
   } else {
@@ -105,12 +108,20 @@ void ryu_to_hr(const char *d2s_str, char *buf, int real_output)
       }
       // Remove trailing decimal point if necessary
       if(*ptr3 == '.')
-        *ptr3 = 0;
+        *ptr3-- = 0;
       // Update digits string with rounded mantissa
       if(nz > 3)
         strcpy(digits, str3);
       // Update ndec
       ndec = strchr(digits, '.') ? strlen(digits) - 2 : 0;
+      // Update str1 to rounded output
+      ptr1 = str1;     // Rewind pointer
+      if(sign == -1)
+        *ptr1++ = '-'; // Write sign into str1
+      while(*ptr3)
+        *ptr1++ = *ptr3++;       // Copy rounded mantissa into str1
+      *ptr1++ = 'e';             // Copy 'e' into str1
+      sprintf(ptr1, "%d", exp);  // Print exponent into str1
     }
 
   }
@@ -155,11 +166,14 @@ void ryu_to_hr(const char *d2s_str, char *buf, int real_output)
   if(exp < -3 || exp > 5 || (exp > 0 && exp - ndec > 3) || skip_dec) {
     // use the exponential form (change 'e' to 'E')
     int i = 0;
-    while (d2s_str[i] != '\0') {
-      buf[i] = d2s_str[i] == 'E' ? 'e' : d2s_str[i];
-      i++;
+    ptr1 = str1;  // Rewind pointer to input copy
+    ptr2 = buf;   // Rewind pointer to output buf
+    while (*ptr1) {
+      *ptr2 = *ptr1 == 'E' ? 'e' : *ptr1;
+      ptr1++;
+      ptr2++;
     }
-    buf[i] = '\0';
+    *ptr2 = '\0';  // Terminate output string
   }
   else
     strcpy(buf, str2); // use the decimal form
