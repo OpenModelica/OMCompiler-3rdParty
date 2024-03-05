@@ -100,6 +100,11 @@ void ryu_to_hr(const char *d2s_str, char *buf, int real_output)
       // Print the rounded value of the mantissa with 12 digits after the 
       // decimal point
       sprintf(str3, "%.12f", mant);
+      // Handle the case of 9.99999999999999 rounded to 10.000000000000
+      if (!strcmp(str3,"10.000000000000")) {
+          sprintf(str3,"1.000000000000");
+          exp++;
+      }
       // Remove trailing zeros from the rounded mantissa
       ptr3 += strlen(str3) - 1;
       while(*ptr3 == '0') {
@@ -282,6 +287,22 @@ int main()
   test("-9.499999999999999e2", "-950");
   test("-1.000000000000002e0", "-1");
   test("-1.0000000000000022e0", "-1");
+  test("9.99999999999999e-13", "1e-12");
+  test("9.99999999999999e-5", "1e-4");
+  test("9.99999999999999e-2", "0.1");
+  test("9.99999999999999e-1", "1");
+  test("9.99999999999999e0", "10");
+  test("9.99999999999999e1", "100");
+  test("9.99999999999999e5", "1e6");
+  test("9.99999999999999e11", "1e12");
+  test("-9.99999999999999e-13", "-1e-12");
+  test("-9.99999999999999e-5", "-1e-4");
+  test("-9.99999999999999e-2", "-0.1");
+  test("-9.99999999999999e-1", "-1");
+  test("-9.99999999999999e0", "-10");
+  test("-9.99999999999999e1", "-100");
+  test("-9.99999999999999e5", "-1e6");
+  test("-9.99999999999999e11", "-1e12");
 
   test_real("8e5", "8e5");
   test_real("8e4", "8e4");
