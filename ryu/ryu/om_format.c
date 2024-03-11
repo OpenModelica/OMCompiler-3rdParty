@@ -115,18 +115,21 @@ void ryu_to_hr(const char *d2s_str, char *buf, int real_output)
       if(*ptr3 == '.')
         *ptr3-- = 0;
       // Update digits string with rounded mantissa
-      if(nz > 3)
+      if(nz > 3){
+        // Update digits string with rounded mantissa
         strcpy(digits, str3);
-      // Update ndec
-      ndec = strchr(digits, '.') ? strlen(digits) - 2 : 0;
-      // Update str1 to rounded output
-      ptr1 = str1;     // Rewind pointer
-      if(sign == -1)
-        *ptr1++ = '-'; // Write sign into str1
-      while(*ptr3)
-        *ptr1++ = *ptr3++;       // Copy rounded mantissa into str1
-      *ptr1++ = 'e';             // Copy 'e' into str1
-      sprintf(ptr1, "%d", exp);  // Print exponent into str1
+        // Update ndec
+        ndec = strchr(digits, '.') ? strlen(digits) - 2 : 0;
+        // Update str1 to rounded output
+        ptr1 = str1;     // Rewind pointer to output copy (to update)
+        ptr3 = str3;     // Rewind pointer to rounded mantissa
+        if(sign == -1)
+          *ptr1++ = '-'; // Write sign into str1
+        while(*ptr3)
+          *ptr1++ = *ptr3++;       // Copy rounded mantissa into str1
+        *ptr1++ = 'e';             // Copy 'e' into str1
+        sprintf(ptr1, "%d", exp);  // Print exponent into str1
+      }
     }
 
   }
@@ -303,6 +306,36 @@ int main()
   test("-9.99999999999999e1", "-100");
   test("-9.99999999999999e5", "-1e6");
   test("-9.99999999999999e11", "-1e12");
+  test("1.234567890123456e6", "1.234567890123456e6");
+  test("1.23456789012345e6", "1.23456789012345e6");
+  test("1.2345678901234e6", "1.2345678901234e6");
+  test("1.234567890123e6", "1.234567890123e6");
+  test("1.23456789012e6", "1.23456789012e6");
+  test("1.2345678901e6", "1.2345678901e6");
+  test("1.23456789e6", "1.23456789e6");
+  test("1.2345678e6", "1.2345678e6");
+  test("1.234567e6", "1.234567e6");
+  test("1.23456e6", "1.23456e6");
+  test("1.2345e6", "1.2345e6");
+  test("1.234e6", "1.234e6");
+  test("1.23e6", "1.23e6");
+  test("1.2e6", "1.2e6");
+  test("1e6", "1e6");
+  test("-1.234567890123456e6", "-1.234567890123456e6");
+  test("-1.23456789012345e6", "-1.23456789012345e6");
+  test("-1.2345678901234e6", "-1.2345678901234e6");
+  test("-1.234567890123e6", "-1.234567890123e6");
+  test("-1.23456789012e6", "-1.23456789012e6");
+  test("-1.2345678901e6", "-1.2345678901e6");
+  test("-1.23456789e6", "-1.23456789e6");
+  test("-1.2345678e6", "-1.2345678e6");
+  test("-1.234567e6", "-1.234567e6");
+  test("-1.23456e6", "-1.23456e6");
+  test("-1.2345e6", "-1.2345e6");
+  test("-1.234e6", "-1.234e6");
+  test("-1.23e6", "-1.23e6");
+  test("-1.2e6", "-1.2e6");
+  test("-1e6", "-1e6");
 
   test_real("8e5", "8e5");
   test_real("8e4", "8e4");
