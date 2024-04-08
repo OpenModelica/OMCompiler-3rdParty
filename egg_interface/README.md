@@ -48,8 +48,7 @@ compile it (don't forget to update all submodules).
 If it doesn't compile then either you did something wrong or I forgot to mention
 some setup steps.
 
-
-## Where to develop
+## Development
 
 `egg` is written in [Rust](https://www.rust-lang.org/).
 It is used as a 3rdParty library.
@@ -65,7 +64,24 @@ MetaModelica side of the interface lives.
 This code is only supposed to translate between MetaModelica and Rust as well
 as do some bookkeeping.
 
+### Rust Analyzer
 
-## Documentation and help
+Specify the location of egg_interface:
 
-There is no documentation or help. Read the code!
+```json
+  "rust-analyzer.linkedProjects": [
+    "${workspaceFolder}/OMCompiler/3rdParty/egg_interface/Cargo.toml"
+  ]
+```
+
+### Testing
+
+Run unit and integration tests:
+
+```bash
+cargo test
+```
+
+## Documentation
+
+Run `cargo doc --open` to build and open the documentation in a browser.

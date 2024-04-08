@@ -1,3 +1,38 @@
+/*
+ * This file is part of OpenModelica.
+ *
+ * Copyright (c) 1998-2024, Open Source Modelica Consortium (OSMC),
+ * c/o Linköpings universitet, Department of Computer and Information Science,
+ * SE-58183 Linköping, Sweden.
+ *
+ * All rights reserved.
+ *
+ * THIS PROGRAM IS PROVIDED UNDER THE TERMS OF AGPL VERSION 3 LICENSE OR
+ * THIS OSMC PUBLIC LICENSE (OSMC-PL) VERSION 1.8.
+ * ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS PROGRAM CONSTITUTES
+ * RECIPIENT'S ACCEPTANCE OF THE OSMC PUBLIC LICENSE OR THE GNU AGPL
+ * VERSION 3, ACCORDING TO RECIPIENTS CHOICE.
+ *
+ * The OpenModelica software and the OSMC (Open Source Modelica Consortium)
+ * Public License (OSMC-PL) are obtained from OSMC, either from the above
+ * address, from the URLs:
+ * http://www.openmodelica.org or
+ * https://github.com/OpenModelica/ or
+ * http://www.ida.liu.se/projects/OpenModelica,
+ * and in the OpenModelica distribution.
+ *
+ * GNU AGPL version 3 is obtained from:
+ * https://www.gnu.org/licenses/licenses.html#GPL
+ *
+ * This program is distributed WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE, EXCEPT AS EXPRESSLY SET FORTH
+ * IN THE BY RECIPIENT SELECTED SUBSIDIARY LICENSE CONDITIONS OF OSMC-PL.
+ *
+ * See the full OSMC Public License conditions for more details.
+ *
+ */
+
 use std::ffi::{c_void, CStr, CString};
 use std::mem;
 use std::os::raw::c_char;
@@ -66,11 +101,18 @@ impl Analysis<ModelicaExpr> for ConstantFold {
 
 /* OMC INTERFACE */
 
-/// make the vector of rewrite rules
+/// Make the vector of rewrite rules.
 #[no_mangle]
 pub extern "C" fn egg_make_rules() -> Box<RuleSet> {
     let now = Instant::now();
-    let rules: RuleSet = vec![
+    let rules = make_rules();
+    println!("made rules: {:.2?}", now.elapsed());
+    Box::new(rules)
+}
+
+/// Return vector of rewrite rules
+fn make_rules() -> RuleSet {
+    vec![
         rewrite!("add-commute";   "(+ ?a ?b)" => "(+ ?b ?a)"),
         rewrite!("add-associate"; "(+ (+ ?a ?b) ?c)" => "(+ ?a (+ ?b ?c))"),
         rewrite!("add-neutral";   "(+ ?a 0)" => "?a"),
@@ -99,9 +141,7 @@ pub extern "C" fn egg_make_rules() -> Box<RuleSet> {
         rewrite!("pow-distribute"; "(^ (* ?a ?b) ?n)" => "(* (^ ?a ?n) (^ ?b ?n))"),
 
         rewrite!("sin-0"; "(sin 0)" => "0"),
-    ];
-    println!("made rules: {:.2?}", now.elapsed());
-    Box::new(rules)
+    ]
 }
 
 #[no_mangle]
@@ -110,30 +150,36 @@ pub unsafe extern "C" fn egg_free_rules(_rules: Option<Box<RuleSet>>) {
     println!("dropped rules");
 }
 
-/// make the runner
+/// Make the runner.
 #[no_mangle]
 pub extern "C" fn egg_make_runner() -> Box<Runner> {
     let now = Instant::now();
-    let runner = Runner::default()
-        // we can load a saturated egraph here
-        .with_iter_limit(10)
-        .with_node_limit(1000)
-        .with_time_limit(Duration::from_millis(500));
+    let runner = make_runner();
     println!("made runner: {:.2?}", now.elapsed());
     Box::new(runner)
 }
 
+fn make_runner() -> Runner {
+    Runner::default()
+        // we can load a saturated egraph here
+        .with_iter_limit(10)
+        .with_node_limit(1000)
+        .with_time_limit(Duration::from_millis(500))
+}
+
+/// Free runner.
 #[no_mangle]
 pub unsafe extern "C" fn egg_free_runner(_runner: Option<Box<Runner>>) {
     // dropped implicitly
     println!("dropped runner");
 }
 
+/// Simplify expression string `expr_str`.
 #[no_mangle]
 pub extern "C" fn egg_simplify_expr(rules: Option<&RuleSet>, runner_ptr: Option<&mut Runner>, expr_str: *const c_char) -> *mut c_char {
     let mut times = Vec::new();
 
-    // parse the expression, the type annotation tells it which Language to use
+    // parse the expression, the type annotation tells it which language to use
     let now = Instant::now();
     let expr = unsafe { CStr::from_ptr(expr_str).to_string_lossy().into_owned() };
     let expr: RecExpr<ModelicaExpr> = expr.parse().unwrap();
@@ -185,6 +231,18 @@ pub extern "C" fn egg_simplify_expr(rules: Option<&RuleSet>, runner_ptr: Option<
     CString::new(best.to_string()).expect("return string error").into_raw()
 }
 
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    // Test simplify_expr()
+    fn simplify_expr_test() {
+        let _rules = make_rules();
+        let _runner = make_runner();
+    }
+}
 
 /*----------------------------------------------------------------------------*/
 /* useful functions between Rust and C */
