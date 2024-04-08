@@ -10,8 +10,10 @@ crate-type = ["cdylib", "staticlib", "lib"] # cdylib needs to be first for api_t
 
 [dependencies]
 egg = "0.9.3"
+log = "0.4.21"
 num-traits = "0.2.18"
 ordered-float = "4.2.0"
+simple_logger = "4.3.3"
 
 [dev-dependencies]
 dlopen2 = "0.7.0"

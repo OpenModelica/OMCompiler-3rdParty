@@ -43,6 +43,7 @@ use egg::*;
 use ordered_float::NotNan;
 use num_traits::{Pow, Zero};
 //use num_traits::real::Real;
+use simple_logger;
 
 pub type EGraph = egg::EGraph<ModelicaExpr, ConstantFold>;
 pub type RuleSet = Vec<egg::Rewrite<ModelicaExpr, ConstantFold>>;
@@ -104,9 +105,12 @@ impl Analysis<ModelicaExpr> for ConstantFold {
 /// Make the vector of rewrite rules.
 #[no_mangle]
 pub extern "C" fn egg_make_rules() -> Box<RuleSet> {
+    // TODO: Move to a better location
+    simple_logger::init_with_level(log::Level::Warn).unwrap();
+
     let now = Instant::now();
     let rules = make_rules();
-    println!("made rules: {:.2?}", now.elapsed());
+    log::debug!("made rules: {:.2?}", now.elapsed());
     Box::new(rules)
 }
 
@@ -147,7 +151,7 @@ fn make_rules() -> RuleSet {
 #[no_mangle]
 pub unsafe extern "C" fn egg_free_rules(_rules: Option<Box<RuleSet>>) {
     // dropped implicitly
-    println!("dropped rules");
+    log::debug!("dropped rules");
 }
 
 /// Make the runner.
@@ -155,7 +159,7 @@ pub unsafe extern "C" fn egg_free_rules(_rules: Option<Box<RuleSet>>) {
 pub extern "C" fn egg_make_runner() -> Box<Runner> {
     let now = Instant::now();
     let runner = make_runner();
-    println!("made runner: {:.2?}", now.elapsed());
+    log::debug!("made runner: {:.2?}", now.elapsed());
     Box::new(runner)
 }
 
@@ -171,7 +175,7 @@ fn make_runner() -> Runner {
 #[no_mangle]
 pub unsafe extern "C" fn egg_free_runner(_runner: Option<Box<Runner>>) {
     // dropped implicitly
-    println!("dropped runner");
+    log::debug!("dropped runner");
 }
 
 /// Simplify expression string `expr_str`.
@@ -193,7 +197,7 @@ pub extern "C" fn egg_simplify_expr(rules: Option<&RuleSet>, runner_ptr: Option<
     let best = simplify_expr(&rules.unwrap(), runner_ptr.unwrap(), expr, &mut times);
 
     times.sort_by(|(a,_), (b,_)| b.cmp(a));
-    print!("{}", times.iter().fold(String::new(), |acc, (t,s)| acc + &format!("{}\t{:.2?}", s, t) + "\n"));
+    log::info!("{}", times.iter().fold(String::new(), |acc, (t,s)| acc + &format!("{}\t{:.2?}", s, t) + "\n"));
 
     CString::new(best.to_string()).expect("return string error").into_raw()
 }
@@ -212,7 +216,7 @@ fn simplify_expr(rules: &RuleSet, runner_ptr: &mut Runner, expr: RecExpr<Modelic
     runner = runner.with_expr(&expr).run(rules);
     times.push((now.elapsed(), String::from("runner   ")));
     match runner.stop_reason {
-        Some(ref reason) => println!("stop reason: {:?}", reason),
+        Some(ref reason) => log::info!("stop reason: {:?}", reason),
         _ => ()
     }
 
@@ -230,8 +234,8 @@ fn simplify_expr(rules: &RuleSet, runner_ptr: &mut Runner, expr: RecExpr<Modelic
     let (best_cost, best) = extractor.find_best(root);
     times.push((now.elapsed(), String::from("best     ")));
 
-    println!("cost: {} -> {}", cost, best_cost);
-    //println!("expr {}\n  -> {}", expr, best);
+    log::info!("cost: {} -> {}", cost, best_cost);
+    //log::info!("expr {}\n  -> {}", expr, best);
 
     // give runner back to metamodelica
     mem::swap(runner_ptr, &mut runner);
@@ -278,7 +282,7 @@ macro_rules! create_function {
         #[no_mangle]
         pub extern "C" fn $func_name(v: $ctype) {
             // The `stringify!` macro converts an `ident` into a string.
-            println!(
+            log::trace!(
                 "{:?}() is called, value passed = <{:?}>",
                 stringify!($func_name),
                 v
@@ -304,7 +308,7 @@ pub extern "C" fn rust_string(c_string: *const c_char) {
     // build a Rust string from C string
     let s = unsafe { CStr::from_ptr(c_string).to_string_lossy().into_owned() };
 
-    println!("rust_string() is called, value passed = <{:?}>", s);
+    log::trace!("rust_string() is called, value passed = <{:?}>", s);
 }
 
 // for C arrays, need to pass array size
@@ -312,7 +316,7 @@ pub extern "C" fn rust_string(c_string: *const c_char) {
 pub extern "C" fn rust_int_array(c_array: *const i32, length: usize) {
     // build a Rust array from array & length
     let rust_array: &[i32] = unsafe { slice::from_raw_parts(c_array, length as usize) };
-    println!(
+    log::trace!(
         "rust_int_array() is called, value passed = <{:?}>",
         rust_array
     );
@@ -329,7 +333,7 @@ pub extern "C" fn rust_string_array(c_array: *const *const c_char, length: usize
         .map(|&v| unsafe { CStr::from_ptr(v).to_string_lossy().into_owned() })
         .collect();
 
-    println!(
+    log::trace!(
         "rust_string_array() is called, value passed = <{:?}>",
         rust_array
     );
@@ -343,7 +347,7 @@ pub unsafe extern "C" fn rust_cstruct(c_struct: *mut RustStruct) {
         .to_string_lossy()
         .into_owned();
 
-    println!(
+    log::trace!(
         "rust_cstruct() is called, value passed = <{} {} {}>",
         rust_struct.c, rust_struct.ul, s
     );
