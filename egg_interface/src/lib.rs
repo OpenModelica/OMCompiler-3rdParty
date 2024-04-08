@@ -175,32 +175,42 @@ pub unsafe extern "C" fn egg_free_runner(_runner: Option<Box<Runner>>) {
 }
 
 /// Simplify expression string `expr_str`.
+///
+/// Expect `expr_str` to be in polish notation:
+/// `"x + 1"` -> `"(+ x 1)"`.
 #[no_mangle]
 pub extern "C" fn egg_simplify_expr(rules: Option<&RuleSet>, runner_ptr: Option<&mut Runner>, expr_str: *const c_char) -> *mut c_char {
-    let mut times = Vec::new();
+    let mut times: Vec<(Duration, String)> = Vec::new();
 
     // parse the expression, the type annotation tells it which language to use
     let now = Instant::now();
     let expr = unsafe { CStr::from_ptr(expr_str).to_string_lossy().into_owned() };
     let expr: RecExpr<ModelicaExpr> = expr.parse().unwrap();
-    times.push((now.elapsed(), "expr     "));
-
-    let now = Instant::now();
-    let cost = AstSize.cost_rec(&expr);
-    times.push((now.elapsed(), "cost     "));
+    times.push((now.elapsed(), String::from("expr     ")));
 
     // simplify the expression using a Runner, which creates an e-graph with
     // the given expression and runs the given rules over it
+    let best = simplify_expr(&rules.unwrap(), runner_ptr.unwrap(), expr, &mut times);
+
+    times.sort_by(|(a,_), (b,_)| b.cmp(a));
+    print!("{}", times.iter().fold(String::new(), |acc, (t,s)| acc + &format!("{}\t{:.2?}", s, t) + "\n"));
+
+    CString::new(best.to_string()).expect("return string error").into_raw()
+}
+
+fn simplify_expr(rules: &RuleSet, runner_ptr: &mut Runner, expr: RecExpr<ModelicaExpr>, times: &mut Vec<(Duration, String)>) -> RecExpr<ModelicaExpr> {
     let now = Instant::now();
+    let cost = AstSize.cost_rec(&expr);
+    times.push((now.elapsed(), String::from("cost     ")));
+
     // we need a variable for the unwrapped ptr so we can swap back at the end
-    let runner_ptr = runner_ptr.unwrap();
     let mut runner: Runner = mem::replace(runner_ptr, *egg_make_runner());
 
     // reset runner so it can run again
     runner.stop_reason = None;
 
-    runner = runner.with_expr(&expr).run(rules.unwrap());
-    times.push((now.elapsed(), "runner   "));
+    runner = runner.with_expr(&expr).run(rules);
+    times.push((now.elapsed(), String::from("runner   ")));
     match runner.stop_reason {
         Some(ref reason) => println!("stop reason: {:?}", reason),
         _ => ()
@@ -209,28 +219,25 @@ pub extern "C" fn egg_simplify_expr(rules: Option<&RuleSet>, runner_ptr: Option<
     // the Runner knows which e-class the expression given with `with_expr` is in
     let now = Instant::now();
     let root = *runner.roots.last().unwrap();
-    times.push((now.elapsed(), "root     "));
+    times.push((now.elapsed(), String::from("root     ")));
 
     // use an Extractor to pick the best element of the root eclass
     let now = Instant::now();
     let extractor = Extractor::new(&runner.egraph, AstSize);
-    times.push((now.elapsed(), "extractor"));
+    times.push((now.elapsed(), String::from("extractor")));
 
     let now = Instant::now();
     let (best_cost, best) = extractor.find_best(root);
-    times.push((now.elapsed(), "best     "));
+    times.push((now.elapsed(), String::from("best     ")));
 
     println!("cost: {} -> {}", cost, best_cost);
     //println!("expr {}\n  -> {}", expr, best);
-    times.sort_by(|(a,_), (b,_)| b.cmp(a));
-    print!("{}", times.iter().fold(String::new(), |acc, (t,s)| acc + &format!("{}\t{:.2?}", s, t) + "\n"));
 
     // give runner back to metamodelica
     mem::swap(runner_ptr, &mut runner);
 
-    CString::new(best.to_string()).expect("return string error").into_raw()
+    return best;
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -239,8 +246,13 @@ mod tests {
     #[test]
     // Test simplify_expr()
     fn simplify_expr_test() {
-        let _rules = make_rules();
-        let _runner = make_runner();
+        let rules = make_rules();
+        let mut runner = make_runner();
+        let expr = "(+ x (+ y (* 2 x)))";
+        let expr: RecExpr<ModelicaExpr> = expr.parse().unwrap();
+        let mut times: Vec<(Duration, String)> = Vec::new();
+        let result = simplify_expr(&rules, &mut runner, expr, &mut times);
+        assert_eq!(result.to_string(), "(+ y (* x 3))")
     }
 }
 
