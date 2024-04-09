@@ -38,7 +38,9 @@ use dlopen2::wrapper::{Container, WrapperApi};
 use std::os::raw::c_char;
 use std::ffi::{CString, CStr};
 
-use egg_interface::{RuleSet, Runner};
+use egg_interface::rules::RuleSet;
+use egg_interface::runner::Runner;
+
 
 #[derive(WrapperApi)]
 struct Api {

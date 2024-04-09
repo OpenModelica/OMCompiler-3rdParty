@@ -33,119 +33,33 @@
  *
  */
 
-use std::ffi::{c_void, CStr, CString};
+use egg::{AstSize, CostFunction, Extractor, RecExpr};
+use simple_logger;
+use std::ffi::{CStr, CString};
 use std::mem;
 use std::os::raw::c_char;
-use std::slice;
-use std::time::Duration;
-use std::time::Instant;
-use egg::*;
-use ordered_float::NotNan;
-use num_traits::{Pow, Zero};
-//use num_traits::real::Real;
-use simple_logger;
+use std::time::{Duration, Instant};
 
-pub type EGraph = egg::EGraph<ModelicaExpr, ConstantFold>;
-pub type RuleSet = Vec<egg::Rewrite<ModelicaExpr, ConstantFold>>;
-pub type Runner = egg::Runner::<ModelicaExpr, ConstantFold, ()>;
+pub mod runner;
 
-/// Constant needs to implement `Ord` so we can't just use `f64`
-pub type Constant = NotNan<f64>;
+pub mod rules;
+use crate::rules::*;
 
-define_language! {
-    pub enum ModelicaExpr {
-        "+" = Add([Id; 2]),
-        "-" = Sub([Id; 2]),
-        "*" = Mul([Id; 2]),
-        "/" = Div([Id; 2]),
-        "^" = Pow([Id; 2]),
-        "der" = Der(Id),
-        "sin" = Sin(Id),
-        Constant(Constant),
-        Symbol(Symbol),
-    }
-}
+pub mod egraph;
+use crate::egraph::ModelicaExpr;
 
-#[derive(Default)]
-pub struct ConstantFold;
-impl Analysis<ModelicaExpr> for ConstantFold {
-    type Data = Option<Constant>;
-
-    fn make(egraph: &EGraph, enode: &ModelicaExpr) -> Self::Data {
-        let x = |i: &Id| egraph[*i].data;
-        Some(match enode {
-            ModelicaExpr::Add([a, b]) => x(a)? + x(b)?,
-            ModelicaExpr::Sub([a, b]) => x(a)? - x(b)?,
-            ModelicaExpr::Mul([a, b]) => x(a)? * x(b)?,
-            ModelicaExpr::Div([a, b]) if !x(b)?.is_zero() => x(a)? / x(b)?,
-            ModelicaExpr::Pow([a, b]) => x(a)?.pow(x(b)?),
-            ModelicaExpr::Der(a) if x(a).is_some() => Constant::zero(),
-            ModelicaExpr::Sin(a) if x(a).is_some() => NotNan::new(x(a)?.sin()).unwrap(),
-            ModelicaExpr::Constant(n) => *n,
-            _ => return None,
-        })
-    }
-
-    fn merge(&mut self, to: &mut Self::Data, from: Self::Data) -> DidMerge {
-        egg::merge_max(to, from)
-    }
-
-    fn modify(egraph: &mut EGraph, id: Id) {
-        if let Some(i) = egraph[id].data {
-            let added = egraph.add(ModelicaExpr::Constant(i));
-            egraph.union(id, added);
-            // to not prune, comment this out
-            //egraph[id].nodes.retain(|n| n.is_leaf());
-        }
-    }
-}
-
-/* OMC INTERFACE */
+mod debugging;
 
 /// Make the vector of rewrite rules.
 #[no_mangle]
 pub extern "C" fn egg_make_rules() -> Box<RuleSet> {
     // TODO: Move to a better location
-    simple_logger::init_with_level(log::Level::Warn).unwrap();
+    simple_logger::init_with_level(log::Level::Info).unwrap();
 
     let now = Instant::now();
-    let rules = make_rules();
+    let rules = rules::make_rules();
     log::debug!("made rules: {:.2?}", now.elapsed());
     Box::new(rules)
-}
-
-/// Return vector of rewrite rules
-fn make_rules() -> RuleSet {
-    vec![
-        rewrite!("add-commute";   "(+ ?a ?b)" => "(+ ?b ?a)"),
-        rewrite!("add-associate"; "(+ (+ ?a ?b) ?c)" => "(+ ?a (+ ?b ?c))"),
-        rewrite!("add-neutral";   "(+ ?a 0)" => "?a"),
-        rewrite!("add-inverse";   "(- ?a ?a)" => "0"),
-
-        rewrite!("sub-associate"; "(+ ?a (- ?b ?c))" => "(- (+ ?a ?b) ?c)"),
-
-        rewrite!("mul-commute"; "(* ?a ?b)" => "(* ?b ?a)"),
-        rewrite!("mul-associate"; "(* (* ?a ?b) ?c)" => "(* ?a (* ?b ?c))"),
-        rewrite!("mul-1"; "(* ?a 1)" => "?a"),
-
-        rewrite!("div-associate"; "(* (/ ?a ?b) ?c)" => "(* ?a (/ ?c ?b))"),
-        rewrite!("div-inv"; "(/ ?a ?a)" => "1"),
-
-        rewrite!("add-mul-distribute"; "(+ (* ?a ?b) (* ?a ?c))" => "(* ?a (+ ?b ?c))"),
-        rewrite!("mul-0"; "(* ?a 0)" => "0"),
-
-        rewrite!("add-same-base"; "(+ ?a ?a)" => "(* ?a 2)"),
-        rewrite!("add-same"; "(+ ?a (* ?a ?n))" => "(* ?a (+ ?n 1))"),
-
-        rewrite!("mul-same-base"; "(* ?a ?a)" => "(^ ?a 2)"),
-        rewrite!("mul-same"; "(* ?a (^ ?a ?n))" => "(^ ?a (+ ?n 1))"),
-
-        rewrite!("pow-zero"; "(^ ?a 0)" => "1"),
-        rewrite!("pow-one"; "(^ 1 ?a)" => "1"),
-        rewrite!("pow-distribute"; "(^ (* ?a ?b) ?n)" => "(* (^ ?a ?n) (^ ?b ?n))"),
-
-        rewrite!("sin-0"; "(sin 0)" => "0"),
-    ]
 }
 
 #[no_mangle]
@@ -156,34 +70,26 @@ pub unsafe extern "C" fn egg_free_rules(_rules: Option<Box<RuleSet>>) {
 
 /// Make the runner.
 #[no_mangle]
-pub extern "C" fn egg_make_runner() -> Box<Runner> {
+pub extern "C" fn egg_make_runner() -> Box<runner::Runner> {
     let now = Instant::now();
-    let runner = make_runner();
+    let runner = runner::make_runner();
     log::debug!("made runner: {:.2?}", now.elapsed());
     Box::new(runner)
 }
 
-fn make_runner() -> Runner {
-    Runner::default()
-        // we can load a saturated egraph here
-        .with_iter_limit(10)
-        .with_node_limit(1000)
-        .with_time_limit(Duration::from_millis(500))
-}
-
 /// Free runner.
 #[no_mangle]
-pub unsafe extern "C" fn egg_free_runner(_runner: Option<Box<Runner>>) {
+pub unsafe extern "C" fn egg_free_runner(_runner: Option<Box<runner::Runner>>) {
     // dropped implicitly
     log::debug!("dropped runner");
 }
 
 /// Simplify expression string `expr_str`.
 ///
-/// Expect `expr_str` to be in polish notation:
+/// Expect `expr_str` to be in prefix notation:
 /// `"x + 1"` -> `"(+ x 1)"`.
 #[no_mangle]
-pub extern "C" fn egg_simplify_expr(rules: Option<&RuleSet>, runner_ptr: Option<&mut Runner>, expr_str: *const c_char) -> *mut c_char {
+pub extern "C" fn egg_simplify_expr(rules: Option<&RuleSet>, runner_ptr: Option<&mut runner::Runner>, expr_str: *const c_char) -> *mut c_char {
     let mut times: Vec<(Duration, String)> = Vec::new();
 
     // parse the expression, the type annotation tells it which language to use
@@ -202,13 +108,13 @@ pub extern "C" fn egg_simplify_expr(rules: Option<&RuleSet>, runner_ptr: Option<
     CString::new(best.to_string()).expect("return string error").into_raw()
 }
 
-fn simplify_expr(rules: &RuleSet, runner_ptr: &mut Runner, expr: RecExpr<ModelicaExpr>, times: &mut Vec<(Duration, String)>) -> RecExpr<ModelicaExpr> {
+fn simplify_expr(rules: &RuleSet, runner_ptr: &mut runner::Runner, expr: RecExpr<ModelicaExpr>, times: &mut Vec<(Duration, String)>) -> RecExpr<ModelicaExpr> {
     let now = Instant::now();
     let cost = AstSize.cost_rec(&expr);
     times.push((now.elapsed(), String::from("cost     ")));
 
     // we need a variable for the unwrapped ptr so we can swap back at the end
-    let mut runner: Runner = mem::replace(runner_ptr, *egg_make_runner());
+    let mut runner: runner::Runner = mem::replace(runner_ptr, *egg_make_runner());
 
     // reset runner so it can run again
     runner.stop_reason = None;
@@ -247,108 +153,26 @@ fn simplify_expr(rules: &RuleSet, runner_ptr: &mut Runner, expr: RecExpr<Modelic
 mod tests {
     use super::*;
 
-    #[test]
-    // Test simplify_expr()
-    fn simplify_expr_test() {
-        let rules = make_rules();
-        let mut runner = make_runner();
-        let expr = "(+ x (+ y (* 2 x)))";
-        let expr: RecExpr<ModelicaExpr> = expr.parse().unwrap();
+    /// Assert simplification of `expression` equals one of `expected` expressions.
+    ///
+    /// Provide expression in prefix notation.
+    /// Panics if simplification doesn't match any of the expected expressions.
+    fn assert_simplify(expression: &str, expected: Vec<&str>) {
+        let rules = rules::make_rules();
+        let mut runner = runner::make_runner();
+        let expr: RecExpr<ModelicaExpr> = expression.parse().unwrap();
         let mut times: Vec<(Duration, String)> = Vec::new();
         let result = simplify_expr(&rules, &mut runner, expr, &mut times);
-        assert_eq!(result.to_string(), "(+ y (* x 3))")
+        let result = result.to_string();
+        assert!(expected.iter().any(|ex| result == *ex), "Expected solution not found. Found {:?}, expected one of {:?}", expression, expected);
     }
-}
 
-/*----------------------------------------------------------------------------*/
-/* useful functions between Rust and C */
-/*----------------------------------------------------------------------------*/
-
-
-// A Rust struct mapping the C struct
-#[repr(C)]
-#[derive(Debug)]
-pub struct RustStruct {
-    pub c: char,
-    pub ul: u64,
-    pub c_string: *const c_char,
-}
-
-macro_rules! create_function {
-    // This macro takes an argument of designator `ident` and
-    // creates a function named `$func_name`.
-    // The `ident` designator is used for variable/function names.
-    ($func_name:ident, $ctype:ty) => {
-        #[no_mangle]
-        pub extern "C" fn $func_name(v: $ctype) {
-            // The `stringify!` macro converts an `ident` into a string.
-            log::trace!(
-                "{:?}() is called, value passed = <{:?}>",
-                stringify!($func_name),
-                v
-            );
-        }
-    };
-}
-
-// create simple functions where C type is exactly mapping a Rust type
-//create_function!(rust_char, char);
-//create_function!(rust_wchar, char);
-create_function!(rust_short, i16);
-create_function!(rust_ushort, u16);
-create_function!(rust_int, i32);
-create_function!(rust_uint, u32);
-create_function!(rust_long, i64);
-create_function!(rust_ulong, u64);
-create_function!(rust_void, *mut c_void);
-
-// for NULL-terminated C strings, it's a little bit clumsier
-#[no_mangle]
-pub extern "C" fn rust_string(c_string: *const c_char) {
-    // build a Rust string from C string
-    let s = unsafe { CStr::from_ptr(c_string).to_string_lossy().into_owned() };
-
-    log::trace!("rust_string() is called, value passed = <{:?}>", s);
-}
-
-// for C arrays, need to pass array size
-#[no_mangle]
-pub extern "C" fn rust_int_array(c_array: *const i32, length: usize) {
-    // build a Rust array from array & length
-    let rust_array: &[i32] = unsafe { slice::from_raw_parts(c_array, length as usize) };
-    log::trace!(
-        "rust_int_array() is called, value passed = <{:?}>",
-        rust_array
-    );
-}
-
-#[no_mangle]
-pub extern "C" fn rust_string_array(c_array: *const *const c_char, length: usize) {
-    // build a Rust array from array & length
-    let tmp_array: &[*const c_char] = unsafe { slice::from_raw_parts(c_array, length as usize) };
-
-    // convert each element to a Rust string
-    let rust_array: Vec<_> = tmp_array
-        .iter()
-        .map(|&v| unsafe { CStr::from_ptr(v).to_string_lossy().into_owned() })
-        .collect();
-
-    log::trace!(
-        "rust_string_array() is called, value passed = <{:?}>",
-        rust_array
-    );
-}
-
-// for C structs, need to convert each individual Rust member if necessary
-#[no_mangle]
-pub unsafe extern "C" fn rust_cstruct(c_struct: *mut RustStruct) {
-    let rust_struct = &*c_struct;
-    let s = CStr::from_ptr(rust_struct.c_string)
-        .to_string_lossy()
-        .into_owned();
-
-    log::trace!(
-        "rust_cstruct() is called, value passed = <{} {} {}>",
-        rust_struct.c, rust_struct.ul, s
-    );
+    /// Test `simplify_expr` with various expressions.
+    #[test]
+    fn simplify_expr_test() {
+        assert_simplify("(+ x (+ y (* 2 x)))",
+                        vec!["(+ y (* x 3))", "(+ y (* 3 x))", "(+ (* x 3) y)", "(+ (* 3 x) y)"]);
+        assert_simplify("(- (+ x0 (+ x1 (+ x2 x3))) (+ x3 x1))",
+                        vec!["(+ x0 x2)", "(+ x2 x0)"]);
+    }
 }
