@@ -48,8 +48,6 @@ use crate::rules::*;
 pub mod egraph;
 use crate::egraph::ModelicaExpr;
 
-mod debugging;
-
 /// Make the vector of rewrite rules.
 #[no_mangle]
 pub extern "C" fn egg_make_rules() -> Box<RuleSet> {
