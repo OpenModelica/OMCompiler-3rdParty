@@ -35,15 +35,16 @@
 
 use std::time::Duration;
 
-use crate::egraph::{ConstantFold, ModelicaExpr};
+use crate::egraph::{EGraph, ConstantFold, ModelicaExpr};
 
 pub type Runner = egg::Runner::<ModelicaExpr, ConstantFold, ()>;
 
 /// Make the runner.
-pub fn make_runner() -> Runner {
+pub fn make_runner(egraph: EGraph) -> Runner {
+    let size = egraph.total_size();
     Runner::default()
-        // we can load a saturated egraph here
+        .with_egraph(egraph)
         .with_iter_limit(10)
-        .with_node_limit(1000)
-        .with_time_limit(Duration::from_millis(500))
+        .with_node_limit(size + 100)
+        .with_time_limit(Duration::from_millis(5))
 }

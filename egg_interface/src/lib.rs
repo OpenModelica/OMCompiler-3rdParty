@@ -46,7 +46,22 @@ pub mod rules;
 use crate::rules::*;
 
 pub mod egraph;
-use crate::egraph::ModelicaExpr;
+use crate::egraph::{EGraph, ModelicaExpr, ConstantFold};
+
+/// Make a new empty E-Graph
+#[no_mangle]
+pub extern "C" fn egg_make_egraph() -> Box<EGraph> {
+    let now = Instant::now();
+    let egraph = EGraph::new(ConstantFold);
+    log::debug!("made egraph: {:.2?}", now.elapsed());
+    Box::new(egraph)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn egg_free_egraph(_egraph: Option<Box<EGraph>>) {
+    // dropped implicitly
+    log::debug!("dropped egraph");
+}
 
 /// Make the vector of rewrite rules.
 #[no_mangle]
@@ -66,28 +81,12 @@ pub unsafe extern "C" fn egg_free_rules(_rules: Option<Box<RuleSet>>) {
     log::debug!("dropped rules");
 }
 
-/// Make the runner.
-#[no_mangle]
-pub extern "C" fn egg_make_runner() -> Box<runner::Runner> {
-    let now = Instant::now();
-    let runner = runner::make_runner();
-    log::debug!("made runner: {:.2?}", now.elapsed());
-    Box::new(runner)
-}
-
-/// Free runner.
-#[no_mangle]
-pub unsafe extern "C" fn egg_free_runner(_runner: Option<Box<runner::Runner>>) {
-    // dropped implicitly
-    log::debug!("dropped runner");
-}
-
 /// Simplify expression string `expr_str`.
 ///
 /// Expect `expr_str` to be in prefix notation:
 /// `"x + 1"` -> `"(+ x 1)"`.
 #[no_mangle]
-pub extern "C" fn egg_simplify_expr(rules: Option<&RuleSet>, runner_ptr: Option<&mut runner::Runner>, expr_str: *const c_char) -> *mut c_char {
+pub extern "C" fn egg_simplify_expr(egraph_ptr: Option<&mut EGraph>, rules: Option<&RuleSet>, expr_str: *const c_char) -> *mut c_char {
     let mut times: Vec<(Duration, String)> = Vec::new();
 
     // parse the expression, the type annotation tells it which language to use
@@ -96,9 +95,7 @@ pub extern "C" fn egg_simplify_expr(rules: Option<&RuleSet>, runner_ptr: Option<
     let expr: RecExpr<ModelicaExpr> = expr.parse().unwrap();
     times.push((now.elapsed(), String::from("expr     ")));
 
-    // simplify the expression using a Runner, which creates an e-graph with
-    // the given expression and runs the given rules over it
-    let best = simplify_expr(&rules.unwrap(), runner_ptr.unwrap(), expr, &mut times);
+    let best = simplify_expr(egraph_ptr.unwrap(), &rules.unwrap(), expr, &mut times);
 
     times.sort_by(|(a,_), (b,_)| b.cmp(a));
     log::info!("{}", times.iter().fold(String::new(), |acc, (t,s)| acc + &format!("{}\t{:.2?}", s, t) + "\n"));
@@ -106,18 +103,18 @@ pub extern "C" fn egg_simplify_expr(rules: Option<&RuleSet>, runner_ptr: Option<
     CString::new(best.to_string()).expect("return string error").into_raw()
 }
 
-fn simplify_expr(rules: &RuleSet, runner_ptr: &mut runner::Runner, expr: RecExpr<ModelicaExpr>, times: &mut Vec<(Duration, String)>) -> RecExpr<ModelicaExpr> {
+fn simplify_expr(egraph_ptr: &mut EGraph, rules: &RuleSet, expr: RecExpr<ModelicaExpr>, times: &mut Vec<(Duration, String)>) -> RecExpr<ModelicaExpr> {
     let now = Instant::now();
     let cost = AstSize.cost_rec(&expr);
     times.push((now.elapsed(), String::from("cost     ")));
 
     // we need a variable for the unwrapped ptr so we can swap back at the end
-    let mut runner: runner::Runner = mem::replace(runner_ptr, *egg_make_runner());
+    let egraph = mem::replace(egraph_ptr, *egg_make_egraph());
 
-    // reset runner so it can run again
-    runner.stop_reason = None;
-
-    runner = runner.with_expr(&expr).run(rules);
+    // simplify the expression using a Runner,
+    // which adds the given expression to the e-graph
+    // and runs the given rules over it
+    let runner = runner::make_runner(egraph).with_expr(&expr).run(rules);
     times.push((now.elapsed(), String::from("runner   ")));
     match runner.stop_reason {
         Some(ref reason) => log::info!("stop reason: {:?}", reason),
@@ -129,9 +126,11 @@ fn simplify_expr(rules: &RuleSet, runner_ptr: &mut runner::Runner, expr: RecExpr
     let root = *runner.roots.last().unwrap();
     times.push((now.elapsed(), String::from("root     ")));
 
+    let mut egraph = runner.egraph;
+
     // use an Extractor to pick the best element of the root eclass
     let now = Instant::now();
-    let extractor = Extractor::new(&runner.egraph, AstSize);
+    let extractor = Extractor::new(&egraph, AstSize);
     times.push((now.elapsed(), String::from("extractor")));
 
     let now = Instant::now();
@@ -142,7 +141,7 @@ fn simplify_expr(rules: &RuleSet, runner_ptr: &mut runner::Runner, expr: RecExpr
     //log::info!("expr {}\n  -> {}", expr, best);
 
     // give runner back to metamodelica
-    mem::swap(runner_ptr, &mut runner);
+    mem::swap(egraph_ptr, &mut egraph);
 
     return best;
 }
@@ -156,11 +155,11 @@ mod tests {
     /// Provide expression in prefix notation.
     /// Panics if simplification doesn't match any of the expected expressions.
     fn assert_simplify(expression: &str, expected: Vec<&str>) {
+        let mut egraph = EGraph::new(ConstantFold);
         let rules = rules::make_rules();
-        let mut runner = runner::make_runner();
         let expr: RecExpr<ModelicaExpr> = expression.parse().unwrap();
         let mut times: Vec<(Duration, String)> = Vec::new();
-        let result = simplify_expr(&rules, &mut runner, expr, &mut times);
+        let result = simplify_expr(&mut egraph, &rules, expr, &mut times);
         let result = result.to_string();
         assert!(expected.iter().any(|ex| result == *ex), "Expected solution not found. Found {:?}, expected one of {:?}", expression, expected);
     }

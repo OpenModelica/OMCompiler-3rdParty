@@ -47,8 +47,8 @@ pub fn make_rules() -> RuleSet {
       rewrite!("add-neutral";   "(+ ?a 0)" => "?a"),
       rewrite!("add-inverse";   "(- ?a ?a)" => "0"),
 
-      rewrite!("sub-associate"; "(+ ?a (- ?b ?c))" => "(- (+ ?a ?b) ?c)"),
-      rewrite!("sub-associate2"; "(- (+ ?a ?b) ?c)" => "(+ ?a (- ?b ?c))"),
+      rewrite!("sub-associate-out"; "(+ ?a (- ?b ?c))" => "(- (+ ?a ?b) ?c)"),
+      rewrite!("sub-associate-in"; "(- (+ ?a ?b) ?c)" => "(+ ?a (- ?b ?c))"),
 
       rewrite!("mul-commute"; "(* ?a ?b)" => "(* ?b ?a)"),
       rewrite!("mul-associate"; "(* (* ?a ?b) ?c)" => "(* ?a (* ?b ?c))"),
