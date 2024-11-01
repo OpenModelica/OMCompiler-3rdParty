@@ -1461,6 +1461,8 @@ GC_API void GC_CALL GC_enable_incremental(void)
       GC_is_initialized = FALSE;
 #     if defined(THREADS) && (defined(MSWIN32) || defined(MSWINCE))
         DeleteCriticalSection(&GC_write_cs);
+#      endif
+#     if !defined(GC_PTHREADS)
         DeleteCriticalSection(&GC_allocate_ml);
 #     endif
     }
