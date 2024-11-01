@@ -48,7 +48,7 @@
  */
 
 #if defined(SUNDIALS_INT64_T)
-#define KLU_INDEXTYPE long int
+#define KLU_INDEXTYPE __int64
 #else
 #define KLU_INDEXTYPE int
 #endif
