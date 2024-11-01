@@ -48,10 +48,15 @@
  */
 
 #if defined(SUNDIALS_INT64_T)
+#if defined(__MINGW32__) || defined(__MSC_VER)
 #define KLU_INDEXTYPE __int64
+#else
+#define KLU_INDEXTYPE long int
+#endif
 #else
 #define KLU_INDEXTYPE int
 #endif
+
 
 /*
  * -----------------------------------------------------------------
