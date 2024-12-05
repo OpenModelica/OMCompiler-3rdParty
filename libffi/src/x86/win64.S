@@ -85,14 +85,13 @@ C(ffi_call_win64):
 
 /* Below, we're space constrained most of the time.  Thus we eschew the
    modern "mov, pop, ret" sequence (5 bytes) for "leave, ret" (2 bytes).  */
-.macro epilogue
-	leaveq
-	cfi_remember_state
-	cfi_def_cfa(%rsp, 8)
-	cfi_restore(%rbp)
-	ret
+#define epilogue		\
+	leaveq;			\
+	cfi_remember_state;	\
+	cfi_def_cfa(%rsp, 8);	\
+	cfi_restore(%rbp);	\
+	ret;			\
 	cfi_restore_state
-.endm
 
 	.align	8
 0:
@@ -234,6 +233,20 @@ C(ffi_closure_win64):
 
 	cfi_endproc
 	SEH(.seh_endproc)
+
+#if defined(FFI_EXEC_STATIC_TRAMP)
+	.align	8
+	.globl	C(ffi_closure_win64_alt)
+	FFI_HIDDEN(C(ffi_closure_win64_alt))
+
+	SEH(.seh_proc ffi_closure_win64_alt)
+C(ffi_closure_win64_alt):
+	_CET_ENDBR
+	movq	8(%rsp), %r10
+	addq	$16, %rsp
+	jmp	C(ffi_closure_win64)
+	SEH(.seh_endproc)
+#endif
 #endif /* __x86_64__ */
 
 #if defined __ELF__ && defined __linux__
