@@ -28,6 +28,11 @@
 *.out
 *.app
 
+# gc generated
+gc/config.guess~
+gc/config.sub~
+gc/install-sh~
+
 lis-1.4.12/**/Makefile
 config.log
 config.status
