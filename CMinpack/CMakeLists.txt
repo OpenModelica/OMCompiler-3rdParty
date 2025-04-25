@@ -12,7 +12,7 @@ string (TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
 list (APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-# OMC: Use whatever is set in CMAKE_INSTALL_LIBDIR instead of computing a directory
+# OM: Use whatever is set in CMAKE_INSTALL_LIBDIR instead of computing a directory
 # internally. For OMC this is set from outside.
 set(CMINPACK_LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
 
@@ -31,9 +31,9 @@ add_custom_target (uninstall "${CMAKE_COMMAND}" -P
 
 enable_testing ()
 
-# OMC: Rename BUILD_SHARED_LIBS -> CMINPACK_BUILD_SHARED_LIBS
+# OM: Rename BUILD_SHARED_LIBS -> CMINPACK_BUILD_SHARED_LIBS
 option (CMINPACK_BUILD_SHARED_LIBS "Build shared libraries instead of static." OFF)
-# OMC: Rename USE_BLAS -> CMINPACK_USE_BLAS
+# OM: Rename USE_BLAS -> CMINPACK_USE_BLAS
 option (CMINPACK_USE_BLAS "Compile cminpack using Fortran BLAS library if possible" OFF)
 set (CMINPACK_PRECISION "all" CACHE STRING "Precision variants to build ('s', 'd', 'ld', 'all')")
 
@@ -85,11 +85,15 @@ elseif (${CMINPACK_PRECISION} STREQUAL all)
 endif ()
 
 if (CMINPACK_BUILD_SHARED_LIBS)
+  # OM: Set CMINPACK_LIBRARY_BUILD_TYPE
+  set (CMINPACK_LIBRARY_BUILD_TYPE SHARED)
   message (STATUS "Building shared libraries.")
   if (NOT DEFINED CMAKE_DEBUG_POSTFIX)
     set (CMAKE_DEBUG_POSTFIX _d)
   endif ()
 else ()
+  # OM: Set CMINPACK_LIBRARY_BUILD_TYPE
+  set (CMINPACK_LIBRARY_BUILD_TYPE STATIC)
   message (STATUS "Building static libraries.")
   if (NOT DEFINED CMAKE_RELEASE_POSTFIX)
     set (CMAKE_RELEASE_POSTFIX _s)
@@ -112,7 +116,8 @@ if (CMINPACK_USE_BLAS)
 endif ()
 
 foreach (cminpack_lib ${cminpack_libs})
-  add_library (${cminpack_lib} ${cminpack_srcs})
+  # OM: Use CMINPACK_LIBRARY_BUILD_TYPE to select shared or static library.
+  add_library (${cminpack_lib} ${CMINPACK_LIBRARY_BUILD_TYPE} ${cminpack_srcs})
   
   if (OS_WIN AND CMINPACK_BUILD_SHARED_LIBS)
     add_custom_command(
@@ -197,4 +202,5 @@ endforeach ()
 
 install (EXPORT CMinpackConfig DESTINATION share/cminpack NAMESPACE cminpack::)
 
+# OM: Exclude examples
 #add_subdirectory (examples)
