@@ -9,11 +9,16 @@
 /* The default floating-point type is "double" for C/C++ and "float" for CUDA,
    but you can change this by defining one of the following symbols when
    compiling the library, and before including cminpack.h when using it:
+   __cminpack_long_double__ for long double (requires compiler support)
    __cminpack_double__ for double
    __cminpack_float__ for float
    __cminpack_half__ for half from the OpenEXR library (in this case, you must
                      compile cminpack with a C++ compiler)
 */
+#ifdef __cminpack_long_double__
+#define __cminpack_real__ long double
+#endif
+
 #ifdef __cminpack_double__
 #define __cminpack_real__ double
 #endif
@@ -54,8 +59,8 @@ building a DLL on windows.
 #define CMINPACK_DECLSPEC_IMPORT  _Import
 #endif
 
-#if !defined(CMINPACK_NO_DLL) && (defined(__WIN32__) || defined(WIN32) || defined (_WIN32))
-#if defined(cminpack_EXPORTS) || defined(CMINPACK_EXPORTS) || defined(CMINPACK_DLL_EXPORTS)
+#if !defined(CMINPACK_NO_DLL) && defined(_WIN32)
+  #if defined(CMINPACK_DLL_EXPORTS)
     #define  CMINPACK_EXPORT CMINPACK_DECLSPEC_EXPORT
   #else
     #define  CMINPACK_EXPORT CMINPACK_DECLSPEC_IMPORT
@@ -110,10 +115,18 @@ building a DLL on windows.
 
 #ifdef __cminpack_double__
 #define __cminpack_func__(func) func
+#define __cminpack_blas__(func) d ## func ## _
+#define __cminpack_lapack__(func) d ## func
+#endif
+
+#ifdef __cminpack_long_double__
+#define __cminpack_func__(func) ld ## func
 #endif
 
 #ifdef __cminpack_float__
 #define __cminpack_func__(func) s ## func
+#define __cminpack_blas__(func) s ## func ## _
+#define __cminpack_lapack__(func) s ## func
 #endif
 
 #ifdef __cminpack_half__
@@ -143,7 +156,7 @@ __cminpack_type_fcn_nn__(void *p, int n, const __cminpack_real__ *x, __cminpack_
 /*         return this matrix in fjac. do not alter fvec. */
 /* return a negative value to terminate hybrj1/hybrj */
 __cminpack_type_fcnder_nn__(void *p, int n, const __cminpack_real__ *x, __cminpack_real__ *fvec, __cminpack_real__ *fjac,
-                                  int ldfjac, int iflag, void *user_data );
+                                  int ldfjac, int iflag );
 
 /* for lmdif1 and lmdif */
 /*         calculate the functions at x and */
@@ -209,7 +222,7 @@ int CMINPACK_EXPORT __cminpack_func__(hybrd)( __cminpack_decl_fcn_nn__
 __cminpack_attr__
 int CMINPACK_EXPORT __cminpack_func__(hybrj1)( __cminpack_decl_fcnder_nn__ void *p, int n, __cminpack_real__ *x,
 	       __cminpack_real__ *fvec, __cminpack_real__ *fjac, int ldfjac, __cminpack_real__ tol,
-	       __cminpack_real__ *wa, int lwa, void *user_data );
+	       __cminpack_real__ *wa, int lwa );
           
 /* find a zero of a system of N nonlinear functions in N variables by
    a modification of the Powell hybrid method (user-supplied Jacobian,
@@ -220,7 +233,7 @@ int CMINPACK_EXPORT __cminpack_func__(hybrj)( __cminpack_decl_fcnder_nn__ void *
 	      int maxfev, __cminpack_real__ *diag, int mode, __cminpack_real__ factor,
 	      int nprint, int *nfev, int *njev, __cminpack_real__ *r,
 	      int lr, __cminpack_real__ *qtf, __cminpack_real__ *wa1, __cminpack_real__ *wa2,
-	      __cminpack_real__ *wa3, __cminpack_real__ *wa4, void *user_data );
+	      __cminpack_real__ *wa3, __cminpack_real__ *wa4 );
 
 /* minimize the sum of the squares of nonlinear functions in N
    variables by a modification of the Levenberg-Marquardt algorithm

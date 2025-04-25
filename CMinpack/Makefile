@@ -1,5 +1,5 @@
 PACKAGE=cminpack
-VERSION=1.3.4
+VERSION=1.3.11
 
 CC=gcc
 CFLAGS= -O3 -g -Wall -Wextra
@@ -9,9 +9,15 @@ CFLAGS= -O3 -g -Wall -Wextra
 ### configuration for the LAPACK/BLAS (double precision) version:
 ## make LIBSUFFIX= CFLAGS="-O3 -g -Wall -Wextra -D__cminpack_float__"
 #LIBSUFFIX=s
-#CFLAGS="-O3 -g -Wall -Wextra -DUSE_CBLAS -DUSE_LAPACK"
-CFLAGS_L=$(CFLAGS) -DUSE_CBLAS -DUSE_LAPACK
+#CFLAGS="-O3 -g -Wall -Wextra -DUSE_BLAS -DUSE_LAPACK"
+CFLAGS_L=$(CFLAGS) -DUSE_BLAS -DUSE_LAPACK
 LDADD_L=-framework Accelerate
+
+### configuration for the long double version:
+## make LIBSUFFIX=s CFLAGS="-O3 -g -Wall -Wextra -D__cminpack_long_double__"
+#LIBSUFFIX=s
+#CFLAGS="-O3 -g -Wall -Wextra -D__cminpack_long_double__"
+CFLAGS_LD=$(CFLAGS) -D__cminpack_long_double__
 
 ### configuration for the float (single precision) version:
 ## make LIBSUFFIX=s CFLAGS="-O3 -g -Wall -Wextra -D__cminpack_float__"
@@ -28,6 +34,10 @@ CFLAGS_F=$(CFLAGS) -D__cminpack_float__
 CFLAGS_H=$(CFLAGS) -I/opt/local/include -D__cminpack_half__
 LDADD_H=-L/opt/local/lib -lHalf
 CC_H=$(CXX)
+
+RANLIB=ranlib
+
+LIB=libcminpack$(LIBSUFFIX).a
 
 OBJS = \
 $(LIBSUFFIX)chkder.o  $(LIBSUFFIX)enorm.o   $(LIBSUFFIX)hybrd1.o  $(LIBSUFFIX)hybrj.o  \
@@ -49,7 +59,7 @@ DESTDIR=/usr/local
 #  Static library target
 #
 
-all: libcminpack$(LIBSUFFIX).a
+all: $(LIB)
 
 double:
 	$(MAKE) LIBSUFFIX=
@@ -57,66 +67,50 @@ double:
 lapack:
 	$(MAKE) LIBSUFFIX=l CFLAGS="$(CFLAGS_L)" LDADD="$(LDADD_L)"
 
+longdouble:
+	$(MAKE) LIBSUFFIX=ld CFLAGS="$(CFLAGS_LD)"
+
 float:
 	$(MAKE) LIBSUFFIX=s CFLAGS="$(CFLAGS_F)"
 
 half:
 	$(MAKE) LIBSUFFIX=h CFLAGS="$(CFLAGS_H)" LDADD="$(LDADD_H)" CC="$(CC_H)"
 
-fortran:
-	$(MAKE) -C fortran
+fortran cuda:
+	$(MAKE) -C $@
 
-cuda:
-	$(MAKE) -C cuda
+check checkdouble checklapack checklongdouble checkfloat checkhalf checkfail:
+	$(MAKE) -C examples $@
 
-check:
-	$(MAKE) -C examples check
-
-checkdouble:
-	$(MAKE) -C examples checkdouble
-
-checklapack:
-	$(MAKE) -C examples checklapack
-
-checkfloat:
-	$(MAKE) -C examples checkfloat
-
-checkhalf:
-	$(MAKE) -C examples checkhalf
-
-checkfail:
-	$(MAKE) -C examples checkfail
-
-
-libcminpack$(LIBSUFFIX).a:  $(OBJS)
-	ar r $@ $(OBJS); ranlib $@
+$(LIB):  $(OBJS)
+	$(AR) r $@ $(OBJS); $(RANLIB) $@
 
 $(LIBSUFFIX)%.o: %.c
 	${CC} ${CFLAGS} -c -o $@ $<
 
-install: libcminpack$(LIBSUFFIX).a
-	cp libcminpack$(LIBSUFFIX).a ${DESTDIR}/lib
-	chmod 644 ${DESTDIR}/lib/libcminpack$(LIBSUFFIX).a
-	ranlib -t ${DESTDIR}/lib/libcminpack$(LIBSUFFIX).a # might be unnecessary
+install: $(LIB)
+	cp $(LIB) ${DESTDIR}/lib
+	chmod 644 ${DESTDIR}/lib/$(LIB)
+	$(RANLIB) -t ${DESTDIR}/lib/$(LIB) # might be unnecessary
 	cp minpack.h ${DESTDIR}/include
 	chmod 644 ${DESTDIR}/include/minpack.h
 	cp cminpack.h ${DESTDIR}/include
 	chmod 644 ${DESTDIR}/include/cminpack.h
 
 clean:
-	rm -f $(OBJS) libcminpack$(LIBSUFFIX).a
-	make -C examples clean
-	make -C fortran clean
+	rm -f $(OBJS) $(LIB)
+	$(MAKE) -C examples clean
+	$(MAKE) -C fortran clean
 
 veryclean: clean
 	rm -f *.o libcminpack*.a *.gcno *.gcda *~ #*#
-	make -C examples veryclean
-	make -C examples veryclean LIBSUFFIX=s
-	make -C examples veryclean LIBSUFFIX=h
-	make -C examples veryclean LIBSUFFIX=l
-	make -C fortran veryclean
+	$(MAKE) -C examples veryclean
+	$(MAKE) -C examples veryclean LIBSUFFIX=s
+	$(MAKE) -C examples veryclean LIBSUFFIX=h
+	$(MAKE) -C examples veryclean LIBSUFFIX=l
+	$(MAKE) -C fortran veryclean
 
-.PHONY: dist all double lapack float half fortran cuda check checkhalf checkfail clean veryclean
+.PHONY: dist all double lapack longdouble float half fortran cuda check checkhalf checkfail clean veryclean
 
 # COPYFILE_DISABLE=true and COPY_EXTENDED_ATTRIBUTES_DISABLE=true are used to disable inclusion
 # of file attributes (._* files) in the tar file on MacOSX

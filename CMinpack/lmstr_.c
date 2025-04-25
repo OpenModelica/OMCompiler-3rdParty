@@ -5,13 +5,8 @@
 
 #include "minpack.h"
 #include <math.h>
-#define real __minpack_real__
+#include "minpackP.h"
 
-#define min(a,b) ((a) <= (b) ? (a) : (b))
-#define max(a,b) ((a) >= (b) ? (a) : (b))
-#define abs(x) ((x) >= 0 ? (x) : -(x))
-#define TRUE_ (1)
-#define FALSE_ (0)
 
 __minpack_attr__
 void __minpack_func__(lmstr)(__minpack_decl_fcnderstr_mn__ const int *m, const int *n, real *x, 
@@ -28,9 +23,9 @@ void __minpack_func__(lmstr)(__minpack_decl_fcnderstr_mn__ const int *m, const i
 
     /* Initialized data */
 
-#define p1 .1
-#define p5 .5
-#define p25 .25
+#define p1 ((real).1)
+#define p5 ((real).5)
+#define p25 ((real).25)
 #define p75 .75
 #define p0001 1e-4
 
@@ -500,7 +495,7 @@ L240:
     if (p1 * fnorm1 < fnorm) {
 /* Computing 2nd power */
 	d__1 = fnorm1 / fnorm;
-	actred = 1. - d__1 * d__1;
+	actred = 1 - d__1 * d__1;
     }
 
 /*           compute the scaled predicted reduction and */

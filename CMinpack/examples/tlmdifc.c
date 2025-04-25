@@ -19,6 +19,9 @@ int fcn(void *p, int m, int n, const real *x, real *fvec, int iflag);
 
 int main()
 {
+#if (defined(__MINGW32__) && !defined(_UCRT)) || (defined(_MSC_VER) && (_MSC_VER < 1900))
+  _set_output_format(_TWO_DIGIT_EXPONENT);
+#endif
   int i, j, maxfev, mode, nprint, info, nfev, ldfjac;
   int ipvt[3];
   real ftol, xtol, gtol, epsfcn, factor, fnorm;
@@ -34,6 +37,7 @@ int main()
   real covfac;
   real fjac1[15*3];
 #endif
+
   fcndata_t data;
   data.m = m;
   data.y = y;
@@ -104,7 +108,7 @@ int main()
     for (i=0; i<n; ++i) {
       for (j=0; j<n; ++j) {
         if (fjac[i*ldfjac+j] != fjac1[i*ldfjac+j]*covfac) {
-          printf("component (%d,%d) of covar and covar1 differ: %g != %g\n", i, j, (double)fjac[i*ldfjac+j], (double)fjac1[i*ldfjac+j]*covfac);
+          printf("component (%d,%d) of covar and covar1 differ: %g != %g\n", i, j, (double)fjac[i*ldfjac+j], (double)(fjac1[i*ldfjac+j]*covfac));
         }
       }
     }

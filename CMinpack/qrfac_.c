@@ -5,10 +5,8 @@
 
 #include "minpack.h"
 #include <math.h>
-#define real __minpack_real__
+#include "minpackP.h"
 
-#define min(a,b) ((a) <= (b) ? (a) : (b))
-#define max(a,b) ((a) >= (b) ? (a) : (b))
 
 __minpack_attr__
 void __minpack_func__(qrfac)(const int *m, const int *n, real *a, const int *
@@ -189,7 +187,7 @@ L40:
 	    a[i__ + j * a_dim1] /= ajnorm;
 /* L50: */
 	}
-	a[j + j * a_dim1] += 1.;
+	a[j + j * a_dim1] += 1;
 
 /*        apply the transformation to the remaining columns */
 /*        and update the norms. */
@@ -219,7 +217,7 @@ L40:
 /* Computing MAX */
 /* Computing 2nd power */
 	    d__3 = temp;
-	    d__1 = 0., d__2 = 1. - d__3 * d__3;
+	    d__1 = 0., d__2 = 1 - d__3 * d__3;
 	    rdiag[k] *= sqrt((max(d__1,d__2)));
 /* Computing 2nd power */
 	    d__1 = rdiag[k] / wa[k];

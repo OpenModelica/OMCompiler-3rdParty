@@ -31,6 +31,8 @@
 */
 #define double_dwarf (1.82691291192569e-153)
 #define double_giant (1.34078079299426e+153)
+#define long_double_dwarf (2.245696932951581572e-2465l)
+#define long_double_giant (1.090748135619415929e+2465l)
 #define float_dwarf (1.327871072777421e-18f)
 #define float_giant (1.844674297419792e+18f)
 #define half_dwarf (0.015625f)
@@ -41,15 +43,16 @@
 #define giant(type) _giant(type)
 #define _giant(type) type ## _giant
 
-#define rdwarf dwarf(real)
-#define rgiant giant(real)
+#define rdwarf dwarf(realm)
+#define rgiant giant(realm)
 
 __cminpack_attr__
 real __cminpack_func__(enorm)(int n, const real *x)
 {
-#ifdef USE_CBLAS
-    return cblas_dnrm2(n, x, 1);
-#else /* !USE_CBLAS */
+#ifdef USE_BLAS
+    const __cminpack_blasint__ c__1 = 1;
+    return __cminpack_blas__(nrm2)(&n, x, &c__1);
+#else /* !USE_BLAS */
     /* System generated locals */
     real ret_val, d1;
 
@@ -108,7 +111,7 @@ real __cminpack_func__(enorm)(int n, const real *x)
             if (xabs > x1max) {
                 /* Computing 2nd power */
                 d1 = x1max / xabs;
-                s1 = 1. + s1 * (d1 * d1);
+                s1 = 1 + s1 * (d1 * d1);
                 x1max = xabs;
             } else {
                 /* Computing 2nd power */
@@ -120,7 +123,7 @@ real __cminpack_func__(enorm)(int n, const real *x)
             if (xabs > x3max) {
                 /* Computing 2nd power */
                 d1 = x3max / xabs;
-                s3 = 1. + s3 * (d1 * d1);
+                s3 = 1 + s3 * (d1 * d1);
                 x3max = xabs;
             } else if (xabs != 0.) {
                 /* Computing 2nd power */
@@ -140,7 +143,7 @@ real __cminpack_func__(enorm)(int n, const real *x)
         ret_val = x1max * sqrt(s1 + (s2 / x1max) / x1max);
     } else if (s2 != 0.) {
         if (s2 >= x3max) {
-            ret_val = sqrt(s2 * (1. + (x3max / s2) * (x3max * s3)));
+            ret_val = sqrt(s2 * (1 + (x3max / s2) * (x3max * s3)));
         } else {
             ret_val = sqrt(x3max * ((s2 / x3max) + (x3max * s3)));
         }
@@ -150,6 +153,6 @@ real __cminpack_func__(enorm)(int n, const real *x)
     return ret_val;
 
 /*     last card of function enorm. */
-#endif /* !USE_CBLAS */
+#endif /* !USE_BLAS */
 } /* enorm_ */
 

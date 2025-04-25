@@ -5,12 +5,8 @@
 
 #include "minpack.h"
 #include <math.h>
-#define real __minpack_real__
+#include "minpackP.h"
 
-#define min(a,b) ((a) <= (b) ? (a) : (b))
-#define max(a,b) ((a) >= (b) ? (a) : (b))
-#define TRUE_ (1)
-#define FALSE_ (0)
 
 __minpack_attr__
 void __minpack_func__(hybrj)(__minpack_decl_fcnder_nn__  const int *n, real *x, real *
@@ -18,12 +14,12 @@ void __minpack_func__(hybrj)(__minpack_decl_fcnder_nn__  const int *n, real *x, 
 	maxfev, real *diag, const int *mode, const real *factor, const int *
 	nprint, int *info, int *nfev, int *njev, real *r__, 
 	const int *lr, real *qtf, real *wa1, real *wa2, 
-	real *wa3, real *wa4, void* user_data)
+	real *wa3, real *wa4)
 {
     /* Initialized data */
 
-#define p1 .1
-#define p5 .5
+#define p1 ((real).1)
+#define p5 ((real).5)
 #define p001 .001
 #define p0001 1e-4
     const int c_false = FALSE_;
@@ -240,7 +236,7 @@ L20:
 /*     and calculate its norm. */
 
     iflag = 1;
-    fcnder_nn(n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, &iflag, user_data);
+    fcnder_nn(n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, &iflag);
     *nfev = 1;
     if (iflag < 0) {
 	goto L300;
@@ -263,7 +259,7 @@ L30:
 /*        calculate the jacobian matrix. */
 
     iflag = 2;
-    fcnder_nn(n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, &iflag, user_data);
+    fcnder_nn(n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, &iflag);
     ++(*njev);
     if (iflag < 0) {
 	goto L300;
@@ -390,7 +386,7 @@ L180:
     }
     iflag = 0;
     if ((iter - 1) % *nprint == 0) {
-	fcnder_nn(n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, &iflag, user_data);
+	fcnder_nn(n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, &iflag);
     }
     if (iflag < 0) {
 	goto L300;
@@ -422,7 +418,7 @@ L190:
 /*           evaluate the function at x + p and calculate its norm. */
 
     iflag = 1;
-    fcnder_nn(n, &wa2[1], &wa4[1], &fjac[fjac_offset], ldfjac, &iflag, user_data);
+    fcnder_nn(n, &wa2[1], &wa4[1], &fjac[fjac_offset], ldfjac, &iflag);
     ++(*nfev);
     if (iflag < 0) {
 	goto L300;
@@ -435,7 +431,7 @@ L190:
     if (fnorm1 < fnorm) {
 /* Computing 2nd power */
 	d__1 = fnorm1 / fnorm;
-	actred = 1. - d__1 * d__1;
+	actred = 1 - d__1 * d__1;
     }
 
 /*           compute the scaled predicted reduction. */
@@ -458,7 +454,7 @@ L190:
     if (temp < fnorm) {
 /* Computing 2nd power */
 	d__1 = temp / fnorm;
-	prered = 1. - d__1 * d__1;
+	prered = 1 - d__1 * d__1;
     }
 
 /*           compute the ratio of the actual to the predicted */
@@ -486,7 +482,7 @@ L230:
 	d__1 = delta, d__2 = pnorm / p5;
 	delta = max(d__1,d__2);
     }
-    if (fabs(ratio - 1.) <= p1) {
+    if (fabs(ratio - 1) <= p1) {
 	delta = pnorm / p5;
     }
 L240:
@@ -602,7 +598,7 @@ L300:
     }
     iflag = 0;
     if (*nprint > 0) {
-	fcnder_nn(n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, &iflag, user_data);
+	fcnder_nn(n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, &iflag);
     }
     return;
 

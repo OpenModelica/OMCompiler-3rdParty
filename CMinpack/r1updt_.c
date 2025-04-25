@@ -5,11 +5,7 @@
 
 #include "minpack.h"
 #include <math.h>
-#define real __minpack_real__
-
-#define abs(x) ((x) >= 0 ? (x) : -(x))
-#define TRUE_ (1)
-#define FALSE_ (0)
+#include "minpackP.h"
 
 __minpack_attr__
 void __minpack_func__(r1updt)(const int *m, const int *n, real *s, const int *
@@ -17,8 +13,8 @@ void __minpack_func__(r1updt)(const int *m, const int *n, real *s, const int *
 {
     /* Initialized data */
 
-#define p5 .5
-#define p25 .25
+#define p5 ((real).5)
+#define p25 ((real).25)
     const int c__3 = 3;
 
     /* System generated locals */
@@ -155,7 +151,7 @@ void __minpack_func__(r1updt)(const int *m, const int *n, real *s, const int *
 	cos__ = sin__ * cotan;
 	tau = 1.;
 	if (abs(cos__) * giant > 1.) {
-	    tau = 1. / cos__;
+	    tau = 1 / cos__;
 	}
 	goto L30;
 L20:
@@ -223,7 +219,7 @@ L70:
 	cos__ = sin__ * cotan;
 	tau = 1.;
 	if (abs(cos__) * giant > 1.) {
-	    tau = 1. / cos__;
+	    tau = 1 / cos__;
 	}
 	goto L100;
 L90:

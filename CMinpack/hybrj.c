@@ -13,12 +13,12 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
 	maxfev, real *diag, int mode, real factor, int
 	nprint, int *nfev, int *njev, real *r, 
 	int lr, real *qtf, real *wa1, real *wa2, 
-	real *wa3, real *wa4, void* user_data)
+	real *wa3, real *wa4)
 {
     /* Initialized data */
 
-#define p1 .1
-#define p5 .5
+#define p1 ((real).1)
+#define p5 ((real).5)
 #define p001 .001
 #define p0001 1e-4
 
@@ -229,12 +229,12 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
 /*     evaluate the function at the starting point */
 /*     and calculate its norm. */
 
-    iflag = fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 1, user_data);
+    iflag = fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 1);
     *nfev = 1;
     if (iflag < 0) {
 	goto TERMINATE;
     }
-    fnorm = __cminpack_enorm__(n, &fvec[1]);
+    fnorm = __cminpack_func__(enorm)(n, &fvec[1]);
 
 /*     initialize iteration counter and monitors. */
 
@@ -251,7 +251,7 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
 
 /*        calculate the jacobian matrix. */
 
-        iflag = fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 2, user_data);
+        iflag = fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 2);
         ++(*njev);
         if (iflag < 0) {
             goto TERMINATE;
@@ -281,7 +281,7 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
             for (j = 1; j <= n; ++j) {
                 wa3[j] = diag[j] * x[j];
             }
-            xnorm = __cminpack_enorm__(n, &wa3[1]);
+            xnorm = __cminpack_func__(enorm)(n, &wa3[1]);
             delta = factor * xnorm;
             if (delta == 0.) {
                 delta = factor;
@@ -347,7 +347,7 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
             if (nprint > 0) {
                 iflag = 0;
                 if ((iter - 1) % nprint == 0) {
-                    iflag = fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 0, user_data);
+                    iflag = fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 0);
                 }
                 if (iflag < 0) {
                     goto TERMINATE;
@@ -365,7 +365,7 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
                 wa2[j] = x[j] + wa1[j];
                 wa3[j] = diag[j] * wa1[j];
             }
-            pnorm = __cminpack_enorm__(n, &wa3[1]);
+            pnorm = __cminpack_func__(enorm)(n, &wa3[1]);
 
 /*           on the first iteration, adjust the initial step bound. */
 
@@ -375,12 +375,12 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
 
 /*           evaluate the function at x + p and calculate its norm. */
 
-            iflag = fcnder_nn(p, n, &wa2[1], &wa4[1], &fjac[fjac_offset], ldfjac, 1, user_data);
+            iflag = fcnder_nn(p, n, &wa2[1], &wa4[1], &fjac[fjac_offset], ldfjac, 1);
             ++(*nfev);
             if (iflag < 0) {
                 goto TERMINATE;
             }
-            fnorm1 = __cminpack_enorm__(n, &wa4[1]);
+            fnorm1 = __cminpack_func__(enorm)(n, &wa4[1]);
 
 /*           compute the scaled actual reduction. */
 
@@ -388,7 +388,7 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
             if (fnorm1 < fnorm) {
                 /* Computing 2nd power */
                 d1 = fnorm1 / fnorm;
-                actred = 1. - d1 * d1;
+                actred = 1 - d1 * d1;
             }
 
 /*           compute the scaled predicted reduction. */
@@ -402,12 +402,12 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
                 }
                 wa3[i] = qtf[i] + sum;
             }
-            temp = __cminpack_enorm__(n, &wa3[1]);
+            temp = __cminpack_func__(enorm)(n, &wa3[1]);
             prered = 0.;
             if (temp < fnorm) {
                 /* Computing 2nd power */
                 d1 = temp / fnorm;
-                prered = 1. - d1 * d1;
+                prered = 1 - d1 * d1;
             }
 
 /*           compute the ratio of the actual to the predicted */
@@ -432,7 +432,7 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
                     d1 = pnorm / p5;
                     delta = max(delta,d1);
                 }
-                if (fabs(ratio - 1.) <= p1) {
+                if (fabs(ratio - 1) <= p1) {
                     delta = pnorm / p5;
                 }
             }
@@ -448,7 +448,7 @@ int __cminpack_func__(hybrj)(__cminpack_decl_fcnder_nn__ void *p, int n, real *x
                     wa2[j] = diag[j] * x[j];
                     fvec[j] = wa4[j];
                 }
-                xnorm = __cminpack_enorm__(n, &wa2[1]);
+                xnorm = __cminpack_func__(enorm)(n, &wa2[1]);
                 fnorm = fnorm1;
                 ++iter;
             }
@@ -539,7 +539,7 @@ TERMINATE:
 	info = iflag;
     }
     if (nprint > 0) {
-	fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 0, user_data);
+	fcnder_nn(p, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, 0);
     }
     return info;
 
