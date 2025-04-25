@@ -15,8 +15,8 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
 {
     /* Initialized data */
 
-#define p1 .1
-#define p001 .001
+#define p1 ((real).1)
+#define p001 ((real).001)
 
     /* System generated locals */
     real d1, d2;
@@ -143,8 +143,11 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
 	    wa1[j] = 0.;
 	}
     }
-# ifdef USE_CBLAS
-    cblas_dtrsv(CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, nsing, r, ldr, wa1, 1);
+# ifdef USE_BLAS
+    const __cminpack_blasint__ c__1 = 1;
+    const __cminpack_blasint__ ldr_plus_1 = ldr + 1;
+
+    __cminpack_blas__(trsv)("U", "N", "N", &nsing, r, &ldr, wa1, &c__1);
 # else
     if (nsing >= 1) {
         int k;
@@ -174,7 +177,7 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
     for (j = 0; j < n; ++j) {
 	wa2[j] = diag[j] * x[j];
     }
-    dxnorm = __cminpack_enorm__(n, wa2);
+    dxnorm = __cminpack_func__(enorm)(n, wa2);
     fp = dxnorm - delta;
     if (fp <= p1 * delta) {
 	goto TERMINATE;
@@ -190,8 +193,8 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
             l = ipvt[j]-1;
             wa1[j] = diag[l] * (wa2[l] / dxnorm);
         }
-#     ifdef USE_CBLAS
-        cblas_dtrsv(CblasColMajor, CblasUpper, CblasTrans, CblasNonUnit, n, r, ldr, wa1, 1);
+#     ifdef USE_BLAS
+        __cminpack_blas__(trsv)("U", "T", "N", &n, r, &ldr, wa1, &c__1);
 #     else
         for (j = 0; j < n; ++j) {
             real sum = 0.;
@@ -204,7 +207,7 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
             wa1[j] = (wa1[j] - sum) / r[j + j * ldr];
         }
 #     endif
-        temp = __cminpack_enorm__(n, wa1);
+        temp = __cminpack_func__(enorm)(n, wa1);
         parl = fp / delta / temp / temp;
     }
 
@@ -212,8 +215,9 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
 
     for (j = 0; j < n; ++j) {
         real sum;
-#     ifdef USE_CBLAS
-        sum = cblas_ddot(j+1, &r[j*ldr], 1, qtb, 1);
+#     ifdef USE_BLAS
+        const __cminpack_blasint__ j_plus_1 = j + 1;
+        sum = __cminpack_blas__(dot)(&j_plus_1, &r[j*ldr], &c__1, qtb, &c__1);
 #     else
         int i;
         sum = 0.;
@@ -224,7 +228,7 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
         l = ipvt[j]-1;
         wa1[j] = sum / diag[l];
     }
-    gnorm = __cminpack_enorm__(n, wa1);
+    gnorm = __cminpack_func__(enorm)(n, wa1);
     paru = gnorm / delta;
     if (paru == 0.) {
         paru = dwarf / min(delta,(real)p1) /* / p001 ??? */;
@@ -259,7 +263,7 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
         for (j = 0; j < n; ++j) {
             wa2[j] = diag[j] * x[j];
         }
-        dxnorm = __cminpack_enorm__(n, wa2);
+        dxnorm = __cminpack_func__(enorm)(n, wa2);
         temp = fp;
         fp = dxnorm - delta;
 
@@ -273,7 +277,7 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
 
 /*        compute the newton correction. */
 
-#     ifdef USE_CBLAS
+#     ifdef USE_BLAS
         for (j = 0; j < nsing; ++j) {
             l = ipvt[j]-1;
             wa1[j] = diag[l] * (wa2[l] / dxnorm);
@@ -282,12 +286,12 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
             wa1[j] = 0.;
         }
         /* exchange the diagonal of r with sdiag */
-        cblas_dswap(n, r, ldr+1, sdiag, 1);
+        __cminpack_blas__(swap)(&n, r, &ldr_plus_1, sdiag, &c__1);
         /* solve lower(r).x = wa1, result id put in wa1 */
-        cblas_dtrsv(CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit, nsing, r, ldr, wa1, 1);
+        __cminpack_blas__(trsv)("L", "N", "N", &nsing, r, &ldr, wa1, &c__1);
         /* exchange the diagonal of r with sdiag */
-        cblas_dswap( n, r, ldr+1, sdiag, 1);
-#     else /* !USE_CBLAS */
+        __cminpack_blas__(swap)(&n, r, &ldr_plus_1, sdiag, &c__1);
+#     else /* !USE_BLAS */
         for (j = 0; j < n; ++j) {
             l = ipvt[j]-1;
             wa1[j] = diag[l] * (wa2[l] / dxnorm);
@@ -302,8 +306,8 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
                 }
             }
         }
-#     endif /* !USE_CBLAS */
-        temp = __cminpack_enorm__(n, wa1);
+#     endif /* !USE_BLAS */
+        temp = __cminpack_func__(enorm)(n, wa1);
         parc = fp / delta / temp / temp;
 
 /*        depending on the sign of the function, update parl or paru. */

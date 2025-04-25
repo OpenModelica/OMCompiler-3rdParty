@@ -5,9 +5,8 @@
 
 #include "minpack.h"
 #include <math.h>
-#define real __minpack_real__
+#include "minpackP.h"
 
-#define abs(x) ((x) >= 0 ? (x) : -(x))
 
 __minpack_attr__
 void __minpack_func__(qrsolv)(const int *n, real *r__, const int *ldr, 
@@ -16,8 +15,8 @@ void __minpack_func__(qrsolv)(const int *n, real *r__, const int *ldr,
 {
     /* Initialized data */
 
-#define p5 .5
-#define p25 .25
+#define p5 ((real).5)
+#define p25 ((real).25)
 
     /* System generated locals */
     int r_dim1, r_offset, i__1, i__2, i__3;

@@ -6,6 +6,7 @@
 /* The default floating-point type is "double" for C/C++ and "float" for CUDA,
    but you can change this by defining one of the following symbols when
    compiling the library, and before including cminpack.h when using it:
+   __cminpack_long_double__ for long double (requires compiler support)
    __cminpack_double__ for double
    __cminpack_float__ for float
    __cminpack_half__ for half from the OpenEXR library (in this case, you must
@@ -13,6 +14,10 @@
 */
 #ifdef __cminpack_double__
 #define __minpack_func__(func) func ## _
+#endif
+
+#ifdef __cminpack_long_double__
+#define __minpack_func__(func) ld ## func ## _
 #endif
 
 #ifdef __cminpack_float__
@@ -101,7 +106,7 @@ __minpack_type_fcn_nn__(const int *n, const __minpack_real__ *x, __minpack_real_
 /*         return this matrix in fjac. do not alter fvec. */
 /* return a negative value to terminate hybrj1/hybrj */
 __minpack_type_fcnder_nn__(const int *n, const __minpack_real__ *x, __minpack_real__ *fvec, __minpack_real__ *fjac,
-                                  const int *ldfjac, int *iflag, void *user_data );
+                                  const int *ldfjac, int *iflag );
 
 /* for lmdif1 and lmdif */
 /*         calculate the functions at x and */
@@ -155,7 +160,7 @@ void MINPACK_EXPORT __minpack_func__(hybrd)( __minpack_decl_fcn_nn__
 __minpack_attr__
 void MINPACK_EXPORT __minpack_func__(hybrj1)( __minpack_decl_fcnder_nn__ const int *n, __minpack_real__ *x,
 	       __minpack_real__ *fvec, __minpack_real__ *fjec, const int *ldfjac, const __minpack_real__ *tol,
-	       int *info, __minpack_real__ *wa, const int *lwa, void *user_data );
+	       int *info, __minpack_real__ *wa, const int *lwa );
           
 /* find a zero of a system of N nonlinear functions in N variables by
    a modification of the Powell hybrid method (user-supplied Jacobian,
@@ -166,7 +171,7 @@ void MINPACK_EXPORT __minpack_func__(hybrj)( __minpack_decl_fcnder_nn__ const in
 	      const int *maxfev, __minpack_real__ *diag, const int *mode, const __minpack_real__ *factor,
 	      const int *nprint, int *info, int *nfev, int *njev, __minpack_real__ *r,
 	      const int *lr, __minpack_real__ *qtf, __minpack_real__ *wa1, __minpack_real__ *wa2,
-	      __minpack_real__ *wa3, __minpack_real__ *wa4, void *user_data );
+	      __minpack_real__ *wa3, __minpack_real__ *wa4 );
 
 /* minimize the sum of the squares of nonlinear functions in N
    variables by a modification of the Levenberg-Marquardt algorithm
@@ -259,6 +264,14 @@ void MINPACK_EXPORT __minpack_func__(fdjac1)(__minpack_decl_fcn_nn__
 	     int *iflag, const int *ml, const int *mu, const __minpack_real__ *epsfcn, __minpack_real__ *wa1,
 	     __minpack_real__ *wa2);
 
+/* compute inverse(JtJ) after a run of lmdif or lmder. The covariance
+   matrix is obtained by scaling the result by enorm(y)**2/(m-n). If
+   JtJ is singular and k = rank(J), the pseudo-inverse is computed,
+   and the result has to be scaled by enorm(y)**2/(m-k). */
+__minpack_attr__
+void MINPACK_EXPORT __minpack_func__(covar)(const int *n, __minpack_real__ *r, const int *ldr,
+           const int *ipvt, const __minpack_real__ *tol, __minpack_real__ *wa);
+
 /* internal MINPACK subroutines */
 __minpack_attr__
 void __minpack_func__(dogleg)(const int *n, const __minpack_real__ *r, const int *lr, 
@@ -290,9 +303,6 @@ __minpack_attr__
 void __minpack_func__(rwupdt)(const int *n, __minpack_real__ *r, const int *ldr, 
              const __minpack_real__ *w, __minpack_real__ *b, __minpack_real__ *alpha, __minpack_real__ *cos, 
              __minpack_real__ *sin);
-__minpack_attr__
-void __minpack_func__(covar)(const int *n, __minpack_real__ *r, const int *ldr, 
-           const int *ipvt, const __minpack_real__ *tol, __minpack_real__ *wa);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

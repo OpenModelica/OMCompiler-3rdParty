@@ -1,7 +1,7 @@
 option (BUILD_EXAMPLES "Build the examples and tests." ON)
 option (BUILD_EXAMPLES_FORTRAN "Build the FORTRAN examples and tests." OFF)
 
-if (BUILD_EXAMPLES)
+if (BUILD_EXAMPLES AND TARGET cminpack)
   # Make sure the compiler can find include files from our cminpack library.
   include_directories (${CMINPACK_SOURCE_DIR})
 
@@ -19,32 +19,26 @@ if (BUILD_EXAMPLES)
   macro(add_minpack_test testname reference)
     set(TEST_OUTPUT "${CMINPACK_BINARY_DIR}/examples/${testname}.out")
     set(TEST_REFERENCE "${CMINPACK_SOURCE_DIR}/examples/ref/${reference}.ref")
-    get_target_property(TEST_LOC ${testname} LOCATION)
-    add_test(${testname} "${CMAKE_COMMAND}"
-      -DTEST=${TEST_LOC}
+    add_test(NAME ${testname} COMMAND "${CMAKE_COMMAND}"
+      -DCMAKE_CROSSCOMPILING_EMULATOR=${CMAKE_CROSSCOMPILING_EMULATOR}
+      -DTEST=$<TARGET_FILE:${testname}>
       -DOUTPUT=${TEST_OUTPUT} 
       -DREFERENCE=${TEST_REFERENCE} 
       -DINTDIR=${CMAKE_CFG_INTDIR}
       -P "${CMINPACK_SOURCE_DIR}/examples/runtest.cmake")
-  endmacro(add_minpack_test)
+  endmacro()
 
   foreach (source ${CPGM})
     add_executable (${source}_ ${source}_.c)
     target_link_libraries (${source}_ cminpack)
-    if (OS_LINUX)
-      target_link_libraries (${source}_ m)
-    endif (OS_LINUX)
     add_minpack_test(${source}_ ${source}c)
     add_executable (${source}c ${source}c.c)
     target_link_libraries (${source}c cminpack)
-    if (OS_LINUX)
-      target_link_libraries (${source}c m)
-    endif (OS_LINUX)
     add_minpack_test(${source}c ${source}c)
-  endforeach(source)
-endif (BUILD_EXAMPLES)
+  endforeach()
+endif ()
 
-if (BUILD_EXAMPLES_FORTRAN)
+if (BUILD_EXAMPLES_FORTRAN AND TARGET cminpack)
   enable_language (Fortran OPTIONAL)
   if (CMAKE_Fortran_COMPILER_WORKS)
     foreach (FPGM_item ${FPGM})
@@ -53,19 +47,18 @@ if (BUILD_EXAMPLES_FORTRAN)
 
     # add the executable that will do the generation
     add_executable (genf77tests genf77tests.c)
-    get_target_property (GENF77TESTS_EXE genf77tests LOCATION)
     add_custom_command (
       OUTPUT ${FPGM_SRCS}
-      COMMAND ${GENF77TESTS_EXE} ${CMINPACK_SOURCE_DIR}/doc/minpack-documentation.txt
+      COMMAND $<TARGET_FILE:genf77tests> ${CMINPACK_SOURCE_DIR}/docs/minpack-documentation.txt
       WORKING_DIRECTORY ${CMINPACK_SOURCE_DIR}/examples
       DEPENDS genf77tests
-      MAIN_DEPENDENCY ${CMINPACK_SOURCE_DIR}/doc/minpack-documentation.txt
+      MAIN_DEPENDENCY ${CMINPACK_SOURCE_DIR}/docs/minpack-documentation.txt
       )
     foreach (source ${FPGM})
       add_executable (${source} ${source}.f)
       target_link_libraries (${source} cminpack)
       add_minpack_test(${source} ${source})
-    endforeach (source)
-  endif (CMAKE_Fortran_COMPILER_WORKS)
-endif (BUILD_EXAMPLES_FORTRAN)
+    endforeach ()
+  endif ()
+endif ()
 

@@ -19,12 +19,12 @@ void __cminpack_func__(qrfac)(int m, int n, real *a, int
     __CLPK_integer *jpvt;
 
     int i, j, k;
-    double t;
-    double* tau = wa;
+    real t;
+    real* tau = wa;
     const __CLPK_integer ltau = m > n ? n : m;
     __CLPK_integer lwork = -1;
     __CLPK_integer info = 0;
-    double* work;
+    real* work;
 
     if (pivot) {
         assert( lipvt >= n );
@@ -41,11 +41,11 @@ void __cminpack_func__(qrfac)(int m, int n, real *a, int
     /* query optimal size of work */
     lwork = -1;
     if (pivot) {
-        dgeqp3_(&m_,&n_,a,&lda_,jpvt,tau,tau,&lwork,&info);
+        __cminpack_lapack__(geqp3_)(&m_,&n_,a,&lda_,jpvt,tau,tau,&lwork,&info);
         lwork = (int)tau[0];
         assert( lwork >= 3*n+1  );
     } else {
-        dgeqrf_(&m_,&n_,a,&lda_,tau,tau,&lwork,&info);
+        __cminpack_lapack__(geqrf_)(&m_,&n_,a,&lda_,tau,tau,&lwork,&info);
         lwork = (int)tau[0];
         assert( lwork >= 1 && lwork >= n );
     }
@@ -53,26 +53,26 @@ void __cminpack_func__(qrfac)(int m, int n, real *a, int
     assert( info == 0 );
     
     /* alloc work area */
-    work = (double *)malloc(sizeof(double)*lwork);
+    work = (real *)malloc(sizeof(real)*lwork);
     assert(work != NULL);
     
     /* set acnorm first (from the doc of qrfac, acnorm may point to the same area as rdiag) */
     if (acnorm != rdiag) {
         for (j = 0; j < n; ++j) {
-            acnorm[j] = __cminpack_enorm__(m, &a[j * lda]);
+            acnorm[j] = __cminpack_func__(enorm)(m, &a[j * lda]);
         }
     }
     
     /* QR decomposition */
     if (pivot) {
-        dgeqp3_(&m_,&n_,a,&lda_,jpvt,tau,work,&lwork,&info);
+        __cminpack_lapack__(geqp3_)(&m_,&n_,a,&lda_,jpvt,tau,work,&lwork,&info);
     } else {
-        dgeqrf_(&m_,&n_,a,&lda_,tau,work,&lwork,&info);
+        __cminpack_lapack__(geqrf_)(&m_,&n_,a,&lda_,tau,work,&lwork,&info);
     }
     assert(info == 0);
     
     /* set rdiag, before the diagonal is replaced */
-    memset(rdiag, 0, sizeof(double)*n);
+    memset(rdiag, 0, sizeof(real)*n);
     for(i=0 ; i<n ; ++i) {
         rdiag[i] = a[i*lda+i];
     }
@@ -198,7 +198,7 @@ void __cminpack_func__(qrfac)(int m, int n, real *a, int
 /*     compute the initial column norms and initialize several arrays. */
 
     for (j = 0; j < n; ++j) {
-	acnorm[j] = __cminpack_enorm__(m, &a[j * lda + 0]);
+	acnorm[j] = __cminpack_func__(enorm)(m, &a[j * lda + 0]);
 	rdiag[j] = acnorm[j];
 	wa[j] = rdiag[j];
 	if (pivot) {
@@ -237,7 +237,7 @@ void __cminpack_func__(qrfac)(int m, int n, real *a, int
 /*        compute the householder transformation to reduce the */
 /*        j-th column of a to a multiple of the j-th unit vector. */
 
-	ajnorm = __cminpack_enorm__(m - (j+1) + 1, &a[j + j * lda]);
+	ajnorm = __cminpack_func__(enorm)(m - (j+1) + 1, &a[j + j * lda]);
 	if (ajnorm != 0.) {
             if (a[j + j * lda] < 0.) {
                 ajnorm = -ajnorm;
@@ -245,7 +245,7 @@ void __cminpack_func__(qrfac)(int m, int n, real *a, int
             for (i = j; i < m; ++i) {
                 a[i + j * lda] /= ajnorm;
             }
-            a[j + j * lda] += 1.;
+            a[j + j * lda] += 1;
 
 /*        apply the transformation to the remaining columns */
 /*        and update the norms. */
@@ -264,12 +264,12 @@ void __cminpack_func__(qrfac)(int m, int n, real *a, int
                     if (pivot && rdiag[k] != 0.) {
                         temp = a[j + k * lda] / rdiag[k];
                         /* Computing MAX */
-                        d1 = 1. - temp * temp;
+                        d1 = 1 - temp * temp;
                         rdiag[k] *= sqrt((max((real)0.,d1)));
                         /* Computing 2nd power */
                         d1 = rdiag[k] / wa[k];
                         if (p05 * (d1 * d1) <= epsmch) {
-                            rdiag[k] = __cminpack_enorm__(m - (j+1), &a[jp1 + k * lda]);
+                            rdiag[k] = __cminpack_func__(enorm)(m - (j+1), &a[jp1 + k * lda]);
                             wa[k] = rdiag[k];
                         }
                     }

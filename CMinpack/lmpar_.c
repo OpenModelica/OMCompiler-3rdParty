@@ -5,11 +5,7 @@
 
 #include "minpack.h"
 #include <math.h>
-#define real __minpack_real__
-
-#define min(a,b) ((a) <= (b) ? (a) : (b))
-#define max(a,b) ((a) >= (b) ? (a) : (b))
-#define abs(x) ((x) >= 0 ? (x) : -(x))
+#include "minpackP.h"
 
 
 __minpack_attr__
@@ -24,8 +20,8 @@ void __minpack_func__(lmpar)(const int *n, real *r__, const int *ldr,
 
     /* Initialized data */
 
-#define p1 .1
-#define p001 .001
+#define p1 ((real).1)
+#define p001 ((real).001)
 
     /* System generated locals */
     int r_dim1, r_offset, i__1, i__2;

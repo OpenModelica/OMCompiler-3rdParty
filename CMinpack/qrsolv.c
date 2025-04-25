@@ -9,8 +9,8 @@ void __cminpack_func__(qrsolv)(int n, real *r, int ldr,
 {
     /* Initialized data */
 
-#define p5 .5
-#define p25 .25
+#define p5 ((real).5)
+#define p25 ((real).25)
 
     /* Local variables */
     int i, j, k, l;
@@ -133,7 +133,7 @@ void __cminpack_func__(qrsolv)(int n, real *r, int ldr,
 
                 if (sdiag[k] != 0.) {
 #                 ifdef USE_LAPACK
-                    dlartg_( &r[k + k * ldr], &sdiag[k], &cos, &sin, &temp );
+                    __cminpack_lapack__(lartg_)( &r[k + k * ldr], &sdiag[k], &cos, &sin, &temp );
 #                 else /* !USE_LAPACK */
                     if (fabs(r[k + k * ldr]) < fabs(sdiag[k])) {
                         real cotan;
@@ -156,9 +156,12 @@ void __cminpack_func__(qrsolv)(int n, real *r, int ldr,
                     wa[k] = temp;
 
 /*           accumulate the tranformation in the row of s. */
-#                 ifdef USE_CBLAS
-                    cblas_drot( n-k, &r[k + k * ldr], 1, &sdiag[k], 1, cos, sin );
-#                 else /* !USE_CBLAS */
+#                 ifdef USE_BLAS
+                    const __cminpack_blasint__ n_minus_k = n - k;
+                    const __cminpack_blasint__ c__1 = 1;
+                    
+                    __cminpack_blas__(rot)(&n_minus_k, &r[k + k * ldr], &c__1, &sdiag[k], &c__1, &cos, &sin);
+#                 else /* !USE_BLAS */
                     r[k + k * ldr] = cos * r[k + k * ldr] + sin * sdiag[k];
                     if (n > k+1) {
                         for (i = k+1; i < n; ++i) {
@@ -167,7 +170,7 @@ void __cminpack_func__(qrsolv)(int n, real *r, int ldr,
                             r[i + k * ldr] = temp;
                         }
                     }
-#                 endif /* !USE_CBLAS */
+#                 endif /* !USE_BLAS */
                 }
             }
         }

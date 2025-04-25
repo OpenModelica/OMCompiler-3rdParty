@@ -5,7 +5,8 @@
 
 #include "minpack.h"
 #include <math.h>
-#define real __minpack_real__
+
+#include "minpackP.h"
 
 /*
   About the values for rdwarf and rgiant.
@@ -36,6 +37,8 @@
 */
 #define double_dwarf (1.82691291192569e-153)
 #define double_giant (1.34078079299426e+153)
+#define long_double_dwarf (2.245696932951581572e-2465l)
+#define long_double_giant (1.090748135619415929e+2465l)
 #define float_dwarf (1.327871072777421e-18f)
 #define float_giant (1.844674297419792e+18f)
 #define half_dwarf (0.015625f)
@@ -46,8 +49,8 @@
 #define giant(type) _giant(type)
 #define _giant(type) type ## _giant
 
-#define rdwarf dwarf(real)
-#define rgiant giant(real)
+#define rdwarf dwarf(realm)
+#define rgiant giant(realm)
 
 __minpack_attr__
 real __minpack_func__(enorm)(const int *n, const real *x)
@@ -125,7 +128,7 @@ real __minpack_func__(enorm)(const int *n, const real *x)
 	}
 /* Computing 2nd power */
 	d__1 = x1max / xabs;
-	s1 = 1. + s1 * (d__1 * d__1);
+	s1 = 1 + s1 * (d__1 * d__1);
 	x1max = xabs;
 	goto L20;
 L10:
@@ -143,7 +146,7 @@ L30:
 	}
 /* Computing 2nd power */
 	d__1 = x3max / xabs;
-	s3 = 1. + s3 * (d__1 * d__1);
+	s3 = 1 + s3 * (d__1 * d__1);
 	x3max = xabs;
 	goto L50;
 L40:
@@ -179,7 +182,7 @@ L100:
 	goto L110;
     }
     if (s2 >= x3max) {
-	ret_val = sqrt(s2 * (1. + x3max / s2 * (x3max * s3)));
+	ret_val = sqrt(s2 * (1 + x3max / s2 * (x3max * s3)));
     } else {
 	ret_val = sqrt(x3max * (s2 / x3max + x3max * s3));
     }
@@ -191,6 +194,5 @@ L130:
     return ret_val;
 
 /*     last card of function enorm. */
-
 } /* enorm_ */
 
