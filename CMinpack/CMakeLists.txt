@@ -53,9 +53,8 @@ set (cminpack_srcs
   dogleg_.c fdjac1_.c hybrd_.c  lmder1_.c lmdif_.c  lmstr_.c  qrsolv_.c rwupdt_.c
   dpmpar_.c fdjac2_.c hybrj1_.c lmder_.c  lmpar_.c  qform_.c  r1mpyq_.c covar_.c
   )
-# OM: Also install minpackP.h
 set (cminpack_hdrs
-  cminpack.h minpack.h minpackP.h)
+  cminpack.h minpack.h)
 
 include (CheckTypeSize)
 check_type_size ("double" SIZEOF_DOUBLE)
