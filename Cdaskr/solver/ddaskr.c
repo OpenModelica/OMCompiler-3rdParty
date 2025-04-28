@@ -150,9 +150,25 @@ static integer c__926 = 926;
     static integer lyic, lpwk, nstd;
     static real_number rcfn;
     static integer ncfl0, ncfn0;
-    extern /* Subroutine */ int _daskr_dnedd_();
+    extern /* Subroutine */ int _daskr_dnedd_(real_number *x, real_number *y, real_number *yprime,
+	integer *neq, Unknown_fp res, Unknown_fp jacd, real_number *pdum, real_number *h__,
+	real_number *wt, integer *jstart, integer *idid, real_number *rpar,
+	integer *ipar, real_number *phi, real_number *gamma, real_number *dumsvr,
+	 real_number *delta, real_number *e, real_number *wm, integer *iwm,
+	real_number *cj, real_number *cjold, real_number *cjlast, real_number *s,
+	real_number *uround, real_number *dume, real_number *dums, real_number *
+	dumr, real_number *epcon, integer *jcalc, integer *jfdum, integer *kp1,
+	 integer *nonneg, integer *ntype, integer *iernls);
     static integer mband;
-    extern /* Subroutine */ int _daskr_dnedk_();
+    extern /* Subroutine */ int _daskr_dnedk_(real_number *x, real_number *y, real_number *yprime,
+	integer *neq, Unknown_fp res, Unknown_fp jack, Unknown_fp psol, real_number *h__,
+	real_number *wt, integer *jstart, integer *idid, real_number *rpar,
+	integer *ipar, real_number *phi, real_number *gamma, real_number *savr,
+	real_number *delta, real_number *e, real_number *wm, integer *iwm,
+	real_number *cj, real_number *cjold, real_number *cjlast, real_number *s,
+	real_number *uround, real_number *epli, real_number *sqrtn, real_number *
+	rsqrtn, real_number *epcon, integer *jcalc, integer *jflg, integer *
+	kp1, integer *nonneg, integer *ntype, integer *iernls);
     static integer lenic, lenid, ncphi, lenpd, lsoff, msave, index, itemp, 
 	    leniw, nzflg;
     static real_number atoli;
@@ -181,7 +197,24 @@ static integer c__926 = 926;
 	    , real_number *, real_number *, real_number *, real_number *,
 	    real_number *, real_number *, integer *, integer *, integer *, Unknown_fp)
 	    ;
-    extern /* Subroutine */ int _daskr_ddasid_(), _daskr_ddasik_();
+    extern /* Subroutine */ int _daskr_ddasid_(real_number *x, real_number *y, real_number *yprime,
+	 integer *neq, integer *icopt, integer *id, Unknown_fp res, Unknown_fp jacd,
+	real_number *pdum, real_number *h__, real_number *tscale, real_number *wt,
+	 integer *jsdum, real_number *rpar, integer *ipar, real_number *dumsvr,
+	real_number *delta, real_number *r__, real_number *yic, real_number *ypic,
+	 real_number *dumpwk, real_number *wm, integer *iwm, real_number *cj,
+	real_number *uround, real_number *dume, real_number *dums, real_number *
+	dumr, real_number *epcon, real_number *ratemx, real_number *stptol,
+	integer *jfdum, integer *icnflg, integer *icnstr, integer *iernls);
+    extern /* Subroutine */ int _daskr_ddasik_(real_number *x, real_number *y, real_number *yprime,
+	 integer *neq, integer *icopt, integer *id, Unknown_fp res, Unknown_fp jack, Unknown_fp
+	psol, real_number *h__, real_number *tscale, real_number *wt, integer *
+	jskip, real_number *rpar, integer *ipar, real_number *savr, real_number *
+	delta, real_number *r__, real_number *yic, real_number *ypic, real_number
+	*pwk, real_number *wm, integer *iwm, real_number *cj, real_number *
+	uround, real_number *epli, real_number *sqrtn, real_number *rsqrtn,
+	real_number *epcon, real_number *ratemx, real_number *stptol, integer *
+	jflg, integer *icnflg, integer *icnstr, integer *iernls);
     extern /* Subroutine */ int _daskr_drchek_(integer *, Unknown_fp, integer *, integer *,
 	     real_number *, real_number *, real_number *, real_number *,
 	    real_number *, real_number *, integer *, real_number *, real_number *,
@@ -3286,7 +3319,8 @@ L760:
 L100:
     _daskr_ddatrp_(tn, &rwork[51], &y[1], &yp[1], neq, kold, &phi[phi_offset], &psi[
 	    1]);
-    (*rt)(neq, &rwork[51], &y[1], &yp[1], nrt, &r0[1], rpar, ipar);
+    ((int (*)(integer*, real_number *, real_number*, real_number*, integer *, real_number *, real_number *, integer *))*rt)
+      (neq, &rwork[51], &y[1], &yp[1], nrt, &r0[1], rpar, ipar);
     iwork[36] = 1;
     zroot = _FALSE_;
     i__1 = *nrt;
@@ -3310,7 +3344,8 @@ L100:
 /* L120: */
 	y[i__] += temp2 * phi[i__ + (phi_dim1 << 1)];
     }
-    (*rt)(neq, &rwork[51], &y[1], &yp[1], nrt, &r0[1], rpar, ipar);
+    ((int (*)(integer*, real_number *, real_number*, real_number*, integer *, real_number *, real_number *, integer *))*rt)
+      (neq, &rwork[51], &y[1], &yp[1], nrt, &r0[1], rpar, ipar);
     ++iwork[36];
     zroot = _FALSE_;
     i__1 = *nrt;
@@ -3337,7 +3372,8 @@ L200:
 /* If a root was found on the previous step, evaluate R0 = R(T0). ------- */
     _daskr_ddatrp_(tn, &rwork[51], &y[1], &yp[1], neq, kold, &phi[phi_offset], &psi[
 	    1]);
-    (*rt)(neq, &rwork[51], &y[1], &yp[1], nrt, &r0[1], rpar, ipar);
+    ((int (*)(integer*, real_number *, real_number*, real_number*, integer *, real_number *, real_number *, integer *))*rt)
+      (neq, &rwork[51], &y[1], &yp[1], nrt, &r0[1], rpar, ipar);
     ++iwork[36];
     zroot = _FALSE_;
     i__1 = *nrt;
@@ -3368,7 +3404,8 @@ L230:
     _daskr_ddatrp_(tn, &rwork[51], &y[1], &yp[1], neq, kold, &phi[phi_offset], &psi[
 	    1]);
 L240:
-    (*rt)(neq, &rwork[51], &y[1], &yp[1], nrt, &r0[1], rpar, ipar);
+    ((int (*)(integer*, real_number *, real_number*, real_number*, integer *, real_number *, real_number *, integer *))*rt)
+      (neq, &rwork[51], &y[1], &yp[1], nrt, &r0[1], rpar, ipar);
     ++iwork[36];
     i__1 = *nrt;
     for (i__ = 1; i__ <= i__1; ++i__) {
@@ -3408,7 +3445,8 @@ L300:
     }
 L330:
     _daskr_ddatrp_(tn, &t1, &y[1], &yp[1], neq, kold, &phi[phi_offset], &psi[1]);
-    (*rt)(neq, &t1, &y[1], &yp[1], nrt, &r1[1], rpar, ipar);
+    ((int (*)(integer*, real_number *, real_number*, real_number*, integer *, real_number *, real_number *, integer *))*rt)
+      (neq, &t1, &y[1], &yp[1], nrt, &r1[1], rpar, ipar);
     ++iwork[36];
 /* Call DROOTS to search for root in interval from T0 to T1. ------------ */
     jflag = 0;
@@ -3419,7 +3457,8 @@ L350:
 	goto L360;
     }
     _daskr_ddatrp_(tn, &x, &y[1], &yp[1], neq, kold, &phi[phi_offset], &psi[1]);
-    (*rt)(neq, &x, &y[1], &yp[1], nrt, &rx[1], rpar, ipar);
+    ((int (*)(integer*, real_number *, real_number*, real_number*, integer *, real_number *, real_number *, integer *))*rt)
+      (neq, &x, &y[1], &yp[1], nrt, &rx[1], rpar, ipar);
     ++iwork[36];
     goto L350;
 L360:
@@ -3926,7 +3965,17 @@ L420:
 /* ----------------------------------------------------------------------- */
 
 L200:
-    (*nlsic)(x, &y[1], &yprime[1], neq, icopt, &id[1], (Unknown_fp)res, (Unknown_fp)jac, (
+    ((int (*)(real_number *x, real_number *y, real_number *yprime,
+	 integer *neq, integer *icopt, integer *id, Unknown_fp res, Unknown_fp jack, Unknown_fp
+	psol, real_number *h__, real_number *tscale, real_number *wt, integer *
+	jskip, real_number *rpar, integer *ipar, real_number *savr, real_number *
+	delta, real_number *r__, real_number *yic, real_number *ypic, real_number
+	*pwk, real_number *wm, integer *iwm, real_number *cj, real_number *
+	uround, real_number *epli, real_number *sqrtn, real_number *rsqrtn,
+	real_number *epcon, real_number *ratemx, real_number *stptol, integer *
+	jflg, integer *icnflg, integer *icnstr, integer *iernls))
+    *nlsic)
+    (x, &y[1], &yprime[1], neq, icopt, &id[1], (Unknown_fp)res, (Unknown_fp)jac, (
 	    Unknown_fp)psol, h__, tscale, &wt[1], &jskip, &rpar[1], &ipar[1], &savr[
 	    1], &delta[1], &e[1], &yic[1], &ypic[1], &pwk[1], &wm[1], &iwm[1],
 	     &cj, uround, epli, sqrtn, rsqrtn, epconi, &ratemx, stptol, jflg, 
@@ -4313,7 +4362,17 @@ L280:
 /*     derivative. */
 /* ----------------------------------------------------------------------- */
 
-    (*nls)(x, &y[1], &yprime[1], neq, (Unknown_fp)res, (Unknown_fp)jac, (Unknown_fp)psol, h__, &
+    ((int (*)(real_number *x, real_number *y, real_number *yprime,
+	integer *neq, Unknown_fp res, Unknown_fp jack, Unknown_fp psol, real_number *h__,
+	real_number *wt, integer *jstart, integer *idid, real_number *rpar,
+	integer *ipar, real_number *phi, real_number *gamma, real_number *savr,
+	real_number *delta, real_number *e, real_number *wm, integer *iwm,
+	real_number *cj, real_number *cjold, real_number *cjlast, real_number *s,
+	real_number *uround, real_number *epli, real_number *sqrtn, real_number *
+	rsqrtn, real_number *epcon, integer *jcalc, integer *jflg, integer *
+	kp1, integer *nonneg, integer *ntype, integer *iernls))(*nls))
+
+   (x, &y[1], &yprime[1], neq, (Unknown_fp)res, (Unknown_fp)jac, (Unknown_fp)psol, h__, &
 	    wt[1], jstart, idid, &rpar[1], &ipar[1], &phi[phi_offset], &gamma[
 	    1], &savr[1], &delta[1], &e[1], &wm[1], &iwm[1], cj, cjold, &
 	    cjlast, s, uround, epli, sqrtn, rsqrtn, epcon, jcalc, jflg, &kp1, 
@@ -5307,7 +5366,8 @@ L30:
 
     ires = 0;
     ++iwm[12];
-    (*res)(x, &y[1], &yprime[1], cj, &delta[1], &ires, &rpar[1], &ipar[1]);
+    ((int (*)(real_number *, real_number *, real_number*, real_number*, real_number *, integer *, real_number *, integer *))*res)
+      (x, &y[1], &yprime[1], cj, &delta[1], &ires, &rpar[1], &ipar[1]);
     if (ires < 0) {
 	goto L370;
     }
@@ -5348,7 +5408,8 @@ L300:
 /*        Call RES, reevaluate the Jacobian, and try again. */
 
 	++iwm[12];
-	(*res)(x, &y[1], &yprime[1], cj, &delta[1], &ires, &rpar[1], &ipar[1])
+	((int (*)(real_number *, real_number *, real_number*, real_number*, real_number *, integer *, real_number *, integer *))*res)
+    (x, &y[1], &yprime[1], cj, &delta[1], &ires, &rpar[1], &ipar[1])
 		;
 	if (ires < 0) {
 	    goto L370;
@@ -5878,7 +5939,8 @@ L200:
 
     /* Function Body */
     *ires = 0;
-    (*res)(t, &y[1], &yprime[1], cj, &r__[1], ires, &rpar[1], &ipar[1]);
+    ((int (*)(real_number *, real_number *, real_number*, real_number*, real_number *, integer *, real_number *, integer *))*res)
+      (t, &y[1], &yprime[1], cj, &r__[1], ires, &rpar[1], &ipar[1]);
     if (*ires < 0) {
 	return 0;
     }
@@ -6148,7 +6210,8 @@ L300:
 /*     Call RES to initialize DELTA. */
 
     ++iwm[12];
-    (*res)(x, &y[1], &yprime[1], cj, &delta[1], &ires, &rpar[1], &ipar[1]);
+    ((int (*)(real_number *, real_number *, real_number*, real_number*, real_number *, integer *, real_number *, integer *))*res)
+      (x, &y[1], &yprime[1], cj, &delta[1], &ires, &rpar[1], &ipar[1]);
     if (ires < 0) {
 	goto L380;
     }
@@ -6446,7 +6509,8 @@ L300:
 /*     and go back to do another iteration. */
 
     ++iwm[12];
-    (*res)(x, &y[1], &yprime[1], cj, &delta[1], ires, &rpar[1], &ipar[1]);
+    ((int (*)(real_number *, real_number *, real_number*, real_number*, real_number *, integer *, real_number *, integer *))*res)
+      (x, &y[1], &yprime[1], cj, &delta[1], ires, &rpar[1], &ipar[1]);
     if (*ires < 0) {
 	goto L380;
     }
@@ -6592,7 +6656,8 @@ L100:
 /* L110: */
 	wm[i__] = 0.;
     }
-    (*jacd)(x, &y[1], &yprime[1], &delta[1], &wm[1], cj, h__, &ewt[1], &rpar[1], &ipar[1]);
+    ((int (*)(real_number *, real_number *, real_number*, real_number*, real_number *, real_number*, real_number *, real_number *, real_number *, integer *))*jacd)
+      (x, &y[1], &yprime[1], &delta[1], &wm[1], cj, h__, &ewt[1], &rpar[1], &ipar[1]);
     goto L230;
 
 
@@ -6618,7 +6683,8 @@ L200:
 	y[i__] += del;
 	yprime[i__] += *cj * del;
 	++iwm[12];
-	(*res)(x, &y[1], &yprime[1], cj, &e[1], ires, &rpar[1], &ipar[1]);
+	((int (*)(real_number *, real_number *, real_number*, real_number*, real_number *, integer *, real_number *, integer *))*res)
+    (x, &y[1], &yprime[1], cj, &e[1], ires, &rpar[1], &ipar[1]);
 	if (*ires < 0) {
 	    return 0;
 	}
@@ -6657,7 +6723,8 @@ L400:
 /* L410: */
 	wm[i__] = 0.;
     }
-    (*jacd)(x, &y[1], &yprime[1], &delta[1], &wm[1], cj, h__, &ewt[1], &rpar[1], &ipar[1]);
+    ((int (*)(real_number *, real_number *, real_number*, real_number*, real_number *, real_number*, real_number *, real_number *, real_number *, integer *))*jacd)
+      (x, &y[1], &yprime[1], &delta[1], &wm[1], cj, h__, &ewt[1], &rpar[1], &ipar[1]);
     meband = (iwm[1] << 1) + iwm[2] + 1;
     goto L550;
 
@@ -6696,7 +6763,8 @@ L500:
 	    yprime[n] += *cj * del;
 	}
 	++iwm[12];
-	(*res)(x, &y[1], &yprime[1], cj, &e[1], ires, &rpar[1], &ipar[1]);
+	((int (*)(real_number *, real_number *, real_number*, real_number*, real_number *, integer *, real_number *, integer *))*res)
+    (x, &y[1], &yprime[1], cj, &e[1], ires, &rpar[1], &ipar[1]);
 	if (*ires < 0) {
 	    return 0;
 	}
@@ -6964,7 +7032,8 @@ L400:
 
     ires = 0;
     ++iwm[12];
-    (*res)(x, &y[1], &yprime[1], cj, &delta[1], &ires, &rpar[1], &ipar[1]);
+    ((int (*)(real_number *, real_number *, real_number*, real_number*, real_number *, integer *, real_number *, integer *))*res)
+      (x, &y[1], &yprime[1], cj, &delta[1], &ires, &rpar[1], &ipar[1]);
     if (ires < 0) {
 	goto L370;
     }
@@ -6984,7 +7053,8 @@ L300:
     if (*jflg == 1 && *jskip == 0) {
 	++nj;
 	++iwm[13];
-	(*jack)((Unknown_fp)res, &ires, neq, x, &y[1], &yprime[1], &wt[1], &delta[1]
+	((int (*)(Unknown_fp, integer *, integer *, real_number*, real_number *, real_number *, real_number *, real_number *,real_number *, real_number *, real_number*, real_number*, integer *, integer *, real_number *, integer *))*jack)
+    ((Unknown_fp)res, &ires, neq, x, &y[1], &yprime[1], &wt[1], &delta[1]
 		, &r__[1], h__, cj, &wm[lwp], &iwm[liwp], &ierpj, &rpar[1], &
 		ipar[1]);
 	if (ires < 0 || ierpj != 0) {
@@ -7621,7 +7691,8 @@ L200:
     /* Function Body */
     if (*irin == 0) {
 	*ires = 0;
-	(*res)(t, &y[1], &yprime[1], cj, &savr[1], ires, &rpar[1], &ipar[1]);
+	((int (*)(real_number *, real_number *, real_number*, real_number*, real_number *, integer *, real_number *, integer *))*res)
+    (t, &y[1], &yprime[1], cj, &savr[1], ires, &rpar[1], &ipar[1]);
 	if (*ires < 0) {
 	    return 0;
 	}
@@ -7633,7 +7704,8 @@ L200:
     _daskr_dcopy_(neq, &savr[1], &c__1, &r__[1], &c__1);
     _daskr_dscal_(neq, rsqrtn, &wt[1], &c__1);
     *ier = 0;
-    (*psol)(neq, t, &y[1], &yprime[1], &savr[1], &pwk[1], cj, &wt[1], &wp[1], 
+    ((int (*)(integer*, real_number *, real_number *, real_number*, real_number *, real_number *, real_number *, real_number *, real_number *, integer *, real_number*, real_number*, integer *, real_number *, integer *))*psol)
+      (neq, t, &y[1], &yprime[1], &savr[1], &pwk[1], cj, &wt[1], &wp[1], 
 	    &iwp[1], &r__[1], eplin, ier, &rpar[1], &ipar[1]);
     _daskr_dscal_(neq, sqrtn, &wt[1], &c__1);
     if (*ier != 0) {
@@ -7903,7 +7975,8 @@ L300:
 /*     Call RES to initialize DELTA. */
 
     ++iwm[12];
-    (*res)(x, &y[1], &yprime[1], cj, &delta[1], &ires, &rpar[1], &ipar[1]);
+    ((int (*)(real_number *, real_number *, real_number*, real_number*, real_number *, integer *, real_number *, integer *))*res)
+      (x, &y[1], &yprime[1], cj, &delta[1], &ires, &rpar[1], &ipar[1]);
     if (ires < 0) {
 	goto L380;
     }
@@ -7915,7 +7988,8 @@ L300:
     if (*jcalc == -1) {
 	++iwm[13];
 	*jcalc = 0;
-	(*jack)((Unknown_fp)res, &ires, neq, x, &y[1], &yprime[1], &wt[1], &delta[1]
+	((int (*)(Unknown_fp, integer *, integer *, real_number*, real_number *, real_number *, real_number *, real_number *,real_number *, real_number *, real_number*, real_number*, integer *, integer *, real_number *, integer *))*jack)
+  ((Unknown_fp)res, &ires, neq, x, &y[1], &yprime[1], &wt[1], &delta[1]
 		, &e[1], h__, cj, &wm[lwp], &iwm[liwp], &ierpj, &rpar[1], &
 		ipar[1]);
 	*cjold = *cj;
@@ -8224,7 +8298,8 @@ L300:
 /*     Evaluate the residual, and go back to do another iteration. */
 
     ++iwm[12];
-    (*res)(x, &y[1], &yprime[1], cj, &delta[1], ires, &rpar[1], &ipar[1]);
+    ((int (*)(real_number *, real_number *, real_number*, real_number*, real_number *, integer *, real_number *, integer *))*res)
+      (x, &y[1], &yprime[1], cj, &delta[1], ires, &rpar[1], &ipar[1]);
     if (*ires < 0) {
 	goto L380;
     }
@@ -8629,7 +8704,8 @@ L115:
 /* Form V(*,1), the scaled preconditioned right hand side. */
 /* ----------------------------------------------------------------------- */
     if (*nrsts == 0) {
-	(*psol)(neq, tn, &y[1], &yprime[1], &savr[1], &wk[1], cj, &wght[1], &
+   ((int (*)(integer*, real_number *, real_number *, real_number*, real_number *, real_number *, real_number *, real_number *, real_number *, integer *, real_number*, real_number*, integer *, real_number *, integer *))*psol)
+    (neq, tn, &y[1], &yprime[1], &savr[1], &wk[1], cj, &wght[1], &
 		wp[1], &iwp[1], &r__[1], eplin, &ier, &rpar[1], &ipar[1]);
 	*npsl = 1;
 	if (ier != 0) {
@@ -8981,7 +9057,8 @@ L300:
 /* Call RES with incremented Y, YPRIME arguments */
 /* stored in Z, YPTEM.  VTEM is overwritten with new residual. */
 /* ----------------------------------------------------------------------- */
-    (*res)(tn, &z__[1], &yptem[1], cj, &vtem[1], ires, &rpar[1], &ipar[1]);
+    ((int (*)(real_number *, real_number *, real_number*, real_number*, real_number *, integer *, real_number *, integer *))*res)
+      (tn, &z__[1], &yptem[1], cj, &vtem[1], ires, &rpar[1], &ipar[1]);
     ++(*nre);
     if (*ires < 0) {
 	return 0;
@@ -8998,7 +9075,8 @@ L300:
 /* ----------------------------------------------------------------------- */
 /* Apply inverse of left preconditioner to Z. */
 /* ----------------------------------------------------------------------- */
-    (*psol)(neq, tn, &y[1], &yprime[1], &savr[1], &yptem[1], cj, &wght[1], &
+    ((int (*)(integer*, real_number *, real_number *, real_number*, real_number *, real_number *, real_number *, real_number *, real_number *, integer *, real_number*, real_number*, integer *, real_number *, integer *))*psol)
+      (neq, tn, &y[1], &yprime[1], &savr[1], &yptem[1], cj, &wght[1], &
 	    wp[1], &iwp[1], &z__[1], eplin, ier, &rpar[1], &ipar[1]);
     ++(*npsl);
     if (*ier != 0) {
