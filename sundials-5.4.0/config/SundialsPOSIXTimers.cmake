@@ -43,7 +43,7 @@ if(SUNDIALS_POSIX_TIMERS)
 
     # Create a CMakeLists.txt file which will generate the test executable
     file(WRITE ${POSIXTest_DIR}/CMakeLists.txt
-      "CMAKE_MINIMUM_REQUIRED(VERSION 2.8)\n"
+      "CMAKE_MINIMUM_REQUIRED(VERSION 3.14)\n"
       "PROJECT(posixtimerstest C)\n"
       "SET(CMAKE_VERBOSE_MAKEFILE ON)\n"
       "SET(CMAKE_C_COMPILER \"${CMAKE_C_COMPILER}\")\n"

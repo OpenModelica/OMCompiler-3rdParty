@@ -1,5 +1,5 @@
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 2.8...3.14)
 project (MUMPS C CXX Fortran)
 
 ## The OM Ipopt uses libseq always. I think libseq contains stubs for MPI.
