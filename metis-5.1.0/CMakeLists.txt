@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8...3.14)
 project(METIS)
 
 add_definitions(${MSYS_INCLUDE_LOC})

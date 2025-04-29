@@ -190,7 +190,7 @@ macro (MULTIPASS_SOURCE_RUNS includes libraries source runs language)
   file(WRITE ${testdir}/src.${extension} "${source}")
   # Create a CMakeLists.txt file for the test code
   file(WRITE ${testdir}/CMakeLists.txt
-    "cmake_minimum_required(VERSION 3.5)\n"
+    "cmake_minimum_required(VERSION 3.14)\n"
     "project(ctest ${language})\n"
     "set(CMAKE_VERBOSE_MAKEFILE ON)\n"
     "set(CMAKE_${language}_COMPILER \"${REQUIRED_COMPILER}\")\n"

@@ -312,8 +312,8 @@ macro(add_coin_dylp_test_list Prefix Suffix FileList Label Timeout)
   endforeach ()
 endmacro()
 
-find_package(PythonInterp)
-if(PYTHONINTERP_FOUND)
+find_package(Python2 COMPONENTS Interpreter)
+if(Python2_Interpreter_FOUND)
 
   # create_log_analysis: build a log analysis test for one solver. The string FAILED is returned is case of failure and PASSED in case of success
   # - Name: a value corresponding to the name of the test

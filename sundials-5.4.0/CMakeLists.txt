@@ -21,7 +21,7 @@
 
 # Require CMake 3.5 by default, but certain options will force us
 # to require CMake 3.10
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8...3.14)
 
 # OpenModelica runtime system source files expect all sundials headers under a folder
 # 'sundials'. e.g. <include_dir>/sundials/cvode or <include_dir>/sundials/sundials

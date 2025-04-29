@@ -21,7 +21,7 @@
 #  this will generate gc.sln
 #
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.1...3.14)
 
 option(enable_cplusplus "C++ support" OFF)
 if (enable_cplusplus)

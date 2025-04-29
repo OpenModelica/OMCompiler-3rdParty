@@ -1,5 +1,5 @@
 project(umfpack_package)
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 2.8.9...3.14)
 include(ExternalProject)
 include(Helpers.cmake)
 set(SS_VERSION "5.8.1")

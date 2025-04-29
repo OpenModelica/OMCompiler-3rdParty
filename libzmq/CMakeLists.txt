@@ -1,6 +1,6 @@
 # CMake build script for ZeroMQ
 
-cmake_minimum_required (VERSION 2.8.12)
+cmake_minimum_required (VERSION 2.8.12...3.14)
 project (ZeroMQ)
 
 list (INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -353,11 +353,11 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 endif ()
 
 set (CMAKE_PYTHON_VERSION 2.7 2.6 2.5 2.4)
-find_package (PythonInterp)
+find_package (Python2 COMPONENTS Interpreter)
 find_package (AsciiDoc)
 
 cmake_dependent_option (WITH_DOC "Build Reference Guide documentation (requires DocBook)" ON
-                       "PYTHONINTERP_FOUND;ASCIIDOC_FOUND" OFF)
+                       "Python2_Interpreter_FOUND;ASCIIDOC_FOUND" OFF)
 
 if (MSVC)
   if (WITH_OPENPGM)
