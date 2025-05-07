@@ -11,10 +11,7 @@
 #    You should have received a copy of the FMILIB_License.txt file
 #    along with this program. If not, contact Modelon AB <http://www.modelon.com>.
 
-# NOTE: CMake 2.8.6 is required since this is the version used in development.
-# The script is KNOWN NOT TO WORK WITH 2.8.3 and below (ExternalProject
-# interface changes). CMake 2.8.4 and 2.8.5 are not tested.
-cmake_minimum_required (VERSION 2.8.6 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.14)
 
 # Prohibit in-source build
 IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
@@ -264,7 +261,7 @@ if(FMILIB_BUILD_STATIC_LIB)
 	include(mergestaticlibs)
 	if(WIN32)
 		merge_static_libs(fmilib ${FMILIB_SUBLIBS})
-        target_link_libraries(fmilib Shlwapi)
+        target_link_libraries(fmilib PUBLIC Shlwapi)
         foreach(CONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
 			set(flags "")
 			string(TOUPPER "STATIC_LIBRARY_FLAGS_${CONFIG_TYPE}" PROPNAME)
@@ -275,7 +272,7 @@ if(FMILIB_BUILD_STATIC_LIB)
 		merge_static_libs(fmilib ${FMILIB_SUBLIBS} )
 	endif(WIN32)
 	if(UNIX)
-		target_link_libraries(fmilib dl)
+		target_link_libraries(fmilib PUBLIC dl)
 	endif(UNIX)
 	set(FMILIB_TARGETS ${FMILIB_TARGETS} fmilib)
 endif()
