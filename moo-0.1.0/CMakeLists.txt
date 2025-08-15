@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 include(ExternalProject)
 set(THIRD_PARTY_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/third-party-install/usr/local)
-set(OPENMODELICA_ROOT /home/linus/Projects/OpenModelica) # FIXME
 
 find_package(PkgConfig)
 
