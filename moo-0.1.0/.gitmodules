@@ -1,0 +1,9 @@
+[submodule "third-party/ipopt"]
+	path = third-party/ipopt
+	url = https://github.com/coin-or/Ipopt.git
+[submodule "third-party/mumps"]
+	path = third-party/mumps
+	url = https://github.com/coin-or-tools/ThirdParty-Mumps.git
+[submodule "third-party/fmt"]
+	path = third-party/fmt
+	url = https://github.com/fmtlib/fmt.git

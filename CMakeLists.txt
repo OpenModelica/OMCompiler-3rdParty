@@ -20,7 +20,6 @@ add_library(omc::3rd::cdaskr ALIAS cdaskr)
 omc_add_subdirectory(CMinpack)
 add_library(omc::3rd::cminpack ALIAS cminpack)
 
-
 # # cppzmq
 # omc_add_subdirectory(cppzmq)
 
@@ -289,3 +288,9 @@ target_include_directories(ipopt INTERFACE ${IpOpt_BINARY_DIR}/include/)
 add_library(omc::3rd::ipopt ALIAS ipopt)
 
 endif() # OM_OMC_ENABLE_IPOPT
+
+
+if(OM_OMC_ENABLE_MOO)
+omc_add_subdirectory(moo-0.1.0)
+add_library(omc::3rd::moo ALIAS moo)
+endif() # OM_OMC_ENABLE_MOO

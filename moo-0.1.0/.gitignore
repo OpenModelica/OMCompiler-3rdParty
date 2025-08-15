@@ -1,0 +1,39 @@
+# IDE/Editor settings
+.vscode/
+.idea/
+
+# Build directories
+build*/
+out/
+bin/
+docs/
+dist/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Object files
+*.o
+*.obj
+
+# Compiled binary files
+*.bin
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+
+# XML, JSON, and intermediate/generated data
+*.xml
+*.json
+*.intdata
+*.realdata
+*.mat
+*.csv
+*.log
+
+# Core dumps / crash logs
+core
+*.core
