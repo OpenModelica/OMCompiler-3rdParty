@@ -1,0 +1,10 @@
+# RADAU / RADAU5
+
+This directory contains the RADAU + RADAU5 stiff ODE solver.
+
+- Authors: Ernst Hairer and Gerhard Wanner
+- Copyright: © 2004, UNIGE
+- License: see LICENSE
+- Source: https://www.unige.ch/~hairer/software.html
+
+Redistributed as permitted under the original license.
