@@ -100,6 +100,7 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/ipopt)
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/third-party/ipopt/config.status
   COMMAND ADD_CFLAGS=-Ofast ADD_CXXFLAGS=-Ofast ${CMAKE_CURRENT_SOURCE_DIR}/third-party/ipopt/configure
+      --srcdir=${CMAKE_CURRENT_SOURCE_DIR}/third-party/ipopt
       --without-pardiso
       --with-mumps
       --with-mumps-lflags='-L${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps/.libs'
