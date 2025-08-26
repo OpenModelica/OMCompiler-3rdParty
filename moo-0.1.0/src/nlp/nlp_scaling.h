@@ -22,6 +22,7 @@
 #define MOO_NLP_SCALING_H
 
 #include <base/fixed_vector.h>
+#include <base/export.h>
 
 namespace NLP {
 
@@ -31,7 +32,7 @@ namespace NLP {
  * set this in the NLP instance and these overloaded scaling routines
  * will be automatically called in the solver.
  */
-class Scaling {
+class MOO_EXPORT Scaling {
 public:
     virtual ~Scaling() = default;
 
@@ -53,7 +54,7 @@ public:
  * @brief trivial no-op scaling: simply copies or does nothing.
  * this is useful when the NLP is already well-scaled.
  */
-class NoScaling : public Scaling {
+class MOO_EXPORT NoScaling : public Scaling {
 public:
     void inplace_scale_x(f64* x_unscaled) override {}
 
@@ -92,7 +93,7 @@ public:
     }
 };
 
-class NominalScaling : public Scaling {
+class MOO_EXPORT NominalScaling : public Scaling {
 public:
     FixedVector<f64> x_scaling; // 1 / nominal
     FixedVector<f64> g_scaling; // 1 / nominal

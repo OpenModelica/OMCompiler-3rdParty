@@ -35,7 +35,6 @@ void square(int size, f64* x) {
     }
 }
 
-
 /** 
  * @brief Perform dot product: ret = transpose(x) * y
  *

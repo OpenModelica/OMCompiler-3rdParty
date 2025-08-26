@@ -29,7 +29,8 @@
 #include <type_traits>
 #include <iostream>
 
-#include "util.h"
+#include <base/util.h>
+#include <base/export.h>
 
 // helpers to distinguish iterator and range base field initialization
 template<typename It, typename = void>
@@ -52,7 +53,7 @@ inline constexpr bool is_iterator_v = is_iterator<It>::value;
  * @tparam T The type of elements stored in the vector.
  */
 template<typename T>
-class FixedVector {
+class MOO_EXPORT FixedVector {
 public:
 
     constexpr FixedVector() noexcept : _size{0}, _data{} {}
@@ -219,12 +220,12 @@ private:
 };
 
 template<typename T, std::size_t Dim>
-struct FixedFieldRecursive {
+struct MOO_EXPORT FixedFieldRecursive {
     using type = FixedVector<typename FixedFieldRecursive<T, Dim - 1>::type>;
 };
 
 template<typename T>
-struct FixedFieldRecursive<T, 1> {
+struct MOO_EXPORT FixedFieldRecursive<T, 1> {
     using type = FixedVector<T>;
 };
 

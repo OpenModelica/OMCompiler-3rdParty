@@ -21,12 +21,13 @@
 #ifndef MOO_GDOP_ORCHESTRATOR_H
 #define MOO_GDOP_ORCHESTRATOR_H
 
+#include <base/export.h>
 #include <nlp/nlp_solver.h>
 #include "gdop.h"
 
 namespace GDOP {
 
-class Orchestrator {
+class MOO_EXPORT Orchestrator {
 public:
     GDOP& gdop;
     std::unique_ptr<Strategies> strategies;
@@ -44,7 +45,7 @@ public:
     virtual void optimize() = 0;
 };
 
-class MeshRefinementOrchestrator : public Orchestrator {
+class MOO_EXPORT MeshRefinementOrchestrator : public Orchestrator {
 public:
     MeshRefinementOrchestrator(GDOP& gdop,
                                std::unique_ptr<Strategies> strategies,

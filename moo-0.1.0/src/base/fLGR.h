@@ -21,10 +21,11 @@
 #ifndef MOO_FLGR_H
 #define MOO_FLGR_H
 
-#include "util.h"
-#include "linalg.h"
+#include <base/util.h>
+#include <base/linalg.h>
+#include <base/export.h>
 
-class fLGR {
+class MOO_EXPORT fLGR {
 public:
     fLGR() = delete;
 

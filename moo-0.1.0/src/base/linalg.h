@@ -21,7 +21,8 @@
 #ifndef MOO_LINALG_H
 #define MOO_LINALG_H
 
-#include "util.h"
+#include <base/util.h>
+#include <base/export.h>
 
 // This Linear Algebra namespace implements several useful subroutines, which are (in part) straight BLAS wrappers, but also custom implementations
 
@@ -42,13 +43,13 @@ inline std::string norm_to_string(Norm norm) {
     }
 }
 
-f64 dot(int size, const f64* x, const f64* y);
-void matrix_vector(int size, char format, const f64* matrix, const f64* vector, f64* out);
-void square(int size, f64* x);
-void dsaxpy(int size, const f64* x, const f64* y, const f64* D, f64 beta, bool invD, f64* out);
-void dgmv(int size, const f64* x, const f64* y, const f64* D, f64 beta, bool invD, f64* out);
-void diagmat_vec(const f64* D, bool invD, const f64* x, int size, f64* out);
-void diagmat_vec_inplace(const f64* D, bool invD, f64* x, int size);
+MOO_EXPORT f64 dot(int size, const f64* x, const f64* y);
+MOO_EXPORT void matrix_vector(int size, char format, const f64* matrix, const f64* vector, f64* out);
+MOO_EXPORT void square(int size, f64* x);
+MOO_EXPORT void dsaxpy(int size, const f64* x, const f64* y, const f64* D, f64 beta, bool invD, f64* out);
+MOO_EXPORT void dgmv(int size, const f64* x, const f64* y, const f64* D, f64 beta, bool invD, f64* out);
+MOO_EXPORT void diagmat_vec(const f64* D, bool invD, const f64* x, int size, f64* out);
+MOO_EXPORT void diagmat_vec_inplace(const f64* D, bool invD, f64* x, int size);
 
 } // namespace Linalg
 

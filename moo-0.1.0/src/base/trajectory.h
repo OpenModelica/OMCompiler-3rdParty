@@ -21,17 +21,18 @@
 #ifndef MOO_TRAJECTORY_H
 #define MOO_TRAJECTORY_H
 
-#include "log.h"
-#include "mesh.h"
-#include "linalg.h"
-#include "fLGR.h"
+#include <base/log.h>
+#include <base/mesh.h>
+#include <base/linalg.h>
+#include <base/fLGR.h>
+#include <base/export.h>
 
 enum class InterpolationMethod {
     LINEAR = 0,
     POLYNOMIAL = 1
 };
 
-struct ControlTrajectory {
+struct MOO_EXPORT ControlTrajectory {
     std::vector<f64> t;                       // time grid, monotonic increasing
     std::vector<std::vector<f64>> u;          // u[k][j] = value of k-th control at t[j]
     InterpolationMethod interpolation = InterpolationMethod::LINEAR;
@@ -49,7 +50,7 @@ struct ControlTrajectory {
 };
 
 // given some data trajectories t, x(t), u(t), p
-struct Trajectory {
+struct MOO_EXPORT Trajectory {
     // x[i][j] = x_i(t_j) = x_i at time t[j] 
     std::vector<f64> t;
     std::vector<std::vector<f64>> x;
@@ -98,7 +99,7 @@ struct Trajectory {
 };
 
 // dual trajectory for [costates_f, costates_g]_{ij} constraints, costates_r constraints
-struct CostateTrajectory {
+struct MOO_EXPORT CostateTrajectory {
     // costates_f[i][j] = costates_f_i(t_j) = costates_f_i at time t[j] 
     std::vector<f64> t;
     std::vector<std::vector<f64>> costates_f;
@@ -141,7 +142,7 @@ struct CostateTrajectory {
     int to_csv(const std::string& filename) const;
 };
 
-struct PrimalDualTrajectory {
+struct MOO_EXPORT PrimalDualTrajectory {
     std::unique_ptr<Trajectory> primals;          // unscaled primal variables: x
     std::unique_ptr<CostateTrajectory> costates;  // transformed constraint multipliers / costates: \hat{lambda_g}
     std::unique_ptr<Trajectory> lower_costates;   // transformed (lb) variable bound multipliers / costates: \hat{x_L}
