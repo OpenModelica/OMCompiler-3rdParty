@@ -136,7 +136,7 @@ void NLPSolverSettings::print() const {
                 switch (v) {
                     case HessianOption::Exact: return "Exact";
                     case HessianOption::LBFGS: return "LBFGS";
-                    case HessianOption::CONST: return "CONST";
+                    case HessianOption::Const: return "Const";
                     default: return "<invalid HessianOption>";
                 }
             } else if constexpr (std::is_same_v<T, LinearSolverOption>) {

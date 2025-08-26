@@ -16,7 +16,7 @@ if(WITH_RADAU)
         dc_lapack.f
     )
 
-    target_compile_options(radau PUBLIC "-fPIC" "-O3")
+    target_compile_options(radau PUBLIC -O3 -fPIC ${MOO_NATIVE_BUILD_FLAGS})
 
     target_link_libraries(radau PUBLIC ${LAPACK_LIBRARIES} gfortran)
 

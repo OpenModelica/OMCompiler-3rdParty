@@ -40,7 +40,7 @@ namespace GDOP {
 
 using NLP::Scaling;
 
-class GDOP : public NLP::NLP {
+class MOO_EXPORT GDOP : public NLP::NLP {
 public:
     GDOP(Problem& problem)
         : NLP::NLP(),

@@ -21,6 +21,8 @@
 #ifndef MOO_RADAU_WRAPPER_H
 #define MOO_RADAU_WRAPPER_H
 
+#include <base/export.h>
+
 enum Integrator {
     RADAU_ADAPTIVE = 0,
     RADAU_5 = 5,
@@ -59,7 +61,7 @@ extern "C" {
     );
 }
 
-void radau_solver(
+MOO_EXPORT void radau_solver(
     int* n,           // N: size of the problem
     void (*fcn)(int*, double*, double*, double*), // FCN: function for dy/dx
     double* x,        // X: initial value of the independent variable

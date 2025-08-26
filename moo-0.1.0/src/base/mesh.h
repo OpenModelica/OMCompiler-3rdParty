@@ -26,11 +26,12 @@
 #include <iomanip>
 #include <numeric>
 
-#include "fixed_vector.h"
-#include "fLGR.h"
-#include "util.h"
+#include <base/fixed_vector.h>
+#include <base/export.h>
+#include <base/fLGR.h>
+#include <base/util.h>
 
-struct MeshUpdate {
+struct MOO_EXPORT MeshUpdate {
     FixedVector<f64> new_grid;
     FixedVector<int> new_nodes_per_interval;
 
@@ -40,7 +41,7 @@ struct MeshUpdate {
       new_nodes_per_interval(std::move(new_nodes_per_interval)) {}
 };
 
-class Mesh : public std::enable_shared_from_this<Mesh> {
+class MOO_EXPORT Mesh : public std::enable_shared_from_this<Mesh> {
 public:
     int intervals;                // number of intervals
     int node_count;               // number of collocation nodes (sum over all intervals)

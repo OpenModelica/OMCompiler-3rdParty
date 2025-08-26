@@ -21,6 +21,8 @@
 #ifndef MOO_RADAU_WRAPPER_TEST_H
 #define MOO_RADAU_WRAPPER_TEST_H
 
-int radau_wrapper_test();
+#include <base/export.h>
+
+MOO_EXPORT int radau_wrapper_test();
 
 #endif // MOO_RADAU_WRAPPER_TEST_H

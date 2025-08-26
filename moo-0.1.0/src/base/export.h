@@ -18,32 +18,21 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef MOO_IPOPT_SOLVER_H
-#define MOO_IPOPT_SOLVER_H
+#ifndef MOO_EXPORT_H
+#define MOO_EXPORT_H
 
-#include <memory>
+#if defined(_WIN32) || defined(__CYGWIN__)
+  #if defined(MOO_DLL_EXPORT)
+    #define MOO_EXPORT __declspec(dllexport)
+  #else
+    #define MOO_EXPORT __declspec(dllimport)
+  #endif
+#else
+  #if __GNUC__ >= 4
+    #define MOO_EXPORT __attribute__((visibility("default")))
+  #else
+    #define MOO_EXPORT
+  #endif
+#endif
 
-#include <nlp/nlp_solver.h>
-#include <base/export.h>
-
-namespace IpoptSolver {
-
-struct IpoptSolverData;
-
-class MOO_EXPORT IpoptSolver : public NLP::NLPSolver {
-public:
-    IpoptSolver(NLP::NLP& nlp, NLP::NLPSolverSettings& solver_settings);
-
-    virtual ~IpoptSolver();
-
-    void optimize() override;
-    void init_application();
-    void set_settings();
-
-private:
-   IpoptSolverData* ipdata;
-};
-
-} // namespace IpoptSolver
-
-#endif // MOO_IPOPT_SOLVER_H
+#endif // MOO_EXPORT_H

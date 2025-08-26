@@ -25,8 +25,9 @@
 #include <memory>
 #include <stdexcept>
 
-#include "fixed_vector.h"
-#include "nlp_structs.h"
+#include <base/fixed_vector.h>
+#include <base/nlp_structs.h>
+#include <base/export.h>
 
 
 enum class BlockType {
@@ -35,7 +36,7 @@ enum class BlockType {
     RowOffset,
 };
 
-struct BlockSparsity {
+struct MOO_EXPORT BlockSparsity {
     // use traditional C-like struct with type, because the polymorphism is very simple
     BlockType type;
 
@@ -128,7 +129,7 @@ struct BlockSparsity {
             case BlockType::Exact:
                 return block[row][col];
             default:
-               throw std::runtime_error("Unknown BlockType in BlockSparsity::access().");
+               throw std::runtime_error("BlockType in BlockSparsity::access().");
         }
     }
 
@@ -149,7 +150,7 @@ struct BlockSparsity {
     }
 };
 
-struct OrderedIndexSet {
+struct MOO_EXPORT OrderedIndexSet {
     struct Compare {
         bool operator()(const std::pair<int, int>& a, const std::pair<int, int>& b) const {
             if (a.first != b.first) {

@@ -27,13 +27,14 @@
 #include <optional>
 
 #include <base/util.h>
+#include <base/export.h>
 
 namespace NLP {
 
 enum class HessianOption {
     Exact,
     LBFGS,
-    CONST
+    Const
 };
 
 enum class LinearSolverOption {
@@ -63,7 +64,7 @@ enum class Option {
 
 using OptionValue = std::variant<std::string, f64, int, bool, HessianOption, LinearSolverOption, NLPSolverOption>;
 
-class NLPSolverSettings {
+class MOO_EXPORT NLPSolverSettings {
 public:
     NLPSolverSettings(int argc, char** argv);
 

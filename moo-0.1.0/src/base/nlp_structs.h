@@ -24,10 +24,11 @@
 #include <vector>
 #include <algorithm>
 
-#include "fixed_vector.h"
-#include "util.h"
+#include <base/fixed_vector.h>
+#include <base/util.h>
+#include <base/export.h>
 
-struct Bounds {
+struct MOO_EXPORT Bounds {
     f64 lb = MINUS_INFINITY;
     f64 ub = PLUS_INFINITY;
 
@@ -35,12 +36,12 @@ struct Bounds {
     bool has_upper() const { return ub != PLUS_INFINITY; }
 };
 
-struct JacobianSparsity {
+struct MOO_EXPORT JacobianSparsity {
     int col;
     int buf_index;
 };
 
-struct HessianSparsity {
+struct MOO_EXPORT HessianSparsity {
     int row;
     int col;
     int buf_index;
@@ -49,7 +50,7 @@ struct HessianSparsity {
 // LFG generic global function f(x, u, p, t)
 // used for Lagrange term (L), dynamic (F), path (G) in GDOP
 
-struct JacobianLFG {
+struct MOO_EXPORT JacobianLFG {
     // coordinate format jacobian for LFG functions
     std::vector<JacobianSparsity> dx;
     std::vector<JacobianSparsity> du;
@@ -60,7 +61,7 @@ struct JacobianLFG {
     }
 };
 
-struct HessianLFG {
+struct MOO_EXPORT HessianLFG {
     // coordinate format hessian for LFG functions
     std::vector<HessianSparsity> dx_dx;
     std::vector<HessianSparsity> du_dx;
@@ -73,7 +74,7 @@ struct HessianLFG {
     }
 };
 
-struct ParameterHessian {
+struct MOO_EXPORT ParameterHessian {
     std::vector<HessianSparsity> dp_dp;
 
     inline int nnz() const {
@@ -81,7 +82,7 @@ struct ParameterHessian {
     }
 };
 
-struct FunctionLFG {
+struct MOO_EXPORT FunctionLFG {
     int buf_index;
     JacobianLFG jac;
 };
@@ -89,7 +90,7 @@ struct FunctionLFG {
 // MR semi-generic boundary function r(x(t0), x(tf), u(tf), p)
 // used for Mayer term (M), boundary constraints (R) in GDOP
 
-struct JacobianMR {
+struct MOO_EXPORT JacobianMR {
     // coordinate format jacobian for MR functions
     std::vector<JacobianSparsity> dx0;
     std::vector<JacobianSparsity> dxf;
@@ -101,7 +102,7 @@ struct JacobianMR {
     }
 };
 
-struct HessianMR {
+struct MOO_EXPORT HessianMR {
     // coordinate format hessian for MR functions
     std::vector<HessianSparsity> dx0_dx0;
     std::vector<HessianSparsity> dxf_dx0;
@@ -120,13 +121,13 @@ struct HessianMR {
     }
 };
 
-struct FunctionMR {
+struct MOO_EXPORT FunctionMR {
     int buf_index;
     JacobianMR jac;
 };
 
 // simple state to check which actions are / have to be performed for an iteration
-struct NLPState {
+struct MOO_EXPORT NLPState {
     bool eval_f         = false;
     bool eval_g         = false;
     bool grad_f         = false;
@@ -151,7 +152,7 @@ struct NLPState {
 };
 
 /* exchange form from CSC <-> COO and back */
-struct CscToCoo {
+struct MOO_EXPORT CscToCoo {
 public:
     FixedVector<int> row;
     FixedVector<int> col;

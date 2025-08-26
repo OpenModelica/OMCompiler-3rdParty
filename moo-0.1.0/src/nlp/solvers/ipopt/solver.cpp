@@ -169,7 +169,7 @@ void IpoptSolver::set_settings() {
         case NLP::HessianOption::LBFGS:
             ipdata->app->Options()->SetStringValue("hessian_approximation", "limited-memory");
             break;
-        case NLP::HessianOption::CONST:
+        case NLP::HessianOption::Const:
             ipdata->app->Options()->SetStringValue("hessian_constant", "yes");
             break;
         case NLP::HessianOption::Exact:

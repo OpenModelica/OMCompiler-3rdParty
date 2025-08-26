@@ -26,12 +26,13 @@
 #include <vector>
 
 #include <base/nlp_structs.h>
+#include <base/export.h>
 #include <base/mesh.h>
 #include <base/log.h>
 
 namespace GDOP {
 
-struct ProblemConstants {
+struct MOO_EXPORT ProblemConstants {
     // sizes
     const int x_size;
     const int u_size;
@@ -97,7 +98,7 @@ struct ProblemConstants {
 
 // ================== Continuous, Dynamic - Lfg Layout ==================
 
-struct FullSweepLayout {
+struct MOO_EXPORT FullSweepLayout {
     std::unique_ptr<FunctionLFG> L; // Lagrange Term
     FixedVector<FunctionLFG> f;     // Dynamic Equations
     FixedVector<FunctionLFG> g;     // Path Constraints
@@ -125,12 +126,12 @@ struct FullSweepLayout {
 // return reference to FunctionLFG
 // OpenModelica orders its B Jacobian as [f1, ..., f_n, ?maybe L?, g_1, ..., g_m]
 // so we return the specific function based on which row is given from the OpenModelica format
-FunctionLFG& access_fLg_from_row(FullSweepLayout& layout_lfg, int row);
+MOO_EXPORT FunctionLFG& access_fLg_from_row(FullSweepLayout& layout_lfg, int row);
 
 // default case where ordering as [?maybe L?, f1, ..., f_n, g_1, ..., g_m] -> return fn at index row
-FunctionLFG& access_Lfg_from_row(FullSweepLayout& layout_lfg, int row);
+MOO_EXPORT FunctionLFG& access_Lfg_from_row(FullSweepLayout& layout_lfg, int row);
 
-struct FullSweepBuffers {
+struct MOO_EXPORT FullSweepBuffers {
     // sizes of 1 buffer chuck
     const int eval_size = 0;
     const int jac_size = 0;
@@ -156,7 +157,7 @@ struct FullSweepBuffers {
     void resize(const Mesh& mesh);
 };
 
-class FullSweep {
+class MOO_EXPORT FullSweep {
     friend class Problem;
 
 public:
@@ -216,7 +217,7 @@ private:
 
 // ================== Boundary - Mr Block ==================
 
-struct BoundarySweepLayout {
+struct MOO_EXPORT BoundarySweepLayout {
     // hold eval and Jacobian + Hessian
     std::unique_ptr<FunctionMR> M; // Mayer Term
     FixedVector<FunctionMR> r;     // Boundary Constraints
@@ -232,7 +233,7 @@ struct BoundarySweepLayout {
     int compute_jac_nnz();
 };
 
-struct BoundarySweepBuffers {
+struct MOO_EXPORT BoundarySweepBuffers {
     FixedVector<f64> eval;
     FixedVector<f64> jac;
     FixedVector<f64> hes;
@@ -245,7 +246,7 @@ struct BoundarySweepBuffers {
       hes(FixedVector<f64>(hes.nnz())) {}
 };
 
-class BoundarySweep {
+class MOO_EXPORT BoundarySweep {
     friend class Problem;
 
 public:
@@ -294,7 +295,7 @@ private:
     BoundarySweepBuffers buffers;
 };
 
-class Problem {
+class MOO_EXPORT Problem {
 public:
     Problem(std::unique_ptr<FullSweep>&& full, std::unique_ptr<BoundarySweep>&& boundary, std::unique_ptr<ProblemConstants>&& pc)
     : full(std::move(full)), boundary(std::move(boundary)), pc(std::move(pc)) {

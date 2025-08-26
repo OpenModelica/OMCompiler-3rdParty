@@ -22,6 +22,7 @@
 #define MOO_NLP_H
 
 #include <base/fixed_vector.h>
+#include <base/export.h>
 #include <base/log.h>
 
 #include "nlp_scaling.h"
@@ -45,7 +46,7 @@ namespace NLP {
  * pure virtual methods (User Callbacks). NLP solvers interact with the problem
  * through the 'Solver API' methods.
  */
-class NLP {
+class MOO_EXPORT NLP {
 public:
     /**
      * @brief Default constructor.
