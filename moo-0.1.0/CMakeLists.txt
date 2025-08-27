@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(moo)
+project(moo LANGUAGES C CXX Fortran)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -12,38 +12,91 @@ find_package(PkgConfig)
 
 pkg_check_modules(COINHSL coinhsl)
 
-set(MOO_BLAS_LIB "" CACHE FILEPATH "Override path to BLAS library")
-set(MOO_LAPACK_LIB "" CACHE FILEPATH "Override path to LAPACK library")
-set(MOO_METIS_LIB "" CACHE FILEPATH "Override path to METIS library")
-set(MOO_GFORTRAN_LIB "" CACHE FILEPATH "Override path to gfortran library")
+set(MOO_LAPACK_LIB "" CACHE STRING "Override path to LAPACK library")
+set(MOO_METIS_LIB "" CACHE STRING "Override path to METIS library")
+set(MOO_GFORTRAN_LIB "" CACHE STRING "Override path to gfortran library")
 
-# add OpenMP or pthreads will be added later
-# set(MOO_GOMP_LIB "" CACHE FILEPATH "Override path to gomp library")
+if(WIN32)
+    set(LIB_EXT .dll)
+elseif(APPLE)
+    set(LIB_EXT .dylib)
+else()
+    set(LIB_EXT .so)
+endif()
 
 set(MOO_EXTRA_LIBS "")
 
+# LAPACK
 if(MOO_LAPACK_LIB)
-  list(APPEND MOO_EXTRA_LIBS ${MOO_LAPACK_LIB})
+    message(STATUS "Using user-provided LAPACK: ${MOO_LAPACK_LIB}")
+    list(APPEND MOO_EXTRA_LIBS ${MOO_LAPACK_LIB})
 else()
-  list(APPEND MOO_EXTRA_LIBS lapack)
+    message(STATUS "MOO_LAPACK_LIB not defined: searching for LAPACK")
+    find_package(LAPACK REQUIRED)
+
+    if(LAPACK_FOUND)
+        set(MOO_LAPACK_LIB ${LAPACK_LIBRARIES})
+        message(STATUS "Found LAPACK: ${MOO_LAPACK_LIB}")
+        list(APPEND MOO_EXTRA_LIBS ${MOO_LAPACK_LIB})
+    else()
+        message(FATAL_ERROR "LAPACK library not found")
+    endif()
 endif()
 
-if(MOO_BLAS_LIB)
-  list(APPEND MOO_EXTRA_LIBS ${MOO_BLAS_LIB})
-else()
-  list(APPEND MOO_EXTRA_LIBS blas)
-endif()
-
+# METIS
 if(MOO_METIS_LIB)
-  list(APPEND MOO_EXTRA_LIBS ${MOO_METIS_LIB})
+    message(STATUS "Using user-provided METIS: ${MOO_METIS_LIB}")
+    list(APPEND MOO_EXTRA_LIBS ${MOO_METIS_LIB})
 else()
-  list(APPEND MOO_EXTRA_LIBS metis)
+    message(STATUS "MOO_METIS_LIB not defined: searching for METIS")
+    find_library(MOO_METIS_LIB NAMES metis)
+    if(MOO_METIS_LIB)
+        message(STATUS "Found METIS: ${MOO_METIS_LIB}")
+        list(APPEND MOO_EXTRA_LIBS ${MOO_METIS_LIB})
+    else()
+        message(FATAL_ERROR "METIS library not found")
+    endif()
 endif()
 
+# gfortran runtime
 if(MOO_GFORTRAN_LIB)
-  list(APPEND MOO_EXTRA_LIBS ${MOO_GFORTRAN_LIB})
+    message(STATUS "Using user-provided gfortran: ${MOO_GFORTRAN_LIB}")
+    list(APPEND MOO_EXTRA_LIBS ${MOO_GFORTRAN_LIB})
 else()
-  list(APPEND MOO_EXTRA_LIBS gfortran)
+    message(STATUS "MOO_GFORTRAN_LIB not defined: searching for gfortran")
+    find_library(MOO_GFORTRAN_LIB NAMES gfortran)
+
+    if(NOT MOO_GFORTRAN_LIB)
+        message(STATUS "gfortran library not found in default paths. Attempting to find via the compiler.")
+        find_program(GFORTRAN_EXECUTABLE NAMES gfortran)
+
+        if(GFORTRAN_EXECUTABLE)
+            message(STATUS "Found gfortran executable: ${GFORTRAN_EXECUTABLE}")
+
+            execute_process(
+                COMMAND "${GFORTRAN_EXECUTABLE}" -print-file-name=libgfortran${LIB_EXT}
+                OUTPUT_VARIABLE GFORTRAN_LIB_PATH
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                RESULT_VARIABLE EXECUTE_RESULT
+            )
+
+            if(GFORTRAN_LIB_PATH)
+                message(STATUS "Found gfortran library path using the compiler: ${GFORTRAN_LIB_PATH}")
+                set(MOO_GFORTRAN_LIB "${GFORTRAN_LIB_PATH}")
+            else()
+                message(STATUS "Failed to get gfortran library path from the compiler.")
+            endif()
+        else()
+            message(STATUS "gfortran executable not found.")
+        endif()
+    else()
+        message(STATUS "Found gfortran: ${MOO_GFORTRAN_LIB}")
+        list(APPEND MOO_EXTRA_LIBS ${MOO_GFORTRAN_LIB})
+    endif()
+
+    if(NOT MOO_GFORTRAN_LIB)
+        message(WARNING "gfortran library not found: linking may still work if system finds it automatically")
+    endif()
 endif()
 
 ###### END DEPENDENCIES
@@ -124,6 +177,7 @@ target_compile_options(fmt PRIVATE -fPIC)
 ###### START MUMPS + Ipopt
 
 # TODO: enable build w/o mumps or ipopt - alternative NLP solvers
+# TODO: remove Ipopt examples / tutorial as they bloat the build
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third-party/mumps/MUMPS)
   message(STATUS "Downloading mumps sources...")
@@ -138,6 +192,7 @@ add_custom_command(
         ADD_CFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
         ADD_FCFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
         ADD_CXXFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
+        --with-lapack="${MOO_LAPACK_LIB}"
         --enable-shared=no
         --enable-static=yes
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps
@@ -170,6 +225,7 @@ add_custom_command(
         ADD_CFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
         ADD_FCFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
         ADD_CXXFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
+        --with-lapack="${MOO_LAPACK_LIB}"
         --without-pardiso
         --with-mumps
         --with-mumps-lflags='-L${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps/.libs'
