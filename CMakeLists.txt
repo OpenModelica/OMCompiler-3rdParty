@@ -291,8 +291,7 @@ endif() # OM_OMC_ENABLE_IPOPT
 
 
 if(OM_OMC_ENABLE_MOO)
-    set(MOO_BLAS_LIB "${BLAS_LIBRARIES}" CACHE FILEPATH "Override BLAS for MOO" FORCE)
-    set(MOO_LAPACK_LIB "${LAPACK_LIBRARIES}" CACHE FILEPATH "Override LAPACK for MOO" FORCE)
+    set(MOO_LAPACK_LIB "${LAPACK_LIBRARIES}" CACHE STRING "Override LAPACK for MOO" FORCE)
     set(MOO_METIS_LIB "omc::3rd::metis" CACHE STRING "Override METIS for MOO" FORCE)
     omc_add_subdirectory(moo-0.1.0)
     add_library(omc::3rd::moo ALIAS moo)

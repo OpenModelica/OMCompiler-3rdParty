@@ -1,15 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
 
-option(WITH_RADAU "Build and link with 'RADAU' library" TRUE)
+option(WITH_RADAU "Build and link with RADAU library" TRUE)
 
 if(WITH_RADAU)
-    message(STATUS "Library 'RADAU' will be built from source and linked (WITH_RADAU=TRUE)")
+    message(STATUS "Library RADAU will be built from source and linked (WITH_RADAU=TRUE)")
 
     project(radau)
 
     enable_language(Fortran)
-
-    find_package(LAPACK REQUIRED)
 
     add_library(radau STATIC
         radau.f
@@ -18,7 +16,7 @@ if(WITH_RADAU)
 
     target_compile_options(radau PUBLIC -O3 -fPIC ${MOO_NATIVE_BUILD_FLAGS})
 
-    target_link_libraries(radau PUBLIC ${LAPACK_LIBRARIES} gfortran)
+    target_link_libraries(radau PUBLIC ${MOO_LAPACK_LIB} ${MOO_GFORTRAN_LIB})
 
     target_include_directories(radau PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
