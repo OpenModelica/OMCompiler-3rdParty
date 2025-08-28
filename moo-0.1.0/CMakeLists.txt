@@ -3,6 +3,28 @@ project(moo LANGUAGES C CXX Fortran)
 
 set(CMAKE_CXX_STANDARD 17)
 
+option(MOO_MAKEPROGRAM "Make program used to build third party dependencies of MOO library")
+
+# A make program is necessary for the legacy configure builds of Ipopt and MUMPS
+if(${MOO_MAKEPROGRAM})
+    set(MAKEPROGRAM "${MOO_MAKEPROGRAM}")
+else()
+    if($ENV{MAKE})
+        set(MAKEPROGRAM "$ENV{MAKE}")
+    else()
+        # Now we might be in trouble
+        find_program(MAKEPROGRAM "make")
+        if("${MAKEPROGRAM}" STREQUAL "MAKEPROGRAM-NOTFOUND") # last ditch
+            set(MAKEPROGRAM "$$(MAKE)")
+            message(WARNING "Could not find a make program. Falling back to $(MAKE) enviroment variable. Please set MOO_MAKEPROGRAM to specify an appropriate make program.")
+            if("${CMAKE_MAKE_PROGRAM}" MATCHES "ninja$")
+                message(SEND_ERROR "Ninja build does not support reading $(MAKE) environment variable. This will probably fail.")
+            endif()
+        endif()
+    endif()
+endif()
+message(STATUS "Make program used to build third party dependencies of MOO library: ${MAKEPROGRAM}")
+
 include(ExternalProject)
 set(THIRD_PARTY_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/third-party-install/usr/local)
 
@@ -207,7 +229,7 @@ add_custom_target(configure_mumps
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps/.libs/libcoinmumps.a
     DEPENDS configure_mumps
-    COMMAND $(MAKE)
+    COMMAND ${MAKEPROGRAM}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps
     COMMENT "Building MUMPS library..."
 )
@@ -232,7 +254,7 @@ add_custom_command(
         --with-mumps-cflags='-DCOIN_USE_MUMPS_MPI_H -I${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps -I${CMAKE_CURRENT_SOURCE_DIR}/third-party/mumps/MUMPS/include -I${CMAKE_CURRENT_SOURCE_DIR}/third-party/mumps/MUMPS/libseq'
         --enable-shared=no
         --enable-static=yes
-    COMMAND $(MAKE) clean
+    COMMAND ${MAKEPROGRAM} clean
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/ipopt
     COMMENT "Configuring IPOPT library..."
 )
@@ -245,7 +267,7 @@ add_custom_target(configure_ipopt
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/third-party/ipopt/src/.libs/libipopt.a
     DEPENDS configure_ipopt
-    COMMAND $(MAKE)
+    COMMAND ${MAKEPROGRAM}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/ipopt
     COMMENT "Building IPOPT library..."
 )
