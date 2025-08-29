@@ -3,6 +3,30 @@ project(moo LANGUAGES C CXX Fortran)
 
 set(CMAKE_CXX_STANDARD 17)
 
+##### START setup
+
+message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
+message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
+message(STATUS "Fortran Compiler: ${CMAKE_Fortran_COMPILER}")
+
+if(WIN32)
+    set(LIB_EXT .dll)
+elseif(APPLE)
+    set(LIB_EXT .dylib)
+else()
+    set(LIB_EXT .so)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(IS_GCC TRUE)
+else()
+    set(IS_GCC FALSE)
+endif()
+
+##### END setup
+
+##### START make
+
 option(MOO_MAKEPROGRAM "Make program used to build third party dependencies of MOO library")
 
 # A make program is necessary for the legacy configure builds of Ipopt and MUMPS
@@ -25,6 +49,8 @@ else()
 endif()
 message(STATUS "Make program used to build third party dependencies of MOO library: ${MAKEPROGRAM}")
 
+##### END make
+
 include(ExternalProject)
 set(THIRD_PARTY_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/third-party-install/usr/local)
 
@@ -37,14 +63,6 @@ pkg_check_modules(COINHSL coinhsl)
 set(MOO_LAPACK_LIB "" CACHE STRING "Override path to LAPACK library")
 set(MOO_METIS_LIB "" CACHE STRING "Override path to METIS library")
 set(MOO_GFORTRAN_LIB "" CACHE STRING "Override path to gfortran library")
-
-if(WIN32)
-    set(LIB_EXT .dll)
-elseif(APPLE)
-    set(LIB_EXT .dylib)
-else()
-    set(LIB_EXT .so)
-endif()
 
 set(MOO_EXTRA_LIBS "")
 
@@ -307,15 +325,22 @@ target_link_directories(moo PRIVATE ${THIRD_PARTY_INSTALL_PREFIX}/lib)
 
 # TODO: Make it a clean build with -Wextra
 
-if ("${MOO_BUILD_TYPE}" STREQUAL "Debug")
-    message(STATUS "Configuration: Debug")
-    target_compile_options(moo PRIVATE -Wall -fno-rtti -fno-var-tracking-assignments -Wnon-virtual-dtor -pedantic -O0 -g)
-    message(STATUS "Compile Options: -Wall -fno-rtti -fno-var-tracking-assignments -Wnon-virtual-dtor -pedantic -O0 -g")
-else ()
-    message(STATUS "Configuration: RelWithDebInfo / Release")
-    target_compile_options(moo PRIVATE -Wall -fno-rtti -fno-var-tracking-assignments -Wnon-virtual-dtor -pedantic -O3 -g ${MOO_NATIVE_BUILD_FLAGS})
-    message(STATUS "Compile Options: -Wall -fno-rtti -fno-var-tracking-assignments -Wnon-virtual-dtor -pedantic -O3 -g ${MOO_NATIVE_BUILD_FLAGS_STRING}")
+set(MOO_COMPILE_OPTIONS -Wall -fno-rtti -Wnon-virtual-dtor -pedantic)
+
+if(IS_GCC)
+    list(APPEND MOO_COMPILE_OPTIONS -fno-var-tracking-assignments)
 endif()
+
+if("${MOO_BUILD_TYPE}" STREQUAL "Debug")
+    message(STATUS "Configuration: Debug")
+    list(APPEND MOO_COMPILE_OPTIONS -O0 -g)
+else()
+    message(STATUS "Configuration: RelWithDebInfo / Release")
+    list(APPEND MOO_COMPILE_OPTIONS -O3 -g ${MOO_NATIVE_BUILD_FLAGS})
+endif()
+
+target_compile_options(moo PRIVATE ${MOO_COMPILE_OPTIONS})
+message(STATUS "Compile Options: ${MOO_COMPILE_OPTIONS}")
 
 target_link_libraries(moo PUBLIC fmt)
 target_link_libraries(moo PRIVATE moo::ipopt moo::coinmumps)
