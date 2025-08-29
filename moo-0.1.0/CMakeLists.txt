@@ -235,6 +235,7 @@ add_custom_command(
             ADD_CFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
             ADD_FCFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
             ADD_CXXFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
+            --with-lapack="${MOO_LAPACK_LIB}"
             --enable-shared=no
             --enable-static=yes
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps
@@ -270,6 +271,7 @@ add_custom_command(
             ADD_CFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
             ADD_FCFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
             ADD_CXXFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
+            --with-lapack="${MOO_LAPACK_LIB}"
             --without-pardiso
             --with-mumps
             --with-mumps-lflags='-L${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps/.libs'
