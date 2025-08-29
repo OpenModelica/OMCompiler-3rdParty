@@ -226,12 +226,14 @@ endif()
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps)
 
+# TODO: add CMake compiler for configures
+#       CC=${CMAKE_C_COMPILER}
+#       CXX=${CMAKE_CXX_COMPILER}
+#       FC=${CMAKE_Fortran_COMPILER}
+
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps/config.status
-    COMMAND CC=${CMAKE_C_COMPILER}
-            CXX=${CMAKE_CXX_COMPILER}
-            FC=${CMAKE_Fortran_COMPILER}
-            ${CMAKE_CURRENT_SOURCE_DIR}/third-party/mumps/configure
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/third-party/mumps/configure
             ADD_CFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
             ADD_FCFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
             ADD_CXXFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
@@ -264,10 +266,7 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/ipopt)
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/third-party/ipopt/config.status
-    COMMAND CC=${CMAKE_C_COMPILER}
-            CXX=${CMAKE_CXX_COMPILER}
-            FC=${CMAKE_Fortran_COMPILER}
-            ${CMAKE_CURRENT_SOURCE_DIR}/third-party/ipopt/configure
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/third-party/ipopt/configure
             ADD_CFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
             ADD_FCFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
             ADD_CXXFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
