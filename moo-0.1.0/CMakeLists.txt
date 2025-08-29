@@ -228,13 +228,15 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps)
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps/config.status
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/third-party/mumps/configure
-        ADD_CFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
-        ADD_FCFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
-        ADD_CXXFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
-        --with-lapack="${MOO_LAPACK_LIB}"
-        --enable-shared=no
-        --enable-static=yes
+    COMMAND CC=${CMAKE_C_COMPILER}
+            CXX=${CMAKE_CXX_COMPILER}
+            FC=${CMAKE_Fortran_COMPILER}
+            ${CMAKE_CURRENT_SOURCE_DIR}/third-party/mumps/configure
+            ADD_CFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
+            ADD_FCFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
+            ADD_CXXFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
+            --enable-shared=no
+            --enable-static=yes
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps
     COMMENT "Configuring MUMPS library..."
 )
@@ -261,17 +263,19 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/ipopt)
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/third-party/ipopt/config.status
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/third-party/ipopt/configure
-        ADD_CFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
-        ADD_FCFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
-        ADD_CXXFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
-        --with-lapack="${MOO_LAPACK_LIB}"
-        --without-pardiso
-        --with-mumps
-        --with-mumps-lflags='-L${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps/.libs'
-        --with-mumps-cflags='-DCOIN_USE_MUMPS_MPI_H -I${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps -I${CMAKE_CURRENT_SOURCE_DIR}/third-party/mumps/MUMPS/include -I${CMAKE_CURRENT_SOURCE_DIR}/third-party/mumps/MUMPS/libseq'
-        --enable-shared=no
-        --enable-static=yes
+    COMMAND CC=${CMAKE_C_COMPILER}
+            CXX=${CMAKE_CXX_COMPILER}
+            FC=${CMAKE_Fortran_COMPILER}
+            ${CMAKE_CURRENT_SOURCE_DIR}/third-party/ipopt/configure
+            ADD_CFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
+            ADD_FCFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
+            ADD_CXXFLAGS=-O3\ ${MOO_NATIVE_BUILD_FLAGS_STRING}
+            --without-pardiso
+            --with-mumps
+            --with-mumps-lflags='-L${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps/.libs'
+            --with-mumps-cflags='-DCOIN_USE_MUMPS_MPI_H -I${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps -I${CMAKE_CURRENT_SOURCE_DIR}/third-party/mumps/MUMPS/include -I${CMAKE_CURRENT_SOURCE_DIR}/third-party/mumps/MUMPS/libseq'
+            --enable-shared=no
+            --enable-static=yes
     COMMAND ${MAKEPROGRAM} clean
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/ipopt
     COMMENT "Configuring IPOPT library..."
@@ -355,12 +359,18 @@ if (COINHSL_FOUND)
 endif ()
 
 # hide symbols
-if(NOT WIN32)
+if(WIN32)
+    target_compile_definitions(moo PRIVATE MOO_DLL_EXPORT)
+elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    target_link_libraries(moo PRIVATE dl)
+    target_link_directories(moo PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third-party/mumps/.libs/)
+    target_link_directories(moo PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third-party/ipopt/src/.libs/)
+    target_link_options(moo PRIVATE -Wl,-hidden-lcoinmumps -Wl,-hidden-lipopt)
+    target_compile_options(moo PRIVATE -fvisibility=hidden )
+else()
     target_link_libraries(moo PRIVATE dl)
     target_link_options(moo PRIVATE -Wl,--exclude-libs,ALL)
     target_compile_options(moo PRIVATE -fvisibility=hidden)
-else()
-    target_compile_definitions(moo PRIVATE MOO_DLL_EXPORT)
 endif()
 
 install(TARGETS moo
