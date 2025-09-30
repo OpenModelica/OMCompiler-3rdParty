@@ -116,10 +116,14 @@ if (DOWNLOAD_MUMPS)
 
     if(EXISTS "${MUMPS_SOURCE_DIR}")
         message(STATUS "Using local MUMPS ${MUMPS_VERSION} sources at ${MUMPS_SOURCE_DIR}.")
+
+        set(MUMPS_COPY_DIR "${CMAKE_CURRENT_BINARY_DIR}/_deps/mumps-src")
+        file(COPY "${MUMPS_SOURCE_DIR}/" DESTINATION "${MUMPS_COPY_DIR}")
+
         FetchContent_Declare(
             Mumps
-            SOURCE_DIR ${MUMPS_SOURCE_DIR}
-            PATCH_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/MUMPS/CMakeLists_mumps.cmake CMakeLists.txt
+            SOURCE_DIR ${MUMPS_COPY_DIR}
+            PATCH_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/MUMPS/CMakeLists_mumps.cmake ${MUMPS_COPY_DIR}/CMakeLists.txt
         )
     else()
         message(STATUS "Downloading MUMPS ${MUMPS_VERSION} sources ...")

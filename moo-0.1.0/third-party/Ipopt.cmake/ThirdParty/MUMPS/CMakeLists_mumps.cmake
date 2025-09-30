@@ -678,6 +678,7 @@ if (CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
 endif ()
 
 add_library(mumps_common STATIC ${MUMPS_COMMON_SRCS})
+target_link_libraries(mumps_common ${LINK_LIBS})
 
 # TODO: add MUMPS single precision
 
