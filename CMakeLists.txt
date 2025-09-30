@@ -226,8 +226,7 @@ add_library(omc::3rd::sundials::sunlinsolklu ALIAS sundials_sunlinsolklu_static)
 add_library(omc::3rd::sundials::sunlinsollapackdense ALIAS sundials_sunlinsollapackdense_static)
 
 if(OM_OMC_ENABLE_MOO)
-    set(MOO_LAPACK_LIB "${LAPACK_LIBRARIES}" CACHE STRING "Override LAPACK for MOO" FORCE)
-    set(MOO_METIS_LIB "omc::3rd::metis" CACHE STRING "Override METIS for MOO" FORCE)
+    add_library(EXTERNAL_METIS_TARGET ALIAS metis)
     omc_add_subdirectory(moo-0.1.0)
     add_library(omc::3rd::moo ALIAS moo)
 endif() # OM_OMC_ENABLE_MOO
