@@ -18,6 +18,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <IpIpoptData.hpp>
+#include <IpDenseVector.hpp>
+#include <IpSmartPtr.hpp>
+#include <IpIpoptApplication.hpp>
+#include <IpSolveStatistics.hpp>
+#include <IpJournalist.hpp>
+
 #include <base/nlp_structs.h>
 #include <base/log.h>
 
@@ -26,11 +33,86 @@
 
 namespace IpoptSolver {
 
+std::string vformat_no_newline(const char* format, va_list args) {
+    va_list args_copy;
+    va_copy(args_copy, args);
+    int len = vsnprintf(nullptr, 0, format, args_copy);
+    va_end(args_copy);
+
+    if (len < 0) {
+        return "";
+    }
+
+    std::string str(len + 1, '\0');
+    vsnprintf(str.data(), len + 1, format, args);
+    str.pop_back();
+
+    if (!str.empty() && str.back() == '\n') {
+        str.pop_back();
+    }
+
+    return str;
+}
+
+class LoggerJournal : public Ipopt::Journal {
+public:
+    LoggerJournal(const std::string& name, Ipopt::EJournalLevel default_level)
+    : Ipopt::Journal(name, Ipopt::EJournalLevel::J_ITERSUMMARY) {}
+
+protected:
+    void PrintImpl(Ipopt::EJournalCategory category, Ipopt::EJournalLevel level, const char* str) override
+    {
+        if (str == nullptr) return;
+        Log::info(str);
+    }
+
+    void PrintfImpl(Ipopt::EJournalCategory category, Ipopt::EJournalLevel level, const char* pformat, va_list ap) override
+    {
+        std::string formatted_message = vformat_no_newline(pformat, ap);
+
+        if (formatted_message.empty()) return;
+
+        switch (level) {
+            case Ipopt::J_ERROR:
+                Log::error(formatted_message);
+                break;
+            case Ipopt::J_STRONGWARNING:
+            case Ipopt::J_WARNING:
+                Log::warning(formatted_message);
+                break;
+            case Ipopt::J_SUMMARY:
+            case Ipopt::J_ITERSUMMARY:
+            case Ipopt::J_DETAILED:
+            case Ipopt::J_MOREDETAILED:
+            case Ipopt::J_VECTOR:
+            case Ipopt::J_MOREVECTOR:
+            case Ipopt::J_MATRIX:
+            case Ipopt::J_MOREMATRIX:
+            case Ipopt::J_ALL:
+                Log::info(formatted_message);
+                break;
+            default:
+                Log::info(formatted_message);
+                break;
+        }
+    }
+
+    void FlushBufferImpl() override {}
+};
+
 struct IpoptSolverData {
     Ipopt::SmartPtr<IpoptAdapter> adapter;
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app;
+    Ipopt::SmartPtr<Ipopt::Journal> logger_journal;
 
-    IpoptSolverData(NLP::NLP& nlp) : adapter(new IpoptAdapter(nlp)), app(IpoptApplicationFactory()) {}
+    IpoptSolverData(NLP::NLP& nlp)
+        : adapter(new IpoptAdapter(nlp)),
+          app(IpoptApplicationFactory()),
+          logger_journal(new LoggerJournal("LoggerImpl", Ipopt::J_DETAILED))
+    {
+        app->Jnlst()->DeleteAllJournals();
+        app->Jnlst()->AddJournal(logger_journal);
+    }
 };
 
 IpoptSolver::IpoptSolver(NLP::NLP& nlp, NLP::NLPSolverSettings& solver_settings)
@@ -51,87 +133,87 @@ void IpoptSolver::optimize() {
 
     switch (status) {
         case Ipopt::Solve_Succeeded:
-            LOG_SUCCESS("[Ipopt Interface] Optimization succeeded!");
+            Log::success("[Ipopt Interface] Optimization succeeded.");
             break;
 
         case Ipopt::Solved_To_Acceptable_Level:
-            LOG_SUCCESS("[Ipopt Interface] Optimization succeeded (acceptable)!");
+            Log::success("[Ipopt Interface] Optimization succeeded (acceptable).");
             break;
 
         case Ipopt::Infeasible_Problem_Detected:
-            LOG_ERROR("[Ipopt Interface] Infeasible problem detected.");
+            Log::error("[Ipopt Interface] Infeasible problem detected.");
             break;
 
         case Ipopt::Search_Direction_Becomes_Too_Small:
-            LOG_WARNING("[Ipopt Interface] Search direction became too small.");
+            Log::warning("[Ipopt Interface] Search direction became too small.");
             break;
 
         case Ipopt::Diverging_Iterates:
-            LOG_ERROR("[Ipopt Interface] Diverging iterates.");
+            Log::error("[Ipopt Interface] Diverging iterates.");
             break;
 
         case Ipopt::User_Requested_Stop:
-            LOG_WARNING("[Ipopt Interface] Optimization stopped by user request.");
+            Log::warning("[Ipopt Interface] Optimization stopped by user request.");
             break;
 
         case Ipopt::Feasible_Point_Found:
-            LOG_ERROR("[Ipopt Interface] Feasible point found.");
+            Log::error("[Ipopt Interface] Feasible point found.");
             break;
 
         case Ipopt::Maximum_Iterations_Exceeded:
-            LOG_WARNING("[Ipopt Interface] Maximum iterations exceeded.");
+            Log::warning("[Ipopt Interface] Maximum iterations exceeded.");
             break;
 
         case Ipopt::Restoration_Failed:
-            LOG_ERROR("[Ipopt Interface] Restoration failed.");
+            Log::error("[Ipopt Interface] Restoration failed.");
             break;
 
         case Ipopt::Error_In_Step_Computation:
-            LOG_ERROR("[Ipopt Interface] Error in step computation.");
+            Log::error("[Ipopt Interface] Error in step computation.");
             break;
 
         case Ipopt::Maximum_CpuTime_Exceeded:
-            LOG_WARNING("[Ipopt Interface] Maximum CPU time exceeded.");
+            Log::warning("[Ipopt Interface] Maximum CPU time exceeded.");
             break;
 
         case Ipopt::Maximum_WallTime_Exceeded:
-            LOG_WARNING("[Ipopt Interface] Maximum wall time exceeded.");
+            Log::warning("[Ipopt Interface] Maximum wall time exceeded.");
             break;
 
         case Ipopt::Not_Enough_Degrees_Of_Freedom:
-            LOG_ERROR("[Ipopt Interface] Not enough degrees of freedom.");
+            Log::error("[Ipopt Interface] Not enough degrees of freedom.");
             break;
 
         case Ipopt::Invalid_Problem_Definition:
-            LOG_ERROR("[Ipopt Interface] Invalid problem definition.");
+            Log::error("[Ipopt Interface] Invalid problem definition.");
             break;
 
         case Ipopt::Invalid_Option:
-            LOG_ERROR("[Ipopt Interface] Invalid option.");
+            Log::error("[Ipopt Interface] Invalid option.");
             break;
 
         case Ipopt::Invalid_Number_Detected:
-            LOG_ERROR("[Ipopt Interface] Invalid number detected.");
+            Log::error("[Ipopt Interface] Invalid number detected.");
             break;
 
         case Ipopt::Unrecoverable_Exception:
-            LOG_ERROR("[Ipopt Interface] Unrecoverable exception occurred.");
+            Log::error("[Ipopt Interface] Unrecoverable exception occurred.");
             break;
 
         case Ipopt::NonIpopt_Exception_Thrown:
-            LOG_ERROR("[Ipopt Interface] Non-Ipopt exception thrown.");
+            Log::error("[Ipopt Interface] Non-Ipopt exception thrown.");
             break;
 
         case Ipopt::Insufficient_Memory:
-            LOG_ERROR("[Ipopt Interface] Insufficient memory.");
+            Log::error("[Ipopt Interface] Insufficient memory.");
             break;
 
         case Ipopt::Internal_Error:
-            LOG_ERROR("[Ipopt Interface] Internal error.");
+            Log::error("[Ipopt Interface] Internal error.");
             break;
 
         default:
-            LOG_ERROR("[Ipopt Interface] Unknown return status: {}", static_cast<int>(status));
+            Log::error("[Ipopt Interface] Unknown return status: {}", static_cast<int>(status));
             break;
     }
 }
@@ -139,7 +221,7 @@ void IpoptSolver::optimize() {
 void IpoptSolver::init_application() {
     Ipopt::ApplicationReturnStatus status = ipdata->app->Initialize();
     if (status != Ipopt::Solve_Succeeded) {
-        LOG_ERROR("[Ipopt Interface] Error during application initialization!");
+        Log::error("[Ipopt Interface] Error during application initialization.");
         abort();
     }
 }
@@ -207,7 +289,6 @@ void IpoptSolver::set_settings() {
 
     // --- info ---
     ipdata->app->Options()->SetStringValue("timing_statistics", "yes");
-    ipdata->app->Options()->SetIntegerValue("print_level", 5);
 
     // --- derivative test (optional) ---
     if (solver_settings.option_is_true(NLP::Option::IpoptDerivativeTest)) {

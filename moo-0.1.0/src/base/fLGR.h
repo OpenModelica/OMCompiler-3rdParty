@@ -35,15 +35,15 @@ public:
     static inline const f64* get_b(int scheme) { return &b[offset_linear(scheme)]; }
     static inline const f64* get_w(int scheme) { return &w[offset_linear(scheme)]; }
 
-    static inline const f64 get_c(int scheme, int index) { return c[offset_linear(scheme) + index]; }
-    static inline const f64 get_b(int scheme, int index) { return b[offset_linear(scheme) + index]; }
-    static inline const f64 get_w(int scheme, int index) { return w[offset_linear(scheme) + index]; }
+    static inline f64 get_c(int scheme, int index) { return c[offset_linear(scheme) + index]; }
+    static inline f64 get_b(int scheme, int index) { return b[offset_linear(scheme) + index]; }
+    static inline f64 get_w(int scheme, int index) { return w[offset_linear(scheme) + index]; }
 
     static inline const f64* get_c0(int scheme) { return &c0[offset_linear0(scheme)]; }
     static inline const f64* get_w0(int scheme) { return &w0[offset_linear0(scheme)]; }
 
-    static inline const f64 get_c0(int scheme, int index) { return c0[offset_linear0(scheme) + index]; }
-    static inline const f64 get_w0(int scheme, int index) { return w0[offset_linear0(scheme) + index]; }
+    static inline f64 get_c0(int scheme, int index) { return c0[offset_linear0(scheme) + index]; }
+    static inline f64 get_w0(int scheme, int index) { return w0[offset_linear0(scheme) + index]; }
 
     static inline const f64* get_D(int scheme)                   { return &D[offset_quadratic(scheme)]; }
     static inline const f64* get_D(int scheme, int row)          { return &D[offset_quadratic(scheme) + row * (scheme + 1)]; }

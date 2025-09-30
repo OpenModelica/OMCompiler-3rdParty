@@ -108,7 +108,7 @@ void fLGR::diff_matrix_multiply_block_strided(int scheme, int x_size, int x_stri
  * @param increment      The stride to use when accessing elements in the `values` array.
  * @param interval_start The start of the physical interval. (time of values[0], first)
  * @param interval_end   The end of the physical interval.   (time of values[-1], last)
- * @param point          The point at which to interpolate.
+ * @param point          The physical time at which to interpolate.
  * @return The interpolated value at point.
  */
 f64 fLGR::interpolate(int scheme, bool contains_zero, const f64* values, int increment,
@@ -127,7 +127,7 @@ f64 fLGR::interpolate(int scheme, bool contains_zero, const f64* values, int inc
         return values[0];
     }
 
-    f64 point_hat  = (point - interval_start) / h * (node_end - node_start) + node_start;
+    f64 point_hat = (point - interval_start) / h * (node_end - node_start) + node_start;
 
     // check for exact match with any node to avoid division by zero
     for (int j = 0; j < node_count; j++) {

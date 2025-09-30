@@ -48,20 +48,36 @@ void MeshRefinementOrchestrator::optimize() {
         initial_guess = strategies->get_refined_initial_guess(gdop.get_mesh(), *refined_mesh, *gdop.get_optimal_solution());
         solver.solver_settings.set(NLP::Option::WarmStart, true);
 
-        //initial_guess->costates->to_csv("costates_interp.csv");
-        //initial_guess->lower_costates->to_csv("lower_costates_interp.csv");
-        //initial_guess->upper_costates->to_csv("upper_costates_interp.csv");
+        //initial_guess->costates->to_csv("costates_interp.csv", false);
+        //initial_guess->lower_costates->to_csv("lower_costates_interp.csv", false);
+        //initial_guess->upper_costates->to_csv("upper_costates_interp.csv", false);
 
         // 4. update gdop with new mesh
         gdop.update(refined_mesh);
     }
 
     strategies->verify(gdop, *gdop.get_optimal_solution());
-    strategies->emit(*gdop.get_optimal_solution()->primals);
+    strategies->emit(*gdop.get_optimal_solution());
 
-    //gdop.get_optimal_solution()->costates->to_csv("costates_final.csv");
-    //gdop.get_optimal_solution()->lower_costates->to_csv("lower_costates_final.csv");
-    //gdop.get_optimal_solution()->upper_costates->to_csv("upper_costates_final.csv");
+    //gdop.get_optimal_solution()->costates->to_csv("costates_final.csv", false);
+    //gdop.get_optimal_solution()->lower_costates->to_csv("lower_costates_final.csv", false);
+    //gdop.get_optimal_solution()->upper_costates->to_csv("upper_costates_final.csv", false);
 }
 
 } // namespace GDOP
+
+
+/*
+TODO:
+    const auto& optimum = *gdop.get_optimal_solution();
+    const auto& controls = optimum.primals->copy_extract_controls();
+
+    strategies->simulate_step_activate(controls, FixedVector<f64>(optimum.primals->p));
+    auto res = strategies->simulate_step(optimum.primals->extract_initial_states().raw(), optimum.primals->t[0], optimum.primals->t.back() / 2);
+    res->print_table();
+    auto newx = res->extract_final_states();
+    res = strategies->simulate_step(newx.raw(), optimum.primals->t.back() / 2 , optimum.primals->t.back());
+    res->print_table();
+
+    strategies->simulate_step_reset();
+*/

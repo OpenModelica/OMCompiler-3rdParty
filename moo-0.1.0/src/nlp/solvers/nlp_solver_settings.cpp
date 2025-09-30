@@ -116,9 +116,9 @@ void NLPSolverSettings::print() const {
         {Align::Center, Align::Center}
     };
 
-    LOG_START_MODULE(ftf, "NLP Solver options");
-    LOG_HEADER(ftf, "Option", "Value");
-    LOG_DASHES(ftf);
+    Log::start_module(ftf, "NLP Solver options");
+    Log::row(ftf, "Option", "Value");
+    Log::dashes(ftf);
 
     for (const auto& [option, value] : settings) {
         std::string val_str = std::visit([](const auto& v) -> std::string {
@@ -159,10 +159,10 @@ void NLPSolverSettings::print() const {
             }
         }, value);
 
-        LOG_ROW(ftf, to_string(option), val_str);
+        Log::row(ftf, to_string(option), val_str);
     }
 
-    LOG_DASHES_LN(ftf);
+    Log::dashes_ln(ftf);
 }
 
 void NLPSolverSettings::set(Option option, const OptionValue& value) {

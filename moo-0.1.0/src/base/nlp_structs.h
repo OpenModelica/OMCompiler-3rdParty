@@ -198,22 +198,24 @@ public:
         return count;
     }
 
-    void print() {
-        std::cout << "CscToCoo:" << std::endl;
-        std::cout << "  nnz         = " << nnz << std::endl;
-        std::cout << "  nnz_offset  = " << nnz_offset << std::endl;
+    void print() const {
+        Log::info("CscToCoo:");
+        Log::info("  nnz         = {}", nnz);
+        Log::info("  nnz_offset  = {}", nnz_offset);
 
-        std::cout << "  row indices (COO):" << std::endl;
-        row.print();
+        Log::info("  row indices (COO):");
+        row.print();  // assuming row.print() also uses Log; otherwise wrap it
 
-        std::cout << "  col indices (COO):" << std::endl;
+        Log::info("  col indices (COO):");
         col.print();
 
-        std::cout << "  coo_to_csc mapping:" << std::endl;
+        Log::info("  coo_to_csc mapping:");
         __coo_to_csc.print();
 
-        std::cout << "  csc_to_coo mapping:" << std::endl;
+        Log::info("  csc_to_coo mapping:");
         __csc_to_coo.print();
+
+        Log::info("");
     }
 
     /**

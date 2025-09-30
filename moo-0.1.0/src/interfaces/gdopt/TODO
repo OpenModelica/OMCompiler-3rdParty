@@ -1,0 +1,15 @@
+New Interface for GDOPT (General Dynamic Optimizer - Python Modeling Environment)
+
+    - generate Code (e.g. just raw C-Code or use a Python AD-lib for C-Code gen)
+        - with parameters
+        - runtime parameters
+        - exact hessians
+        - exact sparsity
+        - extended modeling (more generic M and r -> define x0 = m.addInitialState(x) / m.addFinalState(x))
+
+    - defines sparsity and model structure
+
+    - create yaml configuration (needed for OM and GDOPT interface), use yamlcpp for workflows and custom strategies
+
+    - how to call a minimal simulation of it inside GDOPT (just from callbacks)?
+        -> maybe create a simple ESDIRK(4) or Radau5 implementation :)

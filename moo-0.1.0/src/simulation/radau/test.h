@@ -23,6 +23,10 @@
 
 #include <base/export.h>
 
+namespace Simulation {
+
 MOO_EXPORT int radau_wrapper_test();
+
+} // namespace Simulation
 
 #endif // MOO_RADAU_WRAPPER_TEST_H

@@ -28,14 +28,19 @@ namespace GDOP {
 // ==================== no-op strategies ====================
 
 // no simulation available
-std::unique_ptr<Trajectory> NoSimulation::operator()(const ControlTrajectory& controls, int num_steps, f64 start_time, f64 stop_time, f64* x_start_values) {
-    LOG_WARNING("No Simulation strategy set: returning nullptr.");
+std::unique_ptr<Trajectory> NoSimulation::operator()(const ControlTrajectory& controls, const FixedVector<f64>& parameters,
+                                                     int num_steps, f64 start_time, f64 stop_time, f64* x_start_values) {
+    Log::warning("No Simulation strategy set: returning nullptr.");
     return nullptr;
 }
 
 // no simulation step available
-std::unique_ptr<Trajectory> NoSimulationStep::operator()(const ControlTrajectory& controls, f64 start_time, f64 stop_time, f64* x_start_values) {
-    LOG_WARNING("No SimulationStep strategy set: returning nullptr.");
+void NoSimulationStep::activate(const ControlTrajectory& controls, const FixedVector<f64>& parameters) {}
+
+void NoSimulationStep::reset() {}
+
+std::unique_ptr<Trajectory> NoSimulationStep::operator()(f64* x_start_values, f64 start_time, f64 stop_time) {
+    Log::warning("No SimulationStep strategy set: returning nullptr.");
     return nullptr;
 }
 
@@ -43,25 +48,25 @@ std::unique_ptr<Trajectory> NoSimulationStep::operator()(const ControlTrajectory
 void NoMeshRefinement::reset(const GDOP& gdop) {}
 
 std::unique_ptr<MeshUpdate> NoMeshRefinement::operator()(const Mesh& mesh, const PrimalDualTrajectory& trajectory) {
-    LOG_WARNING("No MeshRefinement strategy set: returning nullptr.");
+    Log::warning("No MeshRefinement strategy set: returning nullptr.");
     return nullptr;
 }
 
 // no emitter
-int NoEmitter::operator()(const Trajectory& trajectory) {
-    LOG_WARNING("No Emitter strategy set: returning -1.");
+int NoEmitter::operator()(const PrimalDualTrajectory& trajectory) {
+    Log::warning("No Emitter strategy set: returning -1.");
     return -1;
 }
 
 // no verifier
 bool NoVerifier::operator()(const GDOP& gdop, const PrimalDualTrajectory& trajectory) {
-    LOG_WARNING("No Verifier strategy set: returning false.");
+    Log::warning("No Verifier strategy set: returning false.");
     return false;
 }
 
 // no scaling
 std::shared_ptr<NLP::Scaling> NoScalingFactory::operator()(const GDOP& gdop) {
-    LOG_WARNING("No ScalingFactory strategy set: fallback to NoScalingFactory.");
+    Log::warning("No ScalingFactory strategy set: fallback to NoScalingFactory.");
     return std::make_shared<NLP::NoScaling>(NLP::NoScaling());
 };
 
@@ -69,7 +74,7 @@ std::shared_ptr<NLP::Scaling> NoScalingFactory::operator()(const GDOP& gdop) {
 
 // default initialization (is not really proper, but an implementation)
 std::unique_ptr<PrimalDualTrajectory> ConstantInitialization::operator()(const GDOP& gdop) {
-    LOG_WARNING("No Initialization strategy set: fallback to ConstantInitialization.");
+    Log::warning("No Initialization strategy set: fallback to ConstantInitialization.");
 
     const auto& problem = gdop.get_problem();
 
@@ -129,6 +134,92 @@ std::unique_ptr<PrimalDualTrajectory> ConstantInitialization::operator()(const G
     }
 
     return std::make_unique<PrimalDualTrajectory>(std::make_unique<Trajectory>(t, x_guess, u_guess, p_guess, interpolation));
+}
+
+RadauIntegratorSimulation::RadauIntegratorSimulation(Dynamics& dynamics) : dynamics(dynamics) {}
+
+std::unique_ptr<Trajectory> RadauIntegratorSimulation::operator()(
+    const ControlTrajectory& controls,
+    const FixedVector<f64>& parameters,
+    int num_steps,
+    f64 start_time,
+    f64 stop_time,
+    f64* x_start_values)
+{
+    dynamics.allocate();
+
+    auto ode_f_fn = [this](const f64* x, const f64* u, const f64* p, f64 t, f64* f, void* user_data) {
+        return this->dynamics.eval(x, u, p, t, f, user_data);
+    };
+
+    auto ode_jac_fn = [this](const f64* x, const f64* u, const f64* p, f64 t, f64* dfdx, void* user_data) {
+        return this->dynamics.jac(x, u, p, t, dfdx, user_data);
+    };
+
+    auto res = ::Simulation::RadauBuilder()
+                .interval(start_time, stop_time, num_steps)
+                .states(dynamics.pc.x_size, x_start_values)
+                .control(&controls)
+                .params(parameters.int_size(), parameters.raw())
+                .ode(ode_f_fn)
+                .jacobian(ode_jac_fn, dynamics.jac_pattern)
+                .radau_scheme(::Simulation::RadauScheme::ADAPTIVE)
+                .radau_tol(1e-10, 1e-10)
+                .radau_max_it(5e6)
+                .build()
+                .simulate();
+
+    dynamics.free();
+
+    return res;
+}
+
+RadauIntegratorSimulationStep::RadauIntegratorSimulationStep(Dynamics& dynamics) : dynamics(dynamics) {}
+
+void RadauIntegratorSimulationStep::activate(
+    const ControlTrajectory& controls,
+    const FixedVector<f64>& parameters)
+{
+    auto ode_f_fn = [this](const f64* x, const f64* u, const f64* p, f64 t, f64* f, void* user_data) {
+        return this->dynamics.eval(x, u, p, t, f, user_data);
+    };
+
+    auto ode_jac_fn = [this](const f64* x, const f64* u, const f64* p, f64 t, f64* dfdx, void* user_data) {
+        return this->dynamics.jac(x, u, p, t, dfdx, user_data);
+    };
+
+    auto builder = ::Simulation::RadauBuilder()
+                        .states(dynamics.pc.x_size)
+                        .control(&controls)
+                        .params(parameters.int_size(), parameters.raw())
+                        .ode(ode_f_fn)
+                        .jacobian(ode_jac_fn, dynamics.jac_pattern)
+                        .radau_scheme(::Simulation::RadauScheme::ADAPTIVE)
+                        .radau_tol(1e-10, 1e-10)
+                        .radau_max_it(5e6);
+
+    integrator = std::make_unique<::Simulation::RadauIntegrator>(builder.build());
+
+    dynamics.allocate();
+}
+
+void RadauIntegratorSimulationStep::reset()
+{
+    integrator = nullptr; // delete captured integrator
+    dynamics.free();      // free allocated structures from user callbacks
+}
+
+std::unique_ptr<Trajectory> RadauIntegratorSimulationStep::operator()(
+    f64* x_start_values,
+    f64 start_time,
+    f64 stop_time)
+{
+    if (!integrator) {
+        Log::error("RadauIntegrator has not been allocated: returning nullptr.");
+        return nullptr;
+    }
+
+    return integrator->simulate(x_start_values, start_time, stop_time, 1);
 }
 
 std::vector<f64> LinearInterpolation::operator()(
@@ -271,17 +362,22 @@ std::unique_ptr<PrimalDualTrajectory> SimulationInitialization::operator()(const
     auto simple_guess         = (*initialization)(gdop);                                             // call simple, e.g. constant guess
     auto& simple_guess_primal = simple_guess->primals;
     auto extracted_controls   = simple_guess_primal->copy_extract_controls();                        // extract controls from the guess
+    auto extracted_parameters = FixedVector<f64>(simple_guess_primal->p);
     auto exctracted_x0        = simple_guess_primal->extract_initial_states();                       // extract x(t_0) from the guess
-    auto simulated_guess      = (*simulation)(extracted_controls, gdop.get_mesh().node_count, 0.0,         // perform simulation using the controls and gdop config
+    auto simulated_guess      = (*simulation)(extracted_controls, extracted_parameters,              // perform simulation using the controls and gdop config
+                                              gdop.get_mesh().node_count, 0.0,
                                               gdop.get_mesh().tf, exctracted_x0.raw());
     auto interpolated_sim     = simulated_guess->interpolate_onto_mesh(gdop.get_mesh()); // interpolate simulation to current mesh + collocation
     return std::make_unique<PrimalDualTrajectory>(std::make_unique<Trajectory>(interpolated_sim));
 }
 
 // csv emit
-CSVEmitter::CSVEmitter(std::string filename) : filename(filename) {}
+CSVEmitter::CSVEmitter(std::string filename, bool write_header) : filename(filename), write_header(write_header) {}
 
-int CSVEmitter::operator()(const Trajectory& trajectory) { return trajectory.to_csv(filename); }
+int CSVEmitter::operator()(const PrimalDualTrajectory& trajectory) { return trajectory.primals->to_csv(filename, write_header); }
+
+// print emit
+int PrintEmitter::operator()(const PrimalDualTrajectory& trajectory) { trajectory.primals->print_table(); return 0; }
 
 // simulation-based verification
 SimulationVerifier::SimulationVerifier(std::shared_ptr<Simulation> simulation,
@@ -290,16 +386,17 @@ SimulationVerifier::SimulationVerifier(std::shared_ptr<Simulation> simulation,
     : simulation(simulation), norm(norm), tolerances(std::move(tolerances)) {}
 
 bool SimulationVerifier::operator()(const GDOP& gdop, const PrimalDualTrajectory& trajectory) {
-    auto& trajectory_primal = trajectory.primals;
+    auto& trajectory_primal   = trajectory.primals;
+    auto extracted_controls   = trajectory_primal->copy_extract_controls();   // extract controls from the trajectory
+    auto extracted_parameters = FixedVector<f64>(trajectory_primal->p);       // extract parameters from the trajectory
 
-    auto extracted_controls = trajectory_primal->copy_extract_controls();   // extract controls from the trajectory
     extracted_controls.interpolation = InterpolationMethod::POLYNOMIAL;
-    auto exctracted_x0      = trajectory_primal->extract_initial_states();  // extract x(t_0) from the trajectory
+    auto exctracted_x0      = trajectory_primal->extract_initial_states();    // extract x(t_0) from the trajectory
 
     // perform simulation using the controls, gdop config and a high number of nodes
     int  high_node_count    = 1 * gdop.get_mesh().node_count;
 
-    auto simulation_result  = (*simulation)(extracted_controls, high_node_count,
+    auto simulation_result  = (*simulation)(extracted_controls, extracted_parameters, high_node_count,
                                             0.0, gdop.get_mesh().tf, exctracted_x0.raw());
 
     // result of high resolution simulation is interpolated onto lower resolution mesh
@@ -313,17 +410,17 @@ bool SimulationVerifier::operator()(const GDOP& gdop, const PrimalDualTrajectory
     FixedTableFormat<4> ftf = {{7,             13,            11,            4},
                                {Align::Center, Align::Center, Align::Center, Align::Center}};
 
-    LOG_START_MODULE(ftf, "Simulation-Based Verification");
+    Log::start_module(ftf, "Simulation-Based Verification");
 
-    LOG_HEADER(ftf, "State", fmt::format("Error [{}]", Linalg::norm_to_string(norm)), "Tolerance", "Pass");
-    LOG_DASHES(ftf);
+    Log::row(ftf, "State", fmt::format("Error [{}]", Linalg::norm_to_string(norm)), "Tolerance", "Pass");
+    Log::dashes(ftf);
 
     for (size_t x_idx = 0; x_idx < trajectory_primal->x.size(); x_idx++) {
         f64 tol = tolerances[x_idx];
         f64 err = errors[x_idx];
         bool pass = (err <= tol);
 
-        LOG_ROW(ftf,
+        Log::row(ftf,
             fmt::format("x[{}]", x_idx),
             fmt::format("{:.3e}", err),
             fmt::format("{:.3e}", tol),
@@ -334,15 +431,15 @@ bool SimulationVerifier::operator()(const GDOP& gdop, const PrimalDualTrajectory
         }
     }
 
-    LOG_DASHES(ftf);
+    Log::dashes(ftf);
 
     if (is_valid) {
-        LOG_SUCCESS("All state errors within tolerances.");
+        Log::success("All state errors within tolerances.");
     } else {
-        LOG_WARNING("One or more state errors exceeded tolerances.");
+        Log::warning("One or more state errors exceeded tolerances.");
     }
 
-    LOG_DASHES_LN(ftf);
+    Log::dashes_ln(ftf);
 
     return is_valid;
 }
@@ -441,7 +538,7 @@ std::unique_ptr<MeshUpdate> L2BoundaryNorm::operator()(const Mesh& mesh, const P
         // phase II - non-smoothness detection
         std::set<f64> set_new_grid;
 
-        // p', p'' in `Enhancing fLGR-Based Dynamic Optimization through Adaptive Mesh Refinement` (Algorithm 3.2)
+        // p', p'' in `Enhancing Collocation-Based Dynamic Optimization through Adaptive Mesh Refinement` (Algorithm 3.2)
         FixedVector<f64> p_1(fLGR::get_max_scheme() + 1);
         FixedVector<f64> p_2(fLGR::get_max_scheme() + 1);
 
