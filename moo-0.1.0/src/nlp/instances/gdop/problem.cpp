@@ -89,90 +89,90 @@ FunctionLFG& access_Lfg_from_row(FullSweepLayout& layout_lfg, int row) {
 void FullSweep::print_jacobian_sparsity_pattern() {
     FixedTableFormat<4> table_format = {{18, 15, 16, 14}, {Align::Center, Align::Center, Align::Center, Align::Center}};
 
-    LOG_START_MODULE(table_format, "FullSweep (LFG) - Jacobian Sparsity");
-    LOG_HEADER(table_format, "Function", "Variable Type", "Variable Index", "Buffer Index");
-    LOG_DASHES(table_format);
+    Log::start_module(table_format, "FullSweep (LFG) - Jacobian Sparsity");
+    Log::row(table_format, "Function", "Variable Type", "Variable Index", "Buffer Index");
+    Log::dashes(table_format);
 
     if (layout.L) {
         for (const auto& entry : layout.L->jac.dx) {
-            LOG_ROW(table_format, "Lagrange - L", "dx", entry.col, entry.buf_index);
+            Log::row(table_format, "Lagrange - L", "dx", entry.col, entry.buf_index);
         }
         for (const auto& entry : layout.L->jac.du) {
-            LOG_ROW(table_format, "Lagrange - L", "du", entry.col, entry.buf_index);
+            Log::row(table_format, "Lagrange - L", "du", entry.col, entry.buf_index);
         }
         for (const auto& entry : layout.L->jac.dp) {
-            LOG_ROW(table_format, "Lagrange - L", "dp", entry.col, entry.buf_index);
+            Log::row(table_format, "Lagrange - L", "dp", entry.col, entry.buf_index);
         }
-        LOG_DASHES(table_format);
+        Log::dashes(table_format);
     }
 
     for (size_t f = 0; f < layout.f.size(); f++) {
         const auto& current_f = layout.f[f];
 
         for (const auto& entry : current_f.jac.dx) {
-            LOG_ROW(table_format, fmt::format("Dynamic - f[{}]", f), "dx", entry.col, entry.buf_index);
+            Log::row(table_format, fmt::format("Dynamic - f[{}]", f), "dx", entry.col, entry.buf_index);
         }
         for (const auto& entry : current_f.jac.du) {
-            LOG_ROW(table_format, fmt::format("Dynamic - f[{}]", f), "du", entry.col, entry.buf_index);
+            Log::row(table_format, fmt::format("Dynamic - f[{}]", f), "du", entry.col, entry.buf_index);
         }
         for (const auto& entry : current_f.jac.dp) {
-            LOG_ROW(table_format, fmt::format("Dynamic - f[{}]", f), "dp", entry.col, entry.buf_index);
+            Log::row(table_format, fmt::format("Dynamic - f[{}]", f), "dp", entry.col, entry.buf_index);
         }
-        LOG_DASHES(table_format);
+        Log::dashes(table_format);
     }
 
     for (size_t g = 0; g < layout.g.size(); g++) {
         const auto& current_g = layout.g[g];
 
         for (const auto& entry : current_g.jac.dx) {
-            LOG_ROW(table_format, fmt::format("Path - g[{}]", g), "dx", entry.col, entry.buf_index);
+            Log::row(table_format, fmt::format("Path - g[{}]", g), "dx", entry.col, entry.buf_index);
         }
         for (const auto& entry : current_g.jac.du) {
-            LOG_ROW(table_format, fmt::format("Path - g[{}]", g), "du", entry.col, entry.buf_index);
+            Log::row(table_format, fmt::format("Path - g[{}]", g), "du", entry.col, entry.buf_index);
         }
         for (const auto& entry : current_g.jac.dp) {
-            LOG_ROW(table_format, fmt::format("Path - g[{}]", g), "dp", entry.col, entry.buf_index);
+            Log::row(table_format, fmt::format("Path - g[{}]", g), "dp", entry.col, entry.buf_index);
         }
-        LOG_DASHES(table_format);
+        Log::dashes(table_format);
     }
-    LOG("");
+    Log::info("");
 }
 
 void BoundarySweep::print_jacobian_sparsity_pattern() {
     FixedTableFormat<4> table_format = {{18, 15, 16, 14}, {Align::Center, Align::Center, Align::Center, Align::Center}};
 
-    LOG_START_MODULE(table_format, "BoundarySweep (MR) - Jacobian Sparsity");
-    LOG_HEADER(table_format, "Function", "Variable Type", "Variable Index", "Buffer Index");
-    LOG_DASHES(table_format);
+    Log::start_module(table_format, "BoundarySweep (MR) - Jacobian Sparsity");
+    Log::row(table_format, "Function", "Variable Type", "Variable Index", "Buffer Index");
+    Log::dashes(table_format);
 
     if (layout.M) {
         for (const auto& entry : layout.M->jac.dx0) {
-            LOG_ROW(table_format, "Mayer - M", "dx0", entry.col, entry.buf_index);
+            Log::row(table_format, "Mayer - M", "dx0", entry.col, entry.buf_index);
         }
         for (const auto& entry : layout.M->jac.dxf) {
-            LOG_ROW(table_format, "Mayer - M", "dxf", entry.col, entry.buf_index);
+            Log::row(table_format, "Mayer - M", "dxf", entry.col, entry.buf_index);
         }
         for (const auto& entry : layout.M->jac.dp) {
-            LOG_ROW(table_format, "Mayer - M", "dp", entry.col, entry.buf_index);
+            Log::row(table_format, "Mayer - M", "dp", entry.col, entry.buf_index);
         }
-        LOG_DASHES(table_format);
+        Log::dashes(table_format);
     }
 
     for (size_t r = 0; r < layout.r.size(); r++) {
         const auto& current_r = layout.r[r];
 
         for (const auto& entry : current_r.jac.dx0) {
-            LOG_ROW(table_format, fmt::format("Boundary - r[{}]", r), "dx0", entry.col, entry.buf_index);
+            Log::row(table_format, fmt::format("Boundary - r[{}]", r), "dx0", entry.col, entry.buf_index);
         }
         for (const auto& entry : current_r.jac.dxf) {
-            LOG_ROW(table_format, fmt::format("Boundary - r[{}]", r), "dxf", entry.col, entry.buf_index);
+            Log::row(table_format, fmt::format("Boundary - r[{}]", r), "dxf", entry.col, entry.buf_index);
         }
         for (const auto& entry : current_r.jac.dp) {
-            LOG_ROW(table_format, fmt::format("Boundary - r[{}]", r), "dp", entry.col, entry.buf_index);
+            Log::row(table_format, fmt::format("Boundary - r[{}]", r), "dp", entry.col, entry.buf_index);
         }
-        LOG_DASHES(table_format);
+        Log::dashes(table_format);
     }
-    LOG("");
+    Log::info("");
 }
 
 } // namespace GDOP

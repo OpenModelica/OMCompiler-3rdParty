@@ -21,6 +21,8 @@
 #ifndef MOO_TRAJECTORY_H
 #define MOO_TRAJECTORY_H
 
+#include <map>
+
 #include <base/log.h>
 #include <base/mesh.h>
 #include <base/linalg.h>
@@ -32,10 +34,20 @@ enum class InterpolationMethod {
     POLYNOMIAL = 1
 };
 
+struct DynamicField {
+    std::string name;
+    std::vector<std::vector<f64>> data;
+};
+
+struct StaticField {
+    std::string name;
+    std::vector<f64> data;
+};
+
 struct MOO_EXPORT ControlTrajectory {
     std::vector<f64> t;                       // time grid, monotonic increasing
-    std::vector<std::vector<f64>> u;          // u[k][j] = value of k-th control at t[j]
-    InterpolationMethod interpolation = InterpolationMethod::LINEAR;
+    std::vector<std::vector<f64>> u;          // u[i][j] = value of i-th control at t[j]
+    mutable InterpolationMethod interpolation = InterpolationMethod::LINEAR;
 
     // optional mesh observer (nullptr if not set)
     std::shared_ptr<const Mesh> inducing_mesh = nullptr;
@@ -47,6 +59,13 @@ struct MOO_EXPORT ControlTrajectory {
     void interpolate_at(f64 t_query, f64* interpolation_values) const;
     void interpolate_at_linear(f64 t_query, f64* interpolation_values) const;
     void interpolate_at_polynomial(f64 t_query, f64* interpolation_values) const;
+
+    // dumps
+    void print_table() const;
+
+    // I/O
+    int to_csv(const std::string& filename, bool write_header = true) const;
+    static ControlTrajectory from_csv(const std::string& filename);
 };
 
 // given some data trajectories t, x(t), u(t), p
@@ -56,7 +75,7 @@ struct MOO_EXPORT Trajectory {
     std::vector<std::vector<f64>> x;
     std::vector<std::vector<f64>> u;
     std::vector<f64> p;
-    InterpolationMethod interpolation = InterpolationMethod::LINEAR;
+    mutable InterpolationMethod interpolation = InterpolationMethod::LINEAR;
 
     // optional mesh observer (nullptr if not set)
     std::shared_ptr<const Mesh> inducing_mesh = nullptr;
@@ -85,7 +104,8 @@ struct MOO_EXPORT Trajectory {
 
     // extract + copy information from the trajectory
     ControlTrajectory copy_extract_controls() const;
-    FixedVector<f64> extract_initial_states() const; 
+    FixedVector<f64> extract_initial_states() const;
+    FixedVector<f64> extract_final_states() const;
 
     // compare with other trajectory
     FixedVector<f64> state_errors(const Trajectory& other, Linalg::Norm norm) const;
@@ -95,7 +115,11 @@ struct MOO_EXPORT Trajectory {
 
     // dumps
     void print();
-    int to_csv(const std::string& filename) const;
+    void print_table();
+
+    // I/O
+    int to_csv(const std::string& filename, bool write_header = true) const;
+    static Trajectory from_csv(const std::string& filename);
 };
 
 // dual trajectory for [costates_f, costates_g]_{ij} constraints, costates_r constraints
@@ -105,7 +129,7 @@ struct MOO_EXPORT CostateTrajectory {
     std::vector<std::vector<f64>> costates_f;
     std::vector<std::vector<f64>> costates_g;
     std::vector<f64> costates_r;
-    InterpolationMethod interpolation;
+    mutable InterpolationMethod interpolation;
 
     // optional mesh observer (nullptr if not set)
     std::shared_ptr<const Mesh> inducing_mesh = nullptr;
@@ -139,7 +163,11 @@ struct MOO_EXPORT CostateTrajectory {
 
     // dumps
     void print();
-    int to_csv(const std::string& filename) const;
+    void print_table();
+
+    // I/O
+    int to_csv(const std::string& filename, bool write_header = true) const;
+    static CostateTrajectory from_csv(const std::string& filename);
 };
 
 struct MOO_EXPORT PrimalDualTrajectory {
@@ -174,7 +202,7 @@ struct MOO_EXPORT PrimalDualTrajectory {
           upper_costates(nullptr) {}
 };
 
-// === shared helpers for Trajectory and CostateTrajectory ===
+// === shared helpers for Trajectory / CostateTrajectory / ControlTrajectory ===
 
 std::vector<f64> interpolate_polynomial_onto_grid_single(
     const Mesh& mesh,
@@ -196,23 +224,34 @@ std::vector<std::vector<f64>> interpolate_linear_multiple(
     const std::vector<std::vector<f64>>& values,
     const std::vector<f64>& new_t);
 
-// only used for asserts / by "observer_ptr<Mesh> inducing_mesh" members
 bool check_time_compatibility(
     const std::vector<f64>& t_vec,
     const std::vector<std::vector<std::vector<f64>>>& fields_to_check,
     const Mesh& mesh);
 
-int write_trajectory_csv(
+int write_csv(const std::string& filename,
+              const std::vector<f64>& t,
+              const std::vector<DynamicField>& dynamics,
+              const std::vector<StaticField>& statics,
+              bool write_header = true);
+
+void read_csv(
     const std::string& filename,
-    const std::vector<f64>& t,
-    const std::vector<std::pair<std::string, std::vector<std::vector<f64>>>>& fields,
-    const std::string& static_name,
-    const std::vector<f64>& static_field);
+    std::vector<f64>& t,
+    std::map<std::string, std::vector<std::vector<f64>>>& fields,
+    std::map<std::string, std::vector<f64>>& static_fields);
 
 void print_trajectory(
     const std::vector<f64>& t,
     const std::vector<std::pair<std::string, std::vector<std::vector<f64>>>>& fields,
     const std::string& static_name,
     const std::vector<f64>& static_field);
+
+void print_trajectory_table(
+    const std::vector<f64>& t,
+    const std::vector<std::pair<std::string, std::vector<std::vector<f64>>>>& fields,
+    const std::string& static_name,
+    const std::vector<f64>& static_field,
+    const std::string title = "Trajectory Table");
 
 #endif // MOO_TRAJECTORY_H

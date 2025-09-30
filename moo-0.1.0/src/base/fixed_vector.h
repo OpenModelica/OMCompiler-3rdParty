@@ -25,12 +25,16 @@
 #include <cstdint>
 #include <cstring>
 #include <cassert>
-#include <memory>
 #include <type_traits>
 #include <iostream>
 
+#include <base/log.h>
 #include <base/util.h>
 #include <base/export.h>
+
+// the asserts in this file interact very badly with gdb (disable it when observing questionable behavior)
+// #undef assert
+// #define assert(expr) ((void)0)
 
 // helpers to distinguish iterator and range base field initialization
 template<typename It, typename = void>
@@ -56,14 +60,17 @@ template<typename T>
 class MOO_EXPORT FixedVector {
 public:
 
-    constexpr FixedVector() noexcept : _size{0}, _data{} {}
+    constexpr FixedVector() noexcept : _size{0}, _data{nullptr} {}
 
-    // TODO: try using T[] instead of ptr<T[]>
-    explicit FixedVector(std::size_t size) : _size{size}, _data{std::make_unique<T[]>(size)} {}
+    ~FixedVector() {
+        delete[] _data;
+    }
+
+    explicit FixedVector(std::size_t size) : _size{size}, _data{ new T[size]{} } {}
 
     constexpr FixedVector(const FixedVector &other) : FixedVector(other._size) {
         if constexpr (std::is_trivially_copyable_v<T>) {
-            std::memcpy(_data.get(), other._data.get(), _size * sizeof(T));
+            std::memcpy(_data, other._data, _size * sizeof(T));
         } else {
             for (std::size_t i = 0; i < _size; i++) {
                 (*this)[i] = T(other[i]);
@@ -71,7 +78,30 @@ public:
         }
     }
 
-    FixedVector(FixedVector &&other) noexcept = default;
+    FixedVector(FixedVector&& other) noexcept : _size{other._size}, _data{other._data} {
+        other._data = nullptr;
+        other._size = 0;
+    }
+
+    FixedVector(std::initializer_list<T> init)
+    : FixedVector(init.size())
+    {
+        if constexpr (std::is_trivially_copyable_v<T>) {
+            std::memcpy(_data, init.begin(), _size * sizeof(T));
+        } else {
+            std::copy(init.begin(), init.end(), _data);
+        }
+    }
+
+    explicit FixedVector(const std::vector<T>& vec)
+    : FixedVector(vec.size())
+    {
+        if constexpr (std::is_trivially_copyable_v<T>) {
+            std::memcpy(_data, vec.data(), _size * sizeof(T));
+        } else {
+            std::copy(vec.begin(), vec.end(), _data);
+        }
+    }
 
     // assign based on iterator begin() and end(), guard only iterator
     template<typename It, std::enable_if_t<is_iterator_v<It>, int> = 0>
@@ -89,7 +119,7 @@ public:
 
     // access vector at index 0 <= index < vec.size()
     constexpr T& operator[](std::size_t index) {
-        assert(index < _size); // this assert interacts very badly with the debugger (disable it when observing questionable behavior)
+        assert(index < _size);
 
         return _data[index];
     }
@@ -105,23 +135,37 @@ public:
     constexpr FixedVector& operator=(const FixedVector &other) {
         assert(_size == other._size);
 
-        std::copy(other._data.get(), other._data.get() + _size, _data.get());
+        std::copy(other._data, other._data + _size, _data);
 
         return *this;
     }
 
-    FixedVector& operator=(FixedVector&& other) noexcept = default;
+    FixedVector& operator=(FixedVector&& other) noexcept {
+        if (this != &other) {
+            delete[] _data;
+            _data = other._data;
+            _size = other._size;
+
+            other._data = nullptr;
+            other._size = 0;
+        }
+        return *this;
+    }
 
     // fill entire vector with 0
     constexpr void fill_zero() {
-        std::memset(_data.get(), 0, _size * sizeof(T));
+        std::memset(_data, 0, _size * sizeof(T));
+    }
+
+    constexpr void fill(const T& value) {
+        std::fill(_data, _data + _size, value);
     }
 
     // fills the vector with some data of the same len
     constexpr void assign(const T* data) {
         assert(data != nullptr);
 
-        std::memcpy(_data.get(), data, _size * sizeof(T));
+        std::memcpy(_data, data, _size * sizeof(T));
     }
 
     // fills the vector with some data with given len: vector[offset] = data[0], ..., vector[offset + len - 1] = data[len - 1]
@@ -129,7 +173,7 @@ public:
         assert(data != nullptr);
         assert(len <= _size - offset);
 
-        std::memcpy(_data.get() + offset, data, len * sizeof(T));
+        std::memcpy(_data + offset, data, len * sizeof(T));
     }
 
     // assign the vector from a given iterator: vector[offset] = first, ..., vector[offset + len - 1] = last
@@ -137,7 +181,7 @@ public:
     constexpr void assign(It first, It last, std::size_t offset = 0) {
         assert(static_cast<std::size_t>(std::distance(first, last)) <= _size - offset);
 
-        std::copy(first, last, _data.get() + offset);
+        std::copy(first, last, _data + offset);
     }
 
     // write from vector -> data_buffer: data[i] = vector[offset + i], ..., data[len - 1] = vector[offset + len - 1],
@@ -145,14 +189,14 @@ public:
         assert(data != nullptr);
         assert(len <= _size - offset);
 
-        std::memcpy(data, _data.get() + offset, len * sizeof(T));
+        std::memcpy(data, _data + offset, len * sizeof(T));
     }
 
     // write from vector -> data_buffer: data[0] = vector[0], ..., data[_size - 1] = vector[_size - 1]
     constexpr void write_to(T* data) const {
         assert(data != nullptr);
 
-        std::memcpy(data, _data.get(), _size * sizeof(T));
+        std::memcpy(data, _data, _size * sizeof(T));
     }
 
     constexpr std::size_t size() const {
@@ -176,27 +220,27 @@ public:
     }
 
     constexpr T* raw() {
-        return _data.get();
+        return _data;
     }
 
     constexpr const T* raw() const {
-        return _data.get();
+        return _data;
     }
 
     constexpr T* begin() noexcept {
-        return _data.get();
+        return _data;
     }
 
     constexpr T* end() noexcept {
-        return _data.get() + _size;
+        return _data + _size;
     }
 
     constexpr const T* begin() const noexcept {
-        return _data.get();
+        return _data;
     }
 
     constexpr const T* end() const noexcept {
-        return _data.get() + _size;
+        return _data + _size;
     }
 
     constexpr const bool empty() const noexcept {
@@ -204,19 +248,20 @@ public:
     }
 
     void print() const {
-        std::cout << "[";
+        std::string s = "[";
         for (std::size_t i = 0; i < _size; i++) {
-            std::cout << _data[i];
+            s += fmt::format("{}", _data[i]);
             if (i < _size - 1) {
-                std::cout << ", ";
+                s += ", ";
             }
         }
-        std::cout << "]" << std::endl;
+        s += "]";
+        Log::info("{}", s);
     }
 
 private:
     std::size_t _size;
-    std::unique_ptr<T[]> _data;
+    T* _data;
 };
 
 template<typename T, std::size_t Dim>

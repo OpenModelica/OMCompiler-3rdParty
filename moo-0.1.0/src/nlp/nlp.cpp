@@ -52,7 +52,7 @@ void NLP::solver_get_info(
     if (user_scaling) {
         scaling = user_scaling;
     } else {
-        LOG_WARNING("Overloaded method get_scaling() returned nullptr - defaulting to NoScaling.");
+        Log::warning("Overloaded method get_scaling() returned nullptr - defaulting to NoScaling.");
         scaling = std::make_shared<NoScaling>();
     }
 }

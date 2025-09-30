@@ -23,11 +23,6 @@
 
 
 #include <IpTNLP.hpp>
-#include <IpIpoptData.hpp>
-#include <IpDenseVector.hpp>
-#include <IpSmartPtr.hpp>
-#include "IpIpoptApplication.hpp"
-#include "IpSolveStatistics.hpp"
 
 #include <nlp/nlp.h>
 #include <base/log.h>

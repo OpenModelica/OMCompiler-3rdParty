@@ -212,7 +212,154 @@ GDOP::BoundarySweepLayout create_boundarysweep_layout(c_problem_t* c_problem) {
     return layout_mr;
 }
 
-GDOP::Problem create_gdop(c_problem_t* c_problem, const Mesh& mesh) {
+void FullSweep::callback_eval(
+    const f64* xu_nlp,
+    const f64* p)
+{
+    for (int i = 0; i < pc.mesh->intervals; i++) {
+        for (int j = 0; j < pc.mesh->nodes[i]; j++) {
+            const f64* xu_ij = get_xu_ij(xu_nlp, i, j);
+            const f64* data_ij = get_data_ij(i, j);
+            f64* eval_buf_ij = get_eval_buffer(i, j);
+            c_callbacks->eval_lfg(xu_ij, p, pc.mesh->t[i][j], data_ij, eval_buf_ij, c_problem->user_data);
+        }
+    }
+}
+
+void FullSweep::callback_jac(
+    const f64* xu_nlp,
+    const f64* p)
+{
+    for (int i = 0; i < pc.mesh->intervals; i++) {
+        for (int j = 0; j < pc.mesh->nodes[i]; j++) {
+            const f64* xu_ij = get_xu_ij(xu_nlp, i, j);
+            const f64* data_ij = get_data_ij(i, j);
+            f64* jac_buf_ij = get_jac_buffer(i, j);
+            c_callbacks->jac_lfg(xu_ij, p, pc.mesh->t[i][j], data_ij, jac_buf_ij, c_problem->user_data);
+        }
+    }
+}
+
+void FullSweep::callback_hes(
+    const f64* xu_nlp,
+    const f64* p,
+    const FixedField<f64, 2>& lagrange_factors,
+    const f64* lambda)
+{
+    for (int i = 0; i < pc.mesh->intervals; i++) {
+        for (int j = 0; j < pc.mesh->nodes[i]; j++) {
+            const f64* xu_ij = get_xu_ij(xu_nlp, i, j);
+            const f64* data_ij = get_data_ij(i, j);
+            const f64* lmbd_ij = get_lambda_ij(lambda, i, j);
+            f64* hes_buffer = get_hes_buffer(i, j);
+            c_callbacks->hes_lfg(xu_ij, p, lmbd_ij, lagrange_factors[i][j], pc.mesh->t[i][j], data_ij, hes_buffer, c_problem->user_data);
+        }
+    }
+}
+
+void BoundarySweep::callback_eval(
+    const f64* x0_nlp,
+    const f64* xuf_nlp,
+    const f64* p)
+{
+    const f64* data_t0 = get_data_t0();
+    const f64* data_tf = get_data_tf();
+    f64* eval_buf = get_eval_buffer();
+    c_callbacks->eval_mr(x0_nlp, xuf_nlp, p, 0, pc.mesh->tf, data_t0, data_tf, eval_buf, c_problem->user_data);
+};
+
+void BoundarySweep::callback_jac(
+    const f64* x0_nlp,
+    const f64* xuf_nlp,
+    const f64* p)
+{
+    const f64* data_t0 = get_data_t0();
+    const f64* data_tf = get_data_tf();
+    f64* jac_buf = get_jac_buffer();
+    c_callbacks->jac_mr(x0_nlp, xuf_nlp, p, 0, pc.mesh->tf, data_t0, data_tf, jac_buf, c_problem->user_data);
+};
+
+void BoundarySweep::callback_hes(
+    const f64* x0_nlp,
+    const f64* xuf_nlp,
+    const f64* p,
+    const f64 mayer_factor,
+    const f64* lambda)
+{
+    const f64* data_t0 = get_data_t0();
+    const f64* data_tf = get_data_tf();
+    f64* hes_buf = get_hes_buffer();
+    c_callbacks->hes_mr(x0_nlp, xuf_nlp, p, lambda, mayer_factor, 0, pc.mesh->tf, data_t0, data_tf, hes_buf, c_problem->user_data);
+};
+
+f64* Dynamics::get_data(f64 t) {
+    if (c_problem->data_file_count == 0) {
+        return nullptr;
+    }
+
+    f64* ret_ptr = current_data.raw();
+    f64* work_ptr = ret_ptr;
+    if (t != current_data_time) {
+        // new interpolation -> write to contiguous `current_data` buffer
+        for (int file_idx = 0; file_idx < c_problem->data_file_count; file_idx++) {
+            auto& ctrl = raw_ctrl_data[file_idx];
+            ctrl.interpolate_at(t, work_ptr);
+            work_ptr += ctrl.u.size();
+        }
+
+        current_data_time = t;
+    }
+
+    return ret_ptr;
+}
+
+/**
+ * @brief Get the sum of all sizes of the user-provided data trajectories.
+ */
+size_t accumulate_data_size(c_problem_t* c_problem, std::unique_ptr<ControlTrajectory[]>& raw_ctrl_data) {
+    size_t size = 0;
+    for (int file_idx = 0; file_idx < c_problem->data_file_count; file_idx++) {
+        size += raw_ctrl_data[file_idx].u.size();
+    }
+    return size;
+}
+
+/**
+ * @brief Extract the controls of the raw data trajectories. Allows for interpolation using builtin
+ *        ControlTrajectory utils.
+ */
+std::unique_ptr<ControlTrajectory[]> extract_ctrl_data(c_problem_t* c_problem, std::shared_ptr<Trajectory[]>& raw_data) {
+    auto ctrl = std::make_unique<ControlTrajectory[]>(c_problem->data_file_count);
+    for (int file_idx = 0; file_idx < c_problem->data_file_count; file_idx++) {
+        ctrl[file_idx] = raw_data[file_idx].copy_extract_controls();
+    }
+    return ctrl;
+}
+
+Dynamics::Dynamics(const GDOP::ProblemConstants& pc,
+                   c_problem_t* c_problem_,
+                   std::shared_ptr<Trajectory[]> raw_data)
+    : GDOP::Dynamics(pc, ::Simulation::Jacobian::sparse(
+                             ::Simulation::JacobianFormat::COO,
+                             c_problem_->ode_jac->row,
+                             c_problem_->ode_jac->col,
+                             c_problem_->ode_jac->nnz)
+                    ),
+      c_callbacks(c_problem_->callbacks),
+      c_problem(c_problem_),
+      raw_ctrl_data(extract_ctrl_data(c_problem, raw_data)),
+      current_data(FixedVector<f64>(accumulate_data_size(c_problem, raw_ctrl_data))),
+      current_data_time(MINUS_INFINITY) {};
+
+void Dynamics::eval(const f64* x, const f64* u, const f64* p, f64 t, f64* f, void* user_data) {
+    c_callbacks->ode_f(x, u, p, t, get_data(t), f, user_data);
+}
+
+void Dynamics::jac(const f64* x, const f64* u, const f64* p, f64 t, f64* dfdx, void* user_data) {
+    c_callbacks->ode_jac_f(x, u, p, t, get_data(t), dfdx, user_data);
+}
+
+GDOP::Problem create_gdop_problem(c_problem_t* c_problem, const Mesh& mesh, std::shared_ptr<Trajectory[]> raw_data) {
     auto x_bounds = create_bounds(c_problem->x_bounds, c_problem->x_size);
     auto u_bounds = create_bounds(c_problem->u_bounds, c_problem->u_size);
     auto p_bounds = create_bounds(c_problem->p_bounds, c_problem->p_size);
@@ -235,84 +382,99 @@ GDOP::Problem create_gdop(c_problem_t* c_problem, const Mesh& mesh) {
         mesh
     );
 
-    auto fs = std::make_unique<FullSweep>(create_fullsweep_layout(c_problem), *pc, c_problem->callbacks);
-    auto bs = std::make_unique<BoundarySweep>(create_boundarysweep_layout(c_problem), *pc, c_problem->callbacks);
+    auto fs  = std::make_unique<FullSweep>(create_fullsweep_layout(c_problem), *pc, c_problem);
+    auto bs  = std::make_unique<BoundarySweep>(create_boundarysweep_layout(c_problem), *pc, c_problem);
+    auto dyn = std::make_unique<Dynamics>(*pc, c_problem, raw_data);
 
-    return GDOP::Problem(std::move(fs), std::move(bs),std::move(pc));
+    return GDOP::Problem(std::move(fs), std::move(bs),std::move(pc), std::move(dyn));
 }
 
-void FullSweep::callback_eval(
-    const f64* xu_nlp,
-    const f64* p)
-{
-    for (int i = 0; i < pc.mesh->intervals; i++) {
-        for (int j = 0; j < pc.mesh->nodes[i]; j++) {
-            const f64* xu_ij = get_xu_ij(xu_nlp, i, j);
-            f64* eval_buf_ij = get_eval_buffer(i, j);
-            c_callbacks->eval_lfg(xu_ij, p, pc.mesh->t[i][j], eval_buf_ij);
+/**
+ * @brief Read in all trajectories provided by the user
+ */
+std::shared_ptr<Trajectory[]> create_raw_data(c_problem_t* c_problem) {
+    if (c_problem->data_file_count == 0) return nullptr;
+
+    std::shared_ptr<Trajectory[]> raw_data(new Trajectory[c_problem->data_file_count],
+                                           std::default_delete<Trajectory[]>());
+
+    for (int i = 0; i < c_problem->data_file_count; i++) {
+        raw_data[i] = Trajectory::from_csv(std::string(c_problem->data_filepath[i]));
+    }
+
+    return raw_data;
+}
+
+/**
+ * @brief Extract the parameters of all input files and write them into the
+ *        user-provided contiguous runtime parameter buffer
+ */
+void Problem::fill_runtime_parameters() {
+    size_t offset = 0;
+    for (int file_idx = 0; file_idx < c_problem->data_file_count; file_idx++) {
+        auto const& raw_rp = raw_data[file_idx].p;
+        if (offset + raw_rp.size() > static_cast<size_t>(c_problem->rp_size)) {
+            Log::error("Runtime parameters out of range.");
+            abort();
+        }
+
+        std::memcpy(c_problem->rp + offset, raw_rp.data(), raw_rp.size() * sizeof(f64));
+        offset += raw_rp.size();
+    }
+}
+
+/**
+ * @brief Interpolate the raw data trajectories onto a given mesh (interpolated_data),
+ *        extract the controls and write them into c_problem->data as contiguous memory for callbacks.
+ *        -> No more interpolation needed during the optimization callbacks / only lookup.
+ */
+void Problem::fill_data(const Mesh& mesh) {
+    int block_size = 0;
+    for (int file_idx = 0; file_idx < c_problem->data_file_count; file_idx++) {
+        interpolated_data[file_idx] = raw_data[file_idx].interpolate_onto_mesh(mesh);
+        block_size += static_cast<int>(raw_data[file_idx].u.size());
+    }
+
+    if (block_size == 0) {
+        c_problem->data = nullptr;
+        c_problem->data_chunk_size = 0;
+        return;
+    }
+
+    flat_interpolated_input_data = FixedVector<f64>(block_size * (mesh.node_count + 1));
+
+    c_problem->data_chunk_size = block_size;
+    c_problem->data = flat_interpolated_input_data.raw(); // ref to flat_interpolated_input_data
+
+    size_t offset = 0;
+    for (int t_idx = 0; t_idx < mesh.node_count + 1; t_idx++) {
+        for (int file_idx = 0; file_idx < c_problem->data_file_count; file_idx++) {
+            auto& u = interpolated_data[file_idx].u;
+            for (size_t u_idx = 0; u_idx < u.size(); u_idx++) {
+                flat_interpolated_input_data[offset + u_idx] = u[u_idx][t_idx];
+            }
+            offset += u.size();
         }
     }
 }
 
-void FullSweep::callback_jac(
-    const f64* xu_nlp,
-    const f64* p)
+Problem::Problem(c_problem_t* c_problem, const Mesh& mesh, std::shared_ptr<Trajectory[]> raw_data)
+    : GDOP::Problem(create_gdop_problem(c_problem, mesh, raw_data)),
+      c_callbacks(c_problem->callbacks),
+      c_problem(c_problem),
+      raw_data(raw_data),
+      interpolated_data(std::make_unique<Trajectory[]>(c_problem->data_file_count))
 {
-    for (int i = 0; i < pc.mesh->intervals; i++) {
-        for (int j = 0; j < pc.mesh->nodes[i]; j++) {
-            const f64* xu_ij = get_xu_ij(xu_nlp, i, j);
-            f64* jac_buf_ij = get_jac_buffer(i, j);
-            c_callbacks->jac_lfg(xu_ij, p, pc.mesh->t[i][j], jac_buf_ij);
-        }
-    }
+    fill_runtime_parameters();
+    fill_data(mesh);
 }
 
-void FullSweep::callback_hes(
-    const f64* xu_nlp,
-    const f64* p,
-    const FixedField<f64, 2>& lagrange_factors,
-    const f64* lambda)
-{
-    for (int i = 0; i < pc.mesh->intervals; i++) {
-        for (int j = 0; j < pc.mesh->nodes[i]; j++) {
-            const f64* xu_ij = get_xu_ij(xu_nlp, i, j);
-            const f64* lmbd_ij = get_lambda_ij(lambda, i, j);
-            f64* hes_buffer = get_hes_buffer(i, j);
-            c_callbacks->hes_lfg(xu_ij, p, lmbd_ij, lagrange_factors[i][j], pc.mesh->t[i][j], hes_buffer);
-        }
-    }
+Problem Problem::create(c_problem_t* c_problem, const Mesh& mesh) {
+    return Problem(c_problem, mesh, create_raw_data(c_problem));
 }
 
-void BoundarySweep::callback_eval(
-    const f64* x0_nlp,
-    const f64* xuf_nlp,
-    const f64* p)
-{
-    f64* eval_buf = get_eval_buffer();
-    c_callbacks->eval_mr(x0_nlp, xuf_nlp, p, 0, pc.mesh->tf, eval_buf);
-};
 
-void BoundarySweep::callback_jac(
-    const f64* x0_nlp,
-    const f64* xuf_nlp,
-    const f64* p)
-{
-    f64* jac_buf = get_jac_buffer();
-    c_callbacks->jac_mr(x0_nlp, xuf_nlp, p, 0, pc.mesh->tf, jac_buf);
-};
-
-void BoundarySweep::callback_hes(
-    const f64* x0_nlp,
-    const f64* xuf_nlp,
-    const f64* p,
-    const f64 mayer_factor,
-    const f64* lambda)
-{
-    f64* hes_buf = get_hes_buffer();
-    c_callbacks->hes_mr(x0_nlp, xuf_nlp, p, lambda, mayer_factor,  0, pc.mesh->tf, hes_buf);
-};
-
-    /* here is probably not the correct place for these */
+/* here is probably not the correct place for these */
 /*
 void __used_in_nominal_scaling_factor(c_problem_t* c_problem) {
     auto x_nominal = assign_or_one(c_problem->x_nominal, c_problem->x_size);

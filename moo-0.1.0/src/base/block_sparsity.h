@@ -28,6 +28,7 @@
 #include <base/fixed_vector.h>
 #include <base/nlp_structs.h>
 #include <base/export.h>
+#include <base/log.h>
 
 
 enum class BlockType {
@@ -129,7 +130,8 @@ struct MOO_EXPORT BlockSparsity {
             case BlockType::Exact:
                 return block[row][col];
             default:
-               throw std::runtime_error("BlockType in BlockSparsity::access().");
+                Log::error("Unknown BlockType in BlockSparsity::access().");
+                abort();
         }
     }
 
@@ -146,6 +148,12 @@ struct MOO_EXPORT BlockSparsity {
 
             default:
                return access(row, col);
+        }
+    }
+
+    void print() const {
+        for (auto const& v : block) {
+            v.print();
         }
     }
 };
@@ -165,6 +173,7 @@ struct MOO_EXPORT OrderedIndexSet {
 
     void insert_sparsity(const std::vector<HessianSparsity>& hes, int row_off, int col_off) {
         for (auto coo : hes) {
+            assert(coo.row + row_off >= coo.col + col_off); // Hessian must be lower triangular!
             set.insert({coo.row + row_off, coo.col + col_off});
         }
     }

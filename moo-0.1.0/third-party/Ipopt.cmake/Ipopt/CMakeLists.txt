@@ -1,0 +1,805 @@
+get_ac_init_version(${Ipopt_DIR}/configure.ac IPOPT)
+
+set(IPOPT_VERSION_MAJOR   "${IPOPT_MAJOR_VERSION}"  CACHE STRING "The Ipopt major version number")
+set(IPOPT_VERSION_MINOR   "${IPOPT_MINOR_VERSION}"  CACHE STRING "The Ipopt minor version number")
+set(IPOPT_VERSION_RELEASE "${IPOPT_PATCH_VERSION}"  CACHE STRING "The Ipopt patch version number")
+set(IPOPT_VERSION         "${IPOPT_VERSION_STRING}" CACHE STRING "The Ipopt version")
+
+mark_as_advanced(IPOPT_VERSION_MAJOR
+        IPOPT_VERSION_MINOR
+        IPOPT_VERSION_RELEASE
+        IPOPT_VERSION)
+
+add_definitions(-DIPOPTLIB_BUILD)
+
+message(STATUS "Fortran name mangling:")
+message(STATUS "F77_FUNC = ${F77_FUNC}")
+message(STATUS "F77_FUNC_ = ${F77_FUNC_}")
+message(STATUS "COIN_LAPACK_FUNC = ${COIN_LAPACK_FUNC}")
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/config.h.in       ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/include/config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/config_ipopt.h.in ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/include/config_ipopt.h)
+
+#
+# pkg-config file generation
+#
+
+set(prefix               "${CMAKE_INSTALL_PREFIX}")
+set(exec_prefix          "\${prefix}")
+set(libdir               "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+set(includedir           "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
+set(IPOPTLIB_LFLAGS_NOPC "-lm -ldl")
+set(IPOPTLIB_PCFILES     "")
+if (COIN_HAS_LAPACK OR USE_SYSTEM_LAPACK)
+    set(IPOPTLIB_PCFILES "${IPOPTLIB_PCFILES} -llapack")
+endif ()
+if (COIN_HAS_BLAS OR COIN_USE_BLAS)
+    set(IPOPTLIB_PCFILES "${IPOPTLIB_PCFILES} -lblas")
+endif ()
+set(PACKAGE_VERSION "${IPOPT_VERSION}")
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ipopt.pc.in ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/ipopt.pc @ONLY)
+
+set(libdir         "${Ipopt_DIR}")
+set(abs_source_dir "${CMAKE_CURRENT_BINARY_DIR}/bin")
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/ipopt.pc
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pkg-config/)
+
+#
+# Build
+#
+
+set (IPOPT_SRC_ALGORITHM_LIST ${Ipopt_DIR}/src/Algorithm/IpAdaptiveMuUpdate.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpAlgBuilder.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpAlgorithmRegOp.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpAugRestoSystemSolver.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpBacktrackingLineSearch.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpDefaultIterateInitializer.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpEquilibrationScaling.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpExactHessianUpdater.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpFilter.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpFilterLSAcceptor.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpGenAugSystemSolver.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpGradientScaling.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpIpoptAlg.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpIpoptCalculatedQuantities.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpIpoptData.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpIteratesVector.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpLeastSquareMults.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpLimMemQuasiNewtonUpdater.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpLoqoMuOracle.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpLowRankAugSystemSolver.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpLowRankSSAugSystemSolver.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpMonotoneMuUpdate.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpNLPBoundsRemover.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpNLPScaling.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpOptErrorConvCheck.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpOrigIpoptNLP.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpOrigIterationOutput.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpPDFullSpaceSolver.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpPDPerturbationHandler.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpPDSearchDirCalc.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpPenaltyLSAcceptor.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpProbingMuOracle.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpQualityFunctionMuOracle.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpRestoConvCheck.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpRestoFilterConvCheck.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpRestoIpoptNLP.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpRestoIterateInitializer.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpRestoIterationOutput.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpRestoMinC_1Nrm.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpRestoPenaltyConvCheck.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpRestoRestoPhase.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpStdAugSystemSolver.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpTimingStatistics.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpUserScaling.cpp
+        ${Ipopt_DIR}/src/Algorithm/IpWarmStartIterateInitializer.cpp)
+
+set (IPOPT_SRC_ALGORITHM_INEXACT_LIST ${Ipopt_DIR}/src/Algorithm/Inexact/IpInexactAlgBuilder.cpp
+        ${Ipopt_DIR}/src/Algorithm/Inexact/IpInexactCq.cpp
+        ${Ipopt_DIR}/src/Algorithm/Inexact/IpInexactData.cpp
+        ${Ipopt_DIR}/src/Algorithm/Inexact/IpInexactDoglegNormal.cpp
+        ${Ipopt_DIR}/src/Algorithm/Inexact/IpInexactLSAcceptor.cpp
+        ${Ipopt_DIR}/src/Algorithm/Inexact/IpInexactNewtonNormal.cpp
+        ${Ipopt_DIR}/src/Algorithm/Inexact/IpInexactNormalTerminationTester.cpp
+        ${Ipopt_DIR}/src/Algorithm/Inexact/IpInexactPDSolver.cpp
+        ${Ipopt_DIR}/src/Algorithm/Inexact/IpInexactPDTerminationTester.cpp
+        ${Ipopt_DIR}/src/Algorithm/Inexact/IpInexactRegOp.cpp
+        ${Ipopt_DIR}/src/Algorithm/Inexact/IpInexactSearchDirCalc.cpp
+        ${Ipopt_DIR}/src/Algorithm/Inexact/IpInexactTSymScalingMethod.cpp
+        ${Ipopt_DIR}/src/Algorithm/Inexact/IpIterativePardisoSolverInterface.cpp
+        ${Ipopt_DIR}/src/Algorithm/Inexact/IpIterativeSolverTerminationTester.cpp)
+
+set (IPOPT_SRC_ALGORITHM_LINEARSOLVERS_LIST ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpIterativeWsmpSolverInterface.cpp 
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpMa57TSolverInterface.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpMc19TSymScalingMethod.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpSlackBasedTSymScalingMethod.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpTSymLinearSolver.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpLinearSolversRegOp.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpMa77SolverInterface.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpMumpsSolverInterface.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpWsmpSolverInterface.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpMa27TSolverInterface.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpMa86SolverInterface.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpPardisoMKLSolverInterface.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpTripletToCSRConverter.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpMa28TDependencyDetector.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpMa97SolverInterface.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpPardisoSolverInterface.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpTSymDependencyDetector.cpp
+        ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpLinearSolvers.c)
+
+if (IPOPT_ENABLE_LINEARSOLVERLOADER)
+    enable_language(Fortran)
+endif ()
+
+if (IPOPT_ENABLE_LINEARSOLVERLOADER AND (NOT "${CMAKE_Fortran_COMPILER}" STREQUAL ""))
+    set (IPOPT_SRC_ALGORITHM_LINEARSOLVERS_LIST ${IPOPT_SRC_ALGORITHM_LINEARSOLVERS_LIST}
+            ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpPardisoSolverInterface.cpp
+            ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpMa28Partition.F)
+else ()
+    if (IPOPT_HAS_PARDISO)
+        set (IPOPT_SRC_ALGORITHM_LINEARSOLVERS_LIST ${IPOPT_SRC_ALGORITHM_LINEARSOLVERS_LIST}
+                ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpPardisoSolverInterface.cpp)
+    endif ()
+    if (IPOPT_HAS_HSL AND (NOT "${CMAKE_Fortran_COMPILER}" STREQUAL ""))
+        set (IPOPT_SRC_ALGORITHM_LINEARSOLVERS_LIST ${IPOPT_SRC_ALGORITHM_LINEARSOLVERS_LIST}
+                ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpMa28Partition.F)
+    endif ()
+endif ()
+
+if (IPOPT_HAS_WSMP)
+    set (IPOPT_SRC_ALGORITHM_LINEARSOLVERS_LIST ${IPOPT_SRC_ALGORITHM_LINEARSOLVERS_LIST}
+            ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpWsmpSolverInterface.cpp
+            ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpIterativeWsmpSolverInterface.cpp)
+endif ()
+
+if (IPOPT_HAS_SPRAL)
+    set (IPOPT_SRC_ALGORITHM_LINEARSOLVERS_LIST ${IPOPT_SRC_ALGORITHM_LINEARSOLVERS_LIST}
+            ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpSpralSolverInterface.cpp)
+endif ()
+
+if (IPOPT_HAS_MUMPS)
+    set (IPOPT_SRC_ALGORITHM_LINEARSOLVERS_LIST ${IPOPT_SRC_ALGORITHM_LINEARSOLVERS_LIST}
+            ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpMumpsSolverInterface.cpp)
+endif ()
+
+set (IPOPT_SRC_APPS_CUTERINTERFACE_LIST )
+set (IPOPT_SRC_APPS_AMPLSOLVER_LIST )
+
+set (IPOPT_SRC_COMMON_LIST ${Ipopt_DIR}/src/Common/IpDebug.cpp
+        ${Ipopt_DIR}/src/Common/IpJournalist.cpp
+        ${Ipopt_DIR}/src/Common/IpLibraryLoader.cpp
+        ${Ipopt_DIR}/src/Common/IpObserver.cpp
+        ${Ipopt_DIR}/src/Common/IpOptionsList.cpp
+        ${Ipopt_DIR}/src/Common/IpRegOptions.cpp
+        ${Ipopt_DIR}/src/Common/IpTaggedObject.cpp
+        ${Ipopt_DIR}/src/Common/IpUtils.cpp)
+
+set (IPOPT_SRC_CONTRIB_CGPENALTY_LIST ${Ipopt_DIR}/src/contrib/CGPenalty/IpCGPenaltyCq.cpp
+        ${Ipopt_DIR}/src/contrib/CGPenalty/IpCGPenaltyData.cpp
+        ${Ipopt_DIR}/src/contrib/CGPenalty/IpCGPenaltyLSAcceptor.cpp
+        ${Ipopt_DIR}/src/contrib/CGPenalty/IpCGPenaltyRegOp.cpp
+        ${Ipopt_DIR}/src/contrib/CGPenalty/IpCGPerturbationHandler.cpp
+        ${Ipopt_DIR}/src/contrib/CGPenalty/IpCGSearchDirCalc.cpp
+        ${Ipopt_DIR}/src/contrib/CGPenalty/IpPiecewisePenalty.cpp)
+
+# set (IPOPT_SRC_CONTRIB_LINEARSOLVERLOADER_LIST ${Ipopt_DIR}/src/contrib/LinearSolverLoader/LibraryHandler.c
+#         ${Ipopt_DIR}/src/contrib/LinearSolverLoader/HSLLoader.c)
+# 
+# if (IPOPT_ENABLE_LINEARSOLVERLOADER)
+#     set(IPOPT_SRC_CONTRIB_LINEARSOLVERLOADER_LIST ${IPOPT_SRC_CONTRIB_LINEARSOLVERLOADER_LIST}
+#             ${Ipopt_DIR}/src/contrib/LinearSolverLoader/PardisoLoader.c)
+# endif ()
+
+set (IPOPT_SRC_INTERFACES_LIST ${Ipopt_DIR}/src/Interfaces/IpInterfacesRegOp.cpp
+        ${Ipopt_DIR}/src/Interfaces/IpIpoptApplication.cpp
+        ${Ipopt_DIR}/src/Interfaces/IpSolveStatistics.cpp
+        ${Ipopt_DIR}/src/Interfaces/IpStdCInterface.cpp
+        ${Ipopt_DIR}/src/Interfaces/IpStdFInterface.c
+        ${Ipopt_DIR}/src/Interfaces/IpStdInterfaceTNLP.cpp
+        ${Ipopt_DIR}/src/Interfaces/IpTNLPAdapter.cpp
+        ${Ipopt_DIR}/src/Interfaces/IpTNLP.cpp
+        ${Ipopt_DIR}/src/Interfaces/IpTNLPReducer.cpp)
+        #${Ipopt_DIR}/src/Interfaces/IpStdJInterface.cpp
+
+set (IPOPT_SRC_LINALG_LIST ${Ipopt_DIR}/src/LinAlg/IpBlas.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpCompoundMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpCompoundSymMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpCompoundVector.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpDenseGenMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpDenseSymMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpDenseVector.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpDiagMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpExpandedMultiVectorMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpExpansionMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpIdentityMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpLapack.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpLowRankUpdateSymMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpMultiVectorMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpScaledMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpSumMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpSumSymMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpSymScaledMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpTransposeMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpVector.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpZeroMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/IpZeroSymMatrix.cpp)
+
+set (IPOPT_SRC_LINALG_TMATRICES ${Ipopt_DIR}/src/LinAlg/TMatrices/IpGenTMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/TMatrices/IpSymTMatrix.cpp
+        ${Ipopt_DIR}/src/LinAlg/TMatrices/IpTripletHelper.cpp)
+
+set (IPOPT_SRC_LIST ${IPOPT_SRC_ALGORITHM_LIST}
+        ${IPOPT_SRC_ALGORITHM_LINEARSOLVERS_LIST}
+        ${IPOPT_SRC_APPS_CUTERINTERFACE_LIST}
+        ${IPOPT_SRC_APPS_AMPLSOLVER_LIST}
+        ${IPOPT_SRC_CONTRIB_CGPENALTY_LIST}
+        ${IPOPT_SRC_CONTRIB_LINEARSOLVERLOADER_LIST}
+        ${IPOPT_SRC_COMMON_LIST}
+        ${IPOPT_SRC_INTERFACES_LIST}
+        ${IPOPT_SRC_LINALG_LIST}
+        ${IPOPT_SRC_LINALG_TMATRICES})
+
+if (IPOPT_ENABLE_INEXACT)
+    set(IPOPT_SRC_LIST ${IPOPT_SRC_LIST}
+            ${IPOPT_SRC_ALGORITHM_INEXACT_LIST})
+endif ()
+
+if (EXISTS ${Ipopt_DIR}/ThirdParty/HSL)
+    include_directories(${Ipopt_DIR}/ThirdParty/HSL)
+endif ()
+
+
+if (WIN32)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE)
+endif ()
+
+if (IPOPT_HAS_PARDISO)
+    add_definitions(-DHAVE_PARDISO=1)
+    if (IPOPT_HAS_PARDISO_MKL)
+        add_definitions(-DHAVE_PARDISO_MKL=1)
+    endif ()
+    if (IPOPT_HAS_PARDISO_PARALLEL)
+        add_definitions(-DHAVE_PARDISO_PARALLEL=1)
+    endif ()
+endif ()
+
+if (IPOPT_HAS_HSL)
+    # TODO: for now only search for it, but later also set it from path
+    find_package(PkgConfig)
+    pkg_check_modules(COINHSL coinhsl)
+    if (NOT COINHSL_FOUND)
+        message(FATAL_ERROR "IPOPT_HAS_HSL=ON, but could not find coinhsl library.")
+    endif ()
+endif ()
+
+if (ENABLE_SHARED_LIBRARIES)
+    add_library(ipopt SHARED ${IPOPT_SRC_LIST})
+else ()
+    add_library(ipopt STATIC ${IPOPT_SRC_LIST})
+    target_link_libraries(ipopt quadmath)
+endif ()
+
+set_target_properties(ipopt PROPERTIES OUTPUT_NAME "ipopt")
+
+target_include_directories(ipopt PUBLIC ${Ipopt_DIR}/src/Common)
+target_include_directories(ipopt PUBLIC ${Ipopt_DIR}/src/Interfaces)
+target_include_directories(ipopt PUBLIC ${Ipopt_DIR}/src/LinAlg)
+target_include_directories(ipopt PUBLIC ${Ipopt_DIR}/src/Algorithm)
+target_include_directories(ipopt PUBLIC ${Ipopt_DIR}/src/Algorithm/LinearSolvers)
+target_include_directories(ipopt PUBLIC ${Ipopt_DIR}/src/Algorithm/Inexact)
+target_include_directories(ipopt PUBLIC ${Ipopt_DIR}/src/contrib/CGPenalty)
+target_include_directories(ipopt PUBLIC ${Ipopt_DIR}/src/Apps/AmplSolver)
+target_include_directories(ipopt PUBLIC ${Ipopt_DIR}/src/LinAlg/TMatrices)
+
+add_library(Ipopt::Ipopt ALIAS ipopt)
+
+if (COMPILE_LTO)
+    set_target_properties(ipopt PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
+endif ()
+
+target_include_directories(ipopt BEFORE PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/include)
+
+if (IPOPT_HAS_MUMPS)
+    target_link_libraries(ipopt dmumps mumps_common seq pthread)
+    if (MUMPS_USE_METIS)
+        target_link_libraries(ipopt METIS_TARGET)
+    endif ()
+endif ()
+
+if (IPOPT_HAS_HSL)
+    target_link_libraries(ipopt coinhsl)
+endif ()
+
+if (MKL_FOUND)
+    target_link_libraries(ipopt ${COIN_MKL_LIBS})
+else ()
+    target_link_libraries(ipopt LAPACK_TARGET)
+endif ()
+
+if (DOWNLOAD_LAPACK OR DOWNLOAD_MUMPS OR IPOPT_HAS_MUMPS OR USE_SYSTEM_LAPACK)
+    target_link_libraries(ipopt gfortran)
+endif ()
+if ((IPOPT_ENABLE_LINEARSOLVERLOADER OR ENABLE_SHARED_LIBRARIES) AND UNIX)
+    target_link_libraries(ipopt dl)
+endif ()
+
+if (IPOPT_HAS_WSMP)
+    target_link_libraries(ipopt wsmp)
+endif ()
+
+if (IPOPT_HAS_PARDISO)
+    target_link_libraries(ipopt wsmp)
+    if (WIN32)
+        if (CMAKE_SIZEOF_VOID_P EQUAL 4)
+            target_link_libraries(ipopt mkl_intel_c.lib mkl_sequential.lib mkl_core.lib)
+        else ()
+            target_link_libraries(ipopt mkl_intel_lp64.lib mkl_sequential.lib mkl_core.lib)
+        endif ()
+    else ()
+        set(MKL_TMP_LIB "-Wl,--start-group -lmkl_core")
+        if (CMAKE_SIZEOF_VOID_P EQUAL 4)
+            set(MKL_TMP_LIB "${MKL_TMP_LIB} -lmkl_intel")
+        else ()
+            set(MKL_TMP_LIB "${MKL_TMP_LIB} -lmkl_intel_lp64")
+        endif ()
+        if (IPOPT_HAS_PARDISO_PARALLEL)
+            set(MKL_TMP_LIB "${MKL_TMP_LIB} -lmkl_intel_thread")
+        else ()
+            set(MKL_TMP_LIB "${MKL_TMP_LIB} -lmkl_sequential")
+        endif ()
+        set(MKL_TMP_LIB "${MKL_TMP_LIB} -Wl,--end-group")
+
+        target_link_libraries(ipopt ${MKL_TMP_LIB})
+    endif ()
+endif ()
+
+if (IPOPT_BUILD_EXAMPLES)
+
+    set(ScalableProblems_SRCS ${Ipopt_DIR}/examples/ScalableProblems/LuksanVlcek1.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/LuksanVlcek2.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/LuksanVlcek3.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/LuksanVlcek4.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/LuksanVlcek5.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/LuksanVlcek6.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/LuksanVlcek7.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/MittelmannBndryCntrlDiri3Dsin.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/MittelmannBndryCntrlDiri3D_27.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/MittelmannBndryCntrlDiri3D.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/MittelmannDistCntrlDiri.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/MittelmannBndryCntrlDiri.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/MittelmannDistCntrlNeumA.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/MittelmannDistCntrlNeumB.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/MittelmannBndryCntrlNeum.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/RegisteredTNLP.cpp
+            ${Ipopt_DIR}/examples/ScalableProblems/solve_problem.cpp)
+
+    add_executable_mod(solve_problem ${ScalableProblems_SRCS})
+    target_link_libraries(solve_problem Ipopt::Ipopt)
+    if (COMPILE_LTO)
+        set_target_properties(solve_problem PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
+    endif ()
+    if (IPOPT_HAS_MUMPS)
+        target_link_libraries(solve_problem dmumps mumps_common seq pthread)
+    endif ()
+    if (IPOPT_HAS_HSL)
+        target_link_libraries(solve_problem coinhsl)
+    endif ()
+    if (MKL_FOUND)
+        target_link_libraries(solve_problem ${COIN_MKL_LIBS})
+    else ()
+        target_link_libraries(ipopt LAPACK_TARGET)
+    endif ()
+    if (DOWNLOAD_LAPACK OR DOWNLOAD_MUMPS OR IPOPT_HAS_MUMPS OR USE_SYSTEM_LAPACK)
+        target_link_libraries(solve_problem gfortran)
+    endif ()
+    if ((IPOPT_ENABLE_LINEARSOLVERLOADER OR ENABLE_SHARED_LIBRARIES) AND UNIX)
+        target_link_libraries(solve_problem dl)
+    endif ()
+    include_directories(${Ipopt_DIR}/examples/ScalableProblems)
+    target_include_directories(solve_problem BEFORE PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/include)
+
+    add_test(NAME ipopt_example_luksan_LukVlE1
+            COMMAND $<TARGET_FILE:solve_problem> LukVlE1 10)
+    set_tests_properties(ipopt_example_luksan_LukVlE1 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_LukVlE1 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_LukVlE2
+            COMMAND $<TARGET_FILE:solve_problem> LukVlE2 14)
+    set_tests_properties(ipopt_example_luksan_LukVlE2 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_LukVlE2 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_LukVlE3
+            COMMAND $<TARGET_FILE:solve_problem> LukVlE3 10)
+    set_tests_properties(ipopt_example_luksan_LukVlE3 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_LukVlE3 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_LukVlE4
+            COMMAND $<TARGET_FILE:solve_problem> LukVlE4 10)
+    set_tests_properties(ipopt_example_luksan_LukVlE4 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_LukVlE4 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_LukVlE5
+            COMMAND $<TARGET_FILE:solve_problem> LukVlE5 10)
+    set_tests_properties(ipopt_example_luksan_LukVlE5 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_LukVlE5 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_LukVlE6
+            COMMAND $<TARGET_FILE:solve_problem> LukVlE6 10)
+    set_tests_properties(ipopt_example_luksan_LukVlE6 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_LukVlE6 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_LukVlE7
+            COMMAND $<TARGET_FILE:solve_problem> LukVlE7 4)
+    set_tests_properties(ipopt_example_luksan_LukVlE7 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_LukVlE7 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_LukVlI1
+            COMMAND $<TARGET_FILE:solve_problem> LukVlI1 10)
+    set_tests_properties(ipopt_example_luksan_LukVlI1 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_LukVlI1 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_LukVlI2
+            COMMAND $<TARGET_FILE:solve_problem> LukVlI2 14)
+    set_tests_properties(ipopt_example_luksan_LukVlI2 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_LukVlI2 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_LukVlI3
+            COMMAND $<TARGET_FILE:solve_problem> LukVlI3 10)
+    set_tests_properties(ipopt_example_luksan_LukVlI3 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_LukVlI3 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_LukVlI4
+            COMMAND $<TARGET_FILE:solve_problem> LukVlI4 10)
+    set_tests_properties(ipopt_example_luksan_LukVlI4 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_LukVlI4 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_LukVlI5
+            COMMAND $<TARGET_FILE:solve_problem> LukVlI5 10)
+    set_tests_properties(ipopt_example_luksan_LukVlI5 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_LukVlI5 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_LukVlI6
+            COMMAND $<TARGET_FILE:solve_problem> LukVlI6 10)
+    set_tests_properties(ipopt_example_luksan_LukVlI6 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_LukVlI6 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_LukVlI7
+            COMMAND $<TARGET_FILE:solve_problem> LukVlI7 4)
+    set_tests_properties(ipopt_example_luksan_LukVlI7 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_LukVlI7 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MBndryCntrl1
+            COMMAND $<TARGET_FILE:solve_problem> MBndryCntrl1 10)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl1 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl1 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MBndryCntrl2
+            COMMAND $<TARGET_FILE:solve_problem> MBndryCntrl2 14)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl2 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl2 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MBndryCntrl3
+            COMMAND $<TARGET_FILE:solve_problem> MBndryCntrl3 10)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl3 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl3 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MBndryCntrl4
+            COMMAND $<TARGET_FILE:solve_problem> MBndryCntrl4 10)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl4 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl4 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MBndryCntrl5
+            COMMAND $<TARGET_FILE:solve_problem> MBndryCntrl5 10)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl5 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl5 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MBndryCntrl6
+            COMMAND $<TARGET_FILE:solve_problem> MBndryCntrl6 10)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl6 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl6 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MBndryCntrl7
+            COMMAND $<TARGET_FILE:solve_problem> MBndryCntrl7 10)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl7 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl7 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MBndryCntrl8
+            COMMAND $<TARGET_FILE:solve_problem> MBndryCntrl8 10)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl8 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl8 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MBndryCntrl_3D
+            COMMAND $<TARGET_FILE:solve_problem> MBndryCntrl_3D 10)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl_3D PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl_3D PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MBndryCntrl_3D_27
+            COMMAND $<TARGET_FILE:solve_problem> MBndryCntrl_3D_27 10)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl_3D_27 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl_3D_27 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MBndryCntrl_3D_27BT
+            COMMAND $<TARGET_FILE:solve_problem> MBndryCntrl_3D_27BT 10)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl_3D_27BT PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl_3D_27BT PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MBndryCntrl_3Dsin
+            COMMAND $<TARGET_FILE:solve_problem> MBndryCntrl_3Dsin 10)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl_3Dsin PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MBndryCntrl_3Dsin PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MDistCntrl1
+            COMMAND $<TARGET_FILE:solve_problem> MDistCntrl1 10)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl1 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl1 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MDistCntrl2
+            COMMAND $<TARGET_FILE:solve_problem> MDistCntrl2 10)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl2 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl2 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MDistCntrl3
+            COMMAND $<TARGET_FILE:solve_problem> MDistCntrl3 10)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl3 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl3 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MDistCntrl3a
+            COMMAND $<TARGET_FILE:solve_problem> MDistCntrl3a 10)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl3a PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl3a PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MDistCntrl4
+            COMMAND $<TARGET_FILE:solve_problem> MDistCntrl4 10)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl4 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl4 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MDistCntrl4a
+            COMMAND $<TARGET_FILE:solve_problem> MDistCntrl4a 10)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl4a PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl4a PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MDistCntrl5
+            COMMAND $<TARGET_FILE:solve_problem> MDistCntrl5 10)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl5 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl5 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MDistCntrl5a
+            COMMAND $<TARGET_FILE:solve_problem> MDistCntrl5a 10)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl5a PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl5a PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MDistCntrl6
+            COMMAND $<TARGET_FILE:solve_problem> MDistCntrl6 10)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl6 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl6 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MDistCntrl6a
+            COMMAND $<TARGET_FILE:solve_problem> MDistCntrl6a 10)
+    set_tests_properties(ipopt_example_luksan_MDistCntrl6a PROPERTIES TIMEOUT 30)
+    # set_tests_properties(ipopt_example_luksan_MDistCntrl6a PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+    set_tests_properties(ipopt_example_luksan_MDistCntrl6a PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found." WILL_FAIL TRUE)
+
+    add_test(NAME ipopt_example_luksan_MPara5_1
+            COMMAND $<TARGET_FILE:solve_problem> MPara5_1 10)
+    set_tests_properties(ipopt_example_luksan_MPara5_1 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MPara5_1 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MPara5_2_1
+            COMMAND $<TARGET_FILE:solve_problem> MPara5_2_1 10)
+    set_tests_properties(ipopt_example_luksan_MPara5_2_1 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MPara5_2_1 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MPara5_2_2
+            COMMAND $<TARGET_FILE:solve_problem> MPara5_2_2 10)
+    set_tests_properties(ipopt_example_luksan_MPara5_2_2 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MPara5_2_2 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    add_test(NAME ipopt_example_luksan_MPara5_2_3
+            COMMAND $<TARGET_FILE:solve_problem> MPara5_2_3 10)
+    set_tests_properties(ipopt_example_luksan_MPara5_2_3 PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_luksan_MPara5_2_3 PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+    set(Cpp_example_SRCS ${Ipopt_DIR}/examples/Cpp_example/cpp_example.cpp
+            ${Ipopt_DIR}/examples/Cpp_example/MyNLP.cpp)
+
+    add_executable_mod(cpp_example ${Cpp_example_SRCS})
+    target_link_libraries(cpp_example Ipopt::Ipopt)
+    if (COMPILE_LTO)
+        set_target_properties(cpp_example PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
+    endif ()
+    if (IPOPT_HAS_MUMPS)
+        target_link_libraries(cpp_example dmumps mumps_common seq pthread)
+    endif ()
+    if (MKL_FOUND)
+        target_link_libraries(cpp_example ${COIN_MKL_LIBS})
+    else ()
+        target_link_libraries(cpp_example LAPACK_TARGET quadmath)
+    endif ()
+    if (IPOPT_HAS_HSL)
+        target_link_libraries(cpp_example coinhsl)
+    endif ()
+    if (DOWNLOAD_LAPACK OR DOWNLOAD_MUMPS OR IPOPT_HAS_MUMPS OR USE_SYSTEM_LAPACK)
+        target_link_libraries(cpp_example gfortran)
+    endif ()
+    if ((IPOPT_ENABLE_LINEARSOLVERLOADER OR ENABLE_SHARED_LIBRARIES) AND UNIX)
+        target_link_libraries(cpp_example dl)
+    endif ()
+    if (UNIX)
+        target_link_libraries(cpp_example m)
+    endif ()
+    target_include_directories(cpp_example BEFORE PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/include)
+
+    add_test(NAME ipopt_example_cpp_example
+            COMMAND $<TARGET_FILE:cpp_example>)
+    set_tests_properties(ipopt_example_cpp_example PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_cpp_example PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+
+    set(hs071_c_SRCS ${Ipopt_DIR}/examples/hs071_c/hs071_c.c)
+
+    add_executable_mod(hs071_c ${hs071_c_SRCS})
+    target_link_libraries(hs071_c Ipopt::Ipopt)
+    if (COMPILE_LTO)
+        set_target_properties(hs071_c PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
+    endif ()
+    if (IPOPT_HAS_MUMPS)
+        target_link_libraries(hs071_c dmumps mumps_common seq pthread)
+    endif ()
+    if (IPOPT_HAS_HSL)
+        target_link_libraries(hs071_c coinhsl)
+    endif ()
+    if (MKL_FOUND)
+        target_link_libraries(hs071_c ${COIN_MKL_LIBS})
+    else ()
+        target_link_libraries(hs071_c LAPACK_TARGET)
+    endif ()
+    if (DOWNLOAD_LAPACK OR DOWNLOAD_MUMPS OR IPOPT_HAS_MUMPS OR USE_SYSTEM_LAPACK)
+        target_link_libraries(hs071_c gfortran)
+    endif ()
+    if ((IPOPT_ENABLE_LINEARSOLVERLOADER OR ENABLE_SHARED_LIBRARIES) AND UNIX)
+        target_link_libraries(hs071_c dl)
+    endif ()
+    if (UNIX)
+        target_link_libraries(hs071_c m)
+    endif ()
+    target_include_directories(hs071_c BEFORE PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/include)
+
+    add_test(NAME ipopt_example_hs071_c
+            COMMAND $<TARGET_FILE:hs071_c>)
+    set_tests_properties(ipopt_example_hs071_c PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_hs071_c PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+
+    set(hs071_cpp_SRCS ${Ipopt_DIR}/examples/hs071_cpp/hs071_main.cpp
+            ${Ipopt_DIR}/examples/hs071_cpp/hs071_nlp.cpp)
+
+    add_executable_mod(hs071_cpp ${hs071_cpp_SRCS})
+    target_link_libraries(hs071_cpp Ipopt::Ipopt)
+    if (COMPILE_LTO)
+        set_target_properties(hs071_cpp PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
+    endif ()
+    if (IPOPT_HAS_MUMPS)
+        target_link_libraries(hs071_cpp dmumps mumps_common seq pthread)
+    endif ()
+    if (IPOPT_HAS_HSL)
+        target_link_libraries(hs071_cpp coinhsl)
+    endif ()
+    if (MKL_FOUND)
+        target_link_libraries(hs071_cpp ${COIN_MKL_LIBS})
+    else ()
+        target_link_libraries(hs071_cpp LAPACK_TARGET)
+    endif ()
+    if (DOWNLOAD_LAPACK OR DOWNLOAD_MUMPS OR IPOPT_HAS_MUMPS OR USE_SYSTEM_LAPACK)
+        target_link_libraries(hs071_cpp gfortran)
+    endif ()
+    if ((IPOPT_ENABLE_LINEARSOLVERLOADER OR ENABLE_SHARED_LIBRARIES) AND UNIX)
+        target_link_libraries(hs071_cpp dl)
+    endif ()
+    if (UNIX)
+        target_link_libraries(hs071_cpp m)
+    endif ()
+    target_include_directories(hs071_cpp BEFORE PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/include)
+
+    add_test(NAME ipopt_example_hs071_cpp
+            COMMAND $<TARGET_FILE:hs071_cpp>)
+    set_tests_properties(ipopt_example_hs071_cpp PROPERTIES TIMEOUT 30)
+    set_tests_properties(ipopt_example_hs071_cpp PROPERTIES PASS_REGULAR_EXPRESSION "EXIT: Optimal Solution Found.")
+
+endif ()
+
+#
+# Install part
+#
+
+set(LINALG_HDRS ${Ipopt_DIR}/src/LinAlg/IpMatrix.hpp
+        ${Ipopt_DIR}/src/LinAlg/IpSymMatrix.hpp
+        ${Ipopt_DIR}/src/LinAlg/IpExpansionMatrix.hpp
+        ${Ipopt_DIR}/src/LinAlg/IpVector.hpp
+        ${Ipopt_DIR}/src/LinAlg/IpDenseVector.hpp
+        ${Ipopt_DIR}/src/LinAlg/IpCompoundVector.hpp
+        ${Ipopt_DIR}/src/LinAlg/IpCompoundMatrix.hpp
+        ${Ipopt_DIR}/src/LinAlg/IpCompoundSymMatrix.hpp
+        ${Ipopt_DIR}/src/LinAlg/IpSumSymMatrix.hpp
+        ${Ipopt_DIR}/src/LinAlg/IpDiagMatrix.hpp
+        ${Ipopt_DIR}/src/LinAlg/IpIdentityMatrix.hpp
+        ${Ipopt_DIR}/src/LinAlg/IpScaledMatrix.hpp
+        ${Ipopt_DIR}/src/LinAlg/IpSymScaledMatrix.hpp
+        ${Ipopt_DIR}/src/LinAlg/IpZeroSymMatrix.hpp
+        ${Ipopt_DIR}/src/LinAlg/IpBlas.hpp
+        ${Ipopt_DIR}/src/LinAlg/IpLapack.hpp)
+
+set(TMATRICES_HDRS ${Ipopt_DIR}/src/LinAlg/TMatrices/IpGenTMatrix.hpp
+        ${Ipopt_DIR}/src/LinAlg/TMatrices/IpSymTMatrix.hpp
+        ${Ipopt_DIR}/src/LinAlg/TMatrices/IpTripletHelper.hpp)
+
+set(INTERFACES_HDRS ${Ipopt_DIR}/src/Interfaces/IpAlgTypes.hpp
+        ${Ipopt_DIR}/src/Interfaces/IpIpoptApplication.hpp
+        ${Ipopt_DIR}/src/Interfaces/IpNLP.hpp
+        ${Ipopt_DIR}/src/Interfaces/IpReturnCodes.h
+        ${Ipopt_DIR}/src/Interfaces/IpReturnCodes.hpp
+        ${Ipopt_DIR}/src/Interfaces/IpReturnCodes_inc.h
+        ${Ipopt_DIR}/src/Interfaces/IpReturnCodes.inc
+        ${Ipopt_DIR}/src/Interfaces/IpSolveStatistics.hpp
+        ${Ipopt_DIR}/src/Interfaces/IpStdCInterface.h
+        ${Ipopt_DIR}/src/Interfaces/IpTNLP.hpp
+        ${Ipopt_DIR}/src/Interfaces/IpTNLPAdapter.hpp
+        ${Ipopt_DIR}/src/Interfaces/IpTNLPReducer.hpp)
+
+set(COMMON_HDRS ${Ipopt_DIR}/src/Common/IpCachedResults.hpp
+        ${Ipopt_DIR}/src/Common/IpDebug.hpp
+        ${Ipopt_DIR}/src/Common/IpException.hpp
+        ${Ipopt_DIR}/src/Common/IpJournalist.hpp
+        ${Ipopt_DIR}/src/Common/IpObserver.hpp
+        ${Ipopt_DIR}/src/Common/IpOptionsList.hpp
+        ${Ipopt_DIR}/src/Common/IpReferenced.hpp
+        ${Ipopt_DIR}/src/Common/IpRegOptions.hpp
+        ${Ipopt_DIR}/src/Common/IpSmartPtr.hpp
+        ${Ipopt_DIR}/src/Common/IpTaggedObject.hpp
+        ${Ipopt_DIR}/src/Common/IpTimedTask.hpp
+        ${Ipopt_DIR}/src/Common/IpTypes.hpp
+        ${Ipopt_DIR}/src/Common/IpUtils.hpp)
+
+set(ALGORITHMS_HDRS ${Ipopt_DIR}/src/Algorithm/IpIpoptCalculatedQuantities.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpIpoptData.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpIteratesVector.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpTimingStatistics.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpIpoptNLP.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpOrigIpoptNLP.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpNLPScaling.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpAlgBuilder.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpIpoptAlg.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpAlgStrategy.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpSearchDirCalculator.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpLineSearch.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpMuUpdate.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpConvCheck.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpIterateInitializer.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpIterationOutput.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpHessianUpdater.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpEqMultCalculator.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpAugSystemSolver.hpp
+        ${Ipopt_DIR}/src/Algorithm/IpPDSystemSolver.hpp)
+
+set(LINEARSOLVERS_HDRS ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpSymLinearSolver.hpp)
+
+set(ALL_HDRS ${LINALG_HDRS}
+        ${TMATRICES_HDRS}
+        ${INTERFACES_HDRS}
+        ${COMMON_HDRS}
+        ${ALGORITHMS_HDRS}
+        ${LINEARSOLVERS_HDRS})
+
+install(FILES ${ALL_HDRS}
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin)
+
+install(TARGETS ipopt
+        RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
+
+# install(FILES AUTHORS
+#         DESTINATION ${DATAROOTDIR}/coin/doc/Ipopt/)

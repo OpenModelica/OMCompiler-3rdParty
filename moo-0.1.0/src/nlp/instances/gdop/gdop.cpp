@@ -175,7 +175,7 @@ void GDOP::get_initial_guess(
         flatten_trajectory_to_layout(*initial_guess_primal, x_init);
     }
     else {
-        LOG_ERROR("No primal initial guess supplied in GDOP::init_starting_point().");
+        Log::error("No primal initial guess supplied in GDOP::init_starting_point().");
     }
 
     if (initial_guess_costate) {
@@ -990,25 +990,25 @@ void GDOP::update_hessian_mr(const HessianMR& hes, FixedVector<f64>& curr_hes) {
         curr_hes[hes_d_block.access(dxf_dxf.row, dxf_dxf.col)] += problem.mr_hes(dxf_dxf.buf_index);
     }
     for (const auto& duf_dx0 : hes.duf_dx0) {
-        curr_hes[hes_c_block.access(duf_dx0.row, duf_dx0.col)] += problem.mr_hes(duf_dx0.buf_index);
+        curr_hes[hes_c_block.access(off_x + duf_dx0.row, duf_dx0.col)] += problem.mr_hes(duf_dx0.buf_index);
     }
     for (const auto& duf_dxf : hes.duf_dxf) {
-        curr_hes[hes_d_block.access(duf_dxf.row, duf_dxf.col)] += problem.mr_hes(duf_dxf.buf_index);
+        curr_hes[hes_d_block.access(off_x + duf_dxf.row, duf_dxf.col)] += problem.mr_hes(duf_dxf.buf_index);
     }
     for (const auto& duf_duf : hes.duf_duf) {
-        curr_hes[hes_d_block.access(duf_duf.row, duf_duf.col)] += problem.mr_hes(duf_duf.buf_index);
+        curr_hes[hes_d_block.access(off_x + duf_duf.row, off_x + duf_duf.col)] += problem.mr_hes(duf_duf.buf_index);
     }
     for (const auto& dp_dx0 : hes.dp_dx0) {
-        curr_hes[hes_e_block.access(dp_dx0.row,  dp_dx0.col)]  += problem.mr_hes(dp_dx0.buf_index);
+        curr_hes[hes_e_block.access(dp_dx0.row, dp_dx0.col)]  += problem.mr_hes(dp_dx0.buf_index);
     }
     for (const auto& dp_dxf : hes.dp_dxf) {
-        curr_hes[hes_g_block.access(dp_dxf.row,  dp_dxf.col)]  += problem.mr_hes(dp_dxf.buf_index);
+        curr_hes[hes_g_block.access(dp_dxf.row, dp_dxf.col)]  += problem.mr_hes(dp_dxf.buf_index);
     }
     for (const auto& dp_duf : hes.dp_duf) {
-        curr_hes[hes_g_block.access(dp_duf.row,  dp_duf.col)]  += problem.mr_hes(dp_duf.buf_index);
+        curr_hes[hes_g_block.access(dp_duf.row, off_x + dp_duf.col)]  += problem.mr_hes(dp_duf.buf_index);
     }
     for (const auto& dp_dp : hes.dp_dp) {
-        curr_hes[hes_h_block.access(dp_dp.row,   dp_dp.col)]   += problem.mr_hes(dp_dp.buf_index);
+        curr_hes[hes_h_block.access(dp_dp.row, dp_dp.col)]   += problem.mr_hes(dp_dp.buf_index);
     }
 }
 
@@ -1016,7 +1016,7 @@ void GDOP::update_hessian_mr(const HessianMR& hes, FixedVector<f64>& curr_hes) {
 // === Optimal Solution Retrieval and Costate Estimations ===
 
 /**
- * Dual Transformation in Direct fLGR for Dynamic Optimization
+ * Dual Transformation in Direct Collocation for Dynamic Optimization
  *
  * When solving a dynamic optimization problem using direct collocation with flipped Legendre-Gauss-Radau (fLGR)
  * quadrature, the optimizer returns Karush-Kuhn-Tucker (KKT) multipliers.
@@ -1095,6 +1095,7 @@ std::unique_ptr<Trajectory> GDOP::finalize_optimal_primals(const FixedVector<f64
     optimal_primals->x.resize(off_x);
     optimal_primals->u.resize(off_u);
     optimal_primals->inducing_mesh = mesh->shared_from_this();
+    optimal_primals->interpolation = InterpolationMethod::POLYNOMIAL;
 
     for (auto& v : optimal_primals->x) { v.reserve(mesh->node_count + 1); }
     for (auto& v : optimal_primals->u) { v.reserve(mesh->node_count + 1); }
@@ -1190,6 +1191,7 @@ std::unique_ptr<CostateTrajectory> GDOP::finalize_optimal_costates(const FixedVe
     optimal_costates->costates_f.resize(f_size);
     optimal_costates->costates_g.resize(g_size);
     optimal_costates->inducing_mesh = mesh->shared_from_this();
+    optimal_costates->interpolation = InterpolationMethod::POLYNOMIAL;
 
     for (auto& v : optimal_costates->costates_f) { v.reserve(mesh->node_count + 1); }
     for (auto& v : optimal_costates->costates_g) { v.reserve(mesh->node_count + 1); }
@@ -1313,8 +1315,9 @@ std::pair<std::unique_ptr<Trajectory>, std::unique_ptr<Trajectory>> GDOP::finali
         traj.t.reserve(mesh->node_count + 1);
         traj.x.resize(off_x);
         traj.u.resize(off_u);
-        traj.p.reserve(off_p); // TODO: PARAMETERS add parameters to result trajectory
+        traj.p.resize(off_p);
         traj.inducing_mesh = mesh->shared_from_this();
+        traj.interpolation = InterpolationMethod::POLYNOMIAL;
 
         for (auto& v : traj.x) { v.reserve(mesh->node_count + 1); }
         for (auto& v : traj.u) { v.reserve(mesh->node_count + 1); }
@@ -1342,6 +1345,10 @@ std::pair<std::unique_ptr<Trajectory>, std::unique_ptr<Trajectory>> GDOP::finali
 
                 traj.t.push_back(mesh->t[i][j]);
             }
+        }
+
+        for (int p_idx = 0; p_idx < off_p; p_idx++) {
+            traj.p[p_idx] = z_dual[off_xu_total + p_idx];
         }
     }
 
