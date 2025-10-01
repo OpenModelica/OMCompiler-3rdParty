@@ -562,13 +562,6 @@ message(STATUS "Include directories:${color_reset}     ${ALL_INCLUDES}")
 message(STATUS "Link directories:${color_reset}        ${ALL_LINKS}")
 message(STATUS "Compilation definitions:${color_reset} ${ALL_DEFS}")
 
-#
-# Install part
-#
-
-# install(FILES ${Ipopt_DIR}/LICENSE ${Ipopt_DIR}/README.md
-#         DESTINATION share/coin/doc/Ipopt/)
-
 # TODO: remove this temporary solution
 restore_tmp(CMAKE_C_FLAGS        _GLOBL_TMP_CFLAGS       )
 restore_tmp(CMAKE_CXX_FLAGS      _GLOBL_TMP_CXXFLAGS     )

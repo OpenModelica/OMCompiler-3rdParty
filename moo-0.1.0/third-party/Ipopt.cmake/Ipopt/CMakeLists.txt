@@ -21,32 +21,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/config.h.in       ${CMAKE_CUR
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/config_ipopt.h.in ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/include/config_ipopt.h)
 
 #
-# pkg-config file generation
-#
-
-set(prefix               "${CMAKE_INSTALL_PREFIX}")
-set(exec_prefix          "\${prefix}")
-set(libdir               "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-set(includedir           "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
-set(IPOPTLIB_LFLAGS_NOPC "-lm -ldl")
-set(IPOPTLIB_PCFILES     "")
-if (COIN_HAS_LAPACK OR USE_SYSTEM_LAPACK)
-    set(IPOPTLIB_PCFILES "${IPOPTLIB_PCFILES} -llapack")
-endif ()
-if (COIN_HAS_BLAS OR COIN_USE_BLAS)
-    set(IPOPTLIB_PCFILES "${IPOPTLIB_PCFILES} -lblas")
-endif ()
-set(PACKAGE_VERSION "${IPOPT_VERSION}")
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ipopt.pc.in ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/ipopt.pc @ONLY)
-
-set(libdir         "${Ipopt_DIR}")
-set(abs_source_dir "${CMAKE_CURRENT_BINARY_DIR}/bin")
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/ipopt.pc
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pkg-config/)
-
-#
 # Build
 #
 
@@ -294,14 +268,13 @@ target_include_directories(ipopt PUBLIC ${Ipopt_DIR}/src/Algorithm/Inexact)
 target_include_directories(ipopt PUBLIC ${Ipopt_DIR}/src/contrib/CGPenalty)
 target_include_directories(ipopt PUBLIC ${Ipopt_DIR}/src/Apps/AmplSolver)
 target_include_directories(ipopt PUBLIC ${Ipopt_DIR}/src/LinAlg/TMatrices)
+target_include_directories(ipopt PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/include)
 
 add_library(Ipopt::Ipopt ALIAS ipopt)
 
 if (COMPILE_LTO)
     set_target_properties(ipopt PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
 endif ()
-
-target_include_directories(ipopt BEFORE PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/include)
 
 if (IPOPT_HAS_MUMPS)
     target_link_libraries(ipopt dmumps mumps_common seq pthread)
@@ -400,8 +373,6 @@ if (IPOPT_BUILD_EXAMPLES)
         target_link_libraries(solve_problem dl)
     endif ()
     include_directories(${Ipopt_DIR}/examples/ScalableProblems)
-    target_include_directories(solve_problem BEFORE PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/include)
-
     add_test(NAME ipopt_example_luksan_LukVlE1
             COMMAND $<TARGET_FILE:solve_problem> LukVlE1 10)
     set_tests_properties(ipopt_example_luksan_LukVlE1 PROPERTIES TIMEOUT 30)
@@ -631,7 +602,6 @@ if (IPOPT_BUILD_EXAMPLES)
     if (UNIX)
         target_link_libraries(cpp_example m)
     endif ()
-    target_include_directories(cpp_example BEFORE PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/include)
 
     add_test(NAME ipopt_example_cpp_example
             COMMAND $<TARGET_FILE:cpp_example>)
@@ -666,7 +636,6 @@ if (IPOPT_BUILD_EXAMPLES)
     if (UNIX)
         target_link_libraries(hs071_c m)
     endif ()
-    target_include_directories(hs071_c BEFORE PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/include)
 
     add_test(NAME ipopt_example_hs071_c
             COMMAND $<TARGET_FILE:hs071_c>)
@@ -702,7 +671,6 @@ if (IPOPT_BUILD_EXAMPLES)
     if (UNIX)
         target_link_libraries(hs071_cpp m)
     endif ()
-    target_include_directories(hs071_cpp BEFORE PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Ipopt/include)
 
     add_test(NAME ipopt_example_hs071_cpp
             COMMAND $<TARGET_FILE:hs071_cpp>)
@@ -715,91 +683,4 @@ endif ()
 # Install part
 #
 
-set(LINALG_HDRS ${Ipopt_DIR}/src/LinAlg/IpMatrix.hpp
-        ${Ipopt_DIR}/src/LinAlg/IpSymMatrix.hpp
-        ${Ipopt_DIR}/src/LinAlg/IpExpansionMatrix.hpp
-        ${Ipopt_DIR}/src/LinAlg/IpVector.hpp
-        ${Ipopt_DIR}/src/LinAlg/IpDenseVector.hpp
-        ${Ipopt_DIR}/src/LinAlg/IpCompoundVector.hpp
-        ${Ipopt_DIR}/src/LinAlg/IpCompoundMatrix.hpp
-        ${Ipopt_DIR}/src/LinAlg/IpCompoundSymMatrix.hpp
-        ${Ipopt_DIR}/src/LinAlg/IpSumSymMatrix.hpp
-        ${Ipopt_DIR}/src/LinAlg/IpDiagMatrix.hpp
-        ${Ipopt_DIR}/src/LinAlg/IpIdentityMatrix.hpp
-        ${Ipopt_DIR}/src/LinAlg/IpScaledMatrix.hpp
-        ${Ipopt_DIR}/src/LinAlg/IpSymScaledMatrix.hpp
-        ${Ipopt_DIR}/src/LinAlg/IpZeroSymMatrix.hpp
-        ${Ipopt_DIR}/src/LinAlg/IpBlas.hpp
-        ${Ipopt_DIR}/src/LinAlg/IpLapack.hpp)
-
-set(TMATRICES_HDRS ${Ipopt_DIR}/src/LinAlg/TMatrices/IpGenTMatrix.hpp
-        ${Ipopt_DIR}/src/LinAlg/TMatrices/IpSymTMatrix.hpp
-        ${Ipopt_DIR}/src/LinAlg/TMatrices/IpTripletHelper.hpp)
-
-set(INTERFACES_HDRS ${Ipopt_DIR}/src/Interfaces/IpAlgTypes.hpp
-        ${Ipopt_DIR}/src/Interfaces/IpIpoptApplication.hpp
-        ${Ipopt_DIR}/src/Interfaces/IpNLP.hpp
-        ${Ipopt_DIR}/src/Interfaces/IpReturnCodes.h
-        ${Ipopt_DIR}/src/Interfaces/IpReturnCodes.hpp
-        ${Ipopt_DIR}/src/Interfaces/IpReturnCodes_inc.h
-        ${Ipopt_DIR}/src/Interfaces/IpReturnCodes.inc
-        ${Ipopt_DIR}/src/Interfaces/IpSolveStatistics.hpp
-        ${Ipopt_DIR}/src/Interfaces/IpStdCInterface.h
-        ${Ipopt_DIR}/src/Interfaces/IpTNLP.hpp
-        ${Ipopt_DIR}/src/Interfaces/IpTNLPAdapter.hpp
-        ${Ipopt_DIR}/src/Interfaces/IpTNLPReducer.hpp)
-
-set(COMMON_HDRS ${Ipopt_DIR}/src/Common/IpCachedResults.hpp
-        ${Ipopt_DIR}/src/Common/IpDebug.hpp
-        ${Ipopt_DIR}/src/Common/IpException.hpp
-        ${Ipopt_DIR}/src/Common/IpJournalist.hpp
-        ${Ipopt_DIR}/src/Common/IpObserver.hpp
-        ${Ipopt_DIR}/src/Common/IpOptionsList.hpp
-        ${Ipopt_DIR}/src/Common/IpReferenced.hpp
-        ${Ipopt_DIR}/src/Common/IpRegOptions.hpp
-        ${Ipopt_DIR}/src/Common/IpSmartPtr.hpp
-        ${Ipopt_DIR}/src/Common/IpTaggedObject.hpp
-        ${Ipopt_DIR}/src/Common/IpTimedTask.hpp
-        ${Ipopt_DIR}/src/Common/IpTypes.hpp
-        ${Ipopt_DIR}/src/Common/IpUtils.hpp)
-
-set(ALGORITHMS_HDRS ${Ipopt_DIR}/src/Algorithm/IpIpoptCalculatedQuantities.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpIpoptData.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpIteratesVector.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpTimingStatistics.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpIpoptNLP.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpOrigIpoptNLP.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpNLPScaling.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpAlgBuilder.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpIpoptAlg.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpAlgStrategy.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpSearchDirCalculator.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpLineSearch.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpMuUpdate.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpConvCheck.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpIterateInitializer.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpIterationOutput.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpHessianUpdater.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpEqMultCalculator.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpAugSystemSolver.hpp
-        ${Ipopt_DIR}/src/Algorithm/IpPDSystemSolver.hpp)
-
-set(LINEARSOLVERS_HDRS ${Ipopt_DIR}/src/Algorithm/LinearSolvers/IpSymLinearSolver.hpp)
-
-set(ALL_HDRS ${LINALG_HDRS}
-        ${TMATRICES_HDRS}
-        ${INTERFACES_HDRS}
-        ${COMMON_HDRS}
-        ${ALGORITHMS_HDRS}
-        ${LINEARSOLVERS_HDRS})
-
-install(FILES ${ALL_HDRS}
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin)
-
-install(TARGETS ipopt
-        RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
-
-# install(FILES AUTHORS
-#         DESTINATION ${DATAROOTDIR}/coin/doc/Ipopt/)
+install(TARGETS ipopt PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ipopt)

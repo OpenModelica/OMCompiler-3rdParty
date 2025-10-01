@@ -11,16 +11,6 @@ message(STATUS "Building MUMPS with METIS: ${MUMPS_USE_METIS}")
 
 set(INCLUDEDIR ${CMAKE_CURRENT_BINARY_DIR}/MUMPS/include)
 
-include(GNUInstallDirs)
-
-#------------------------------------------------------------
-# End of user config part
-#------------------------------------------------------------
-
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
-
 #------------------------------------------------------------
 # Detect 64 bits
 #------------------------------------------------------------
@@ -714,25 +704,22 @@ if (WIN32)
   set_target_properties(c_example PROPERTIES LINKER_LANGUAGE Fortran)
 endif ()
 
+
 # Install rules
 if (MUMPS_USE_LIBSEQ)
-  install(TARGETS seq
-          DESTINATION ${LIBDIR})
+  install(TARGETS seq)
 endif ()
 
 if (NOT MUMPS_USE_LIBSEQ)
-install(TARGETS pord
-        DESTINATION ${LIBDIR})
+  install(TARGETS pord)
 endif ()
 
-install(TARGETS mumps_common
-        DESTINATION ${LIBDIR})
+install(TARGETS mumps_common)
 
 # install(TARGETS cmumps
 #         DESTINATION ${LIBDIR})
 
-install(TARGETS dmumps
-        DESTINATION ${LIBDIR})
+install(TARGETS dmumps PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mumps)
 
 # install(TARGETS smumps
 #         DESTINATION ${LIBDIR})
