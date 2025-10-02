@@ -12,10 +12,7 @@ if(MOO_WITH_RADAU)
         dc_lapack.f
     )
 
-    target_compile_options(radau PRIVATE -O3 -fPIC)
-
-    target_link_libraries(radau PUBLIC ${MOO_LAPACK_LIB} ${MOO_GFORTRAN_LIB})
-
+    target_compile_options(radau PRIVATE ${CMAKE_Fortran_FLAGS} -fPIC)
     target_include_directories(radau PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 else()

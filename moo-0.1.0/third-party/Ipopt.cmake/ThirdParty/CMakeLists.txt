@@ -58,6 +58,7 @@ endif()
 add_library(LAPACK_TARGET INTERFACE)
 
 if(DOWNLOAD_LAPACK)
+    # TODO: remove safe_tmp
     safe_tmp(_TMP_BUILD_SHARED_LIBS BUILD_SHARED_LIBS)
     safe_tmp(_TMP_BUILD_TESTING     BUILD_TESTING)
     safe_tmp(_TMP_CFLAGS            CMAKE_C_FLAGS)

@@ -614,15 +614,27 @@ set(MUMPS_Z_SRCS src/mumps_c.c
 
 set(LINK_LIBS ${LINK_LIBS} LAPACK_TARGET)
 
+add_library(mumps_flags INTERFACE)
+
 if ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -w -fcray-pointer -fallow-argument-mismatch -fall-intrinsics -finit-local-zero")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w")
-  set(LINK_LIBS ${LINK_LIBS} gfortran)
+    target_compile_options(mumps_flags INTERFACE
+        $<$<COMPILE_LANGUAGE:Fortran>:
+        -w
+        -fcray-pointer
+        -fallow-argument-mismatch
+        -fall-intrinsics
+        -finit-local-zero>
+    )
+
+    target_link_libraries(mumps_flags INTERFACE gfortran)
 endif ()
 
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fPIC -cpp -DALLOW_NON_INIT -Dintel_ ")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -DAdd_")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -DAdd_")
+target_compile_definitions(mumps_flags INTERFACE
+    ALLOW_NON_INIT
+    intel_
+    Add_
+    MUMPS_ARITH=MUMPS_ARITH_d
+)
 
 if (WIN32)
   if (MUMPS_USE_LIBSEQ)
@@ -654,6 +666,7 @@ endif ()
 
 if (MUMPS_USE_LIBSEQ)
   add_library(seq STATIC ${MUMPS_LIBSEQ_SRCS})
+  target_link_libraries(seq PRIVATE std_global_flags mumps_flags)
 endif ()
 
 if (NOT MUMPS_USE_LIBSEQ)
@@ -668,7 +681,8 @@ if (CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
 endif ()
 
 add_library(mumps_common STATIC ${MUMPS_COMMON_SRCS})
-target_link_libraries(mumps_common ${LINK_LIBS})
+target_link_libraries(mumps_common PRIVATE std_global_flags mumps_flags)
+target_link_libraries(mumps_common PUBLIC ${LINK_LIBS})
 
 # TODO: add MUMPS single precision
 
@@ -677,7 +691,8 @@ target_link_libraries(mumps_common ${LINK_LIBS})
 #
 
 add_library(dmumps STATIC ${MUMPS_D_SRCS})
-target_link_libraries(dmumps mumps_common ${LINK_LIBS})
+target_link_libraries(dmumps PRIVATE std_global_flags mumps_flags)
+target_link_libraries(dmumps PUBLIC mumps_common ${LINK_LIBS})
 target_include_directories(dmumps PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(dmumps PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/libseq)
 
@@ -686,11 +701,6 @@ target_include_directories(dmumps PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/libseq)
 
 # add_library(zmumps STATIC ${MUMPS_Z_SRCS})
 # target_link_libraries(zmumps mumps_common)
-
-#set_property(TARGET libsmumps PROPERTY COMPILE_FLAGS "-DMUMPS_ARITH=MUMPS_ARITH_s")
-set_property(TARGET dmumps PROPERTY COMPILE_FLAGS "-DMUMPS_ARITH=MUMPS_ARITH_d")
-#set_property(TARGET libcmumps PROPERTY COMPILE_FLAGS "-DMUMPS_ARITH=MUMPS_ARITH_c")
-#set_property(TARGET libzmumps PROPERTY COMPILE_FLAGS "-DMUMPS_ARITH=MUMPS_ARITH_z")
 
 add_executable(dsimple_test examples/dsimpletest.F)
 target_link_libraries(dsimple_test dmumps mumps_common ${LINK_LIBS})
@@ -716,16 +726,7 @@ endif ()
 
 install(TARGETS mumps_common)
 
-# install(TARGETS cmumps
-#         DESTINATION ${LIBDIR})
-
 install(TARGETS dmumps PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mumps)
-
-# install(TARGETS smumps
-#         DESTINATION ${LIBDIR})
-# 
-# install(TARGETS zmumps
-#         DESTINATION ${LIBDIR})
 
 if (MUMPS_USE_LIBSEQ)
   install(DIRECTORY libseq/
