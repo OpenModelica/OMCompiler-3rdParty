@@ -43,10 +43,16 @@ set(METIS_INC_PATH "" CACHE PATH   "Path to METIS include directory (contains me
 set(EXTERNAL_METIS_TARGET "" CACHE STRING "Existing METIS target to use: add_library(EXTERNAL_METIS_TARGET ALIAS MY_METIS_TARGET)")
 
 # Compilation options
-option(USE_FAST_CODE            "Use intensive optimization flags" ON)
+option(USE_FAST_CODE            "Use intensive optimization flags" OFF)
 option(ENABLE_SHARED_LIBRARIES  "Build libraries as shared libraries" OFF)
 option(COMPILE_LTO              "Activate the whole program optimization" OFF)  # GCC macOS does not support this
 option(HAS_MKL                  "Use Intel MKL library (requires Intel compiler)" OFF)
+
+if(CMAKE_BUILD_TYPE STREQUAL "")
+    message(WARNING "CMAKE_BUILD_TYPE not defined - Ipopt and MUMPS will be slow.")
+else()
+    message(STATUS "Using build type: ${CMAKE_BUILD_TYPE}")
+endif()
 
 # Set paths of source
 set(Ipopt_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Ipopt/sources/)
@@ -72,11 +78,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 include(GetAcInitVersion)
 include(GNUInstallDirs)
 include(cmake/utils.cmake)
-
-# TODO: remove this awful solution by explicitly setting the flags for targets instead of globally!!
-safe_tmp(_GLOBL_TMP_CFLAGS       CMAKE_C_FLAGS)
-safe_tmp(_GLOBL_TMP_CXXFLAGS     CMAKE_CXX_FLAGS)
-safe_tmp(_GLOBL_TMP_FortranFLAGS CMAKE_Fortran_FLAGS)
 
 Enable_Testing ()
 
@@ -121,14 +122,16 @@ if (COMPILE_LTO)
     check_ipo_supported()
 endif ()
 
+add_library(std_global_flags INTERFACE)
+
 if (USE_PROCESSOR_EXTENSIONS)
     # Check for SSE* and AVX*
     find_package(SSE)
     if (MMX_FOUND OR SSE2_FOUND OR SSE3_FOUND OR SSSE3_FOUND OR
         SSE4_1_FOUND OR SSE4_2_FOUND OR AVX_FOUND OR AVX2_FOUND)
-        set(CMAKE_C_FLAGS       "${CMAKE_C_FLAGS} ${SSE_COMPILER_FLAGS}")
-        set(CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} ${SSE_COMPILER_FLAGS}")
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${SSE_COMPILER_FLAGS}")
+        target_compile_options(std_global_flags INTERFACE
+            ${SSE_COMPILER_FLAGS}
+        )
     endif ()
 endif ()
 
@@ -251,30 +254,6 @@ check_include_file_cxx("ctime"     HAVE_CTIME)
 
 string(SUBSTRING ${CMAKE_SHARED_LIBRARY_SUFFIX} 1 -1 SHAREDLIBEXT)
 
-include(CheckCXXCompilerFlag)
-
-check_cxx_compiler_flag(-Qunused-arguments HAVE_QUNUSED_ARGUMENTS)
-if (HAVE_QUNUSED_ARGUMENTS)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments")
-endif ()
-
-if (UNIX)
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT APPLE)
-        check_cxx_compiler_flag(-Wno-unused-local-typedefs GCC_HAS_TYPEDEFS)
-        if (GCC_HAS_TYPEDEFS)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedefs")
-        endif ()
-    endif ()
-
-    if (NOT APPLE)
-        check_cxx_compiler_flag(-Wno-narrowing GCC_HAS_NARROWING)
-        if (GCC_HAS_NARROWING)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-narrowing")
-            set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wno-narrowing")
-        endif ()
-    endif ()
-endif ()
-
 include(CheckTypeSize)
 
 check_type_size("int *" SIZEOF_INT_P)
@@ -375,23 +354,9 @@ endif ()
 #-----------------------------------------------------------------------------
 
 if (UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
-    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wno-deprecated")
-
     if (NOT ENABLE_SHARED_LIBRARIES)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-        set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -fPIC")
+        target_compile_options(std_global_flags INTERFACE -fPIC)
     endif ()
-endif ()
-
-#-----------------------------------------------------------------------------
-# Manage specific VS flags
-#-----------------------------------------------------------------------------
-
-if (MSVC)
-    # Avoid Warning C4530 by using the flag /EHsc
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc ")
-    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} /EHsc ")
 endif ()
 
 #-----------------------------------------------------------------------------
@@ -420,37 +385,23 @@ set(FORTRAN_INTEGER_TYPE int)
 # Detect name mangling convention used between Fortran and C
 #-----------------------------------------------------------------------------
 
-# TODO: this fails for flang with gcc & g++
+enable_language(Fortran)
 
-if (CMAKE_Fortran_COMPILER)
-    enable_language(Fortran)
+include(FortranCInterface)
 
-    safe_tmp(_LOCAL_TMP_F_FLAGS CMAKE_Fortran_FLAGS)
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-lto")
+FortranCInterface_HEADER(${CMAKE_CURRENT_BINARY_DIR}/F77Mangle.h
+        MACRO_NAMESPACE "F77_"
+        SYMBOL_NAMESPACE "F77_")
 
-    include(FortranCInterface)
+file(STRINGS ${CMAKE_CURRENT_BINARY_DIR}/F77Mangle.h CONTENTS REGEX "F77_GLOBAL\\(.*,.*\\) +(.*)")
+string(REGEX MATCH "F77_GLOBAL\\(.*,.*\\) +(.*)" RESULT ${CONTENTS})
+set(F77_FUNC         "F77_FUNC(name,NAME) ${CMAKE_MATCH_1}")
+set(COIN_LAPACK_FUNC "COIN_LAPACK_FUNC(name,NAME) ${CMAKE_MATCH_1}")
 
-    FortranCInterface_HEADER(${CMAKE_CURRENT_BINARY_DIR}/F77Mangle.h
-            MACRO_NAMESPACE "F77_"
-            SYMBOL_NAMESPACE "F77_")
-
-    file(STRINGS ${CMAKE_CURRENT_BINARY_DIR}/F77Mangle.h CONTENTS REGEX "F77_GLOBAL\\(.*,.*\\) +(.*)")
-    string(REGEX MATCH "F77_GLOBAL\\(.*,.*\\) +(.*)" RESULT ${CONTENTS})
-    set(F77_FUNC         "F77_FUNC(name,NAME) ${CMAKE_MATCH_1}")
-    set(COIN_LAPACK_FUNC "COIN_LAPACK_FUNC(name,NAME) ${CMAKE_MATCH_1}")
-
-    file(STRINGS ${CMAKE_CURRENT_BINARY_DIR}/F77Mangle.h CONTENTS REGEX "F77_GLOBAL_\\(.*,.*\\) +(.*)")
-    string(REGEX MATCH "F77_GLOBAL_\\(.*,.*\\) +(.*)" RESULT ${CONTENTS})
-    set(F77_FUNC_         "F77_FUNC_(name,NAME) ${CMAKE_MATCH_1}")
-    set(COIN_LAPACK_FUNC_ "COIN_LAPACK_FUNC_(name,NAME) ${CMAKE_MATCH_1}")
-    restore_tmp(CMAKE_Fortran_FLAGS _LOCAL_TMP_F_FLAGS)
-else ()
-    set(F77_FUNC          "F77_FUNC(name,NAME)  name##_")
-    set(F77_FUNC_         "F77_FUNC_(name,NAME) name##__")
-    set(COIN_LAPACK_FUNC  "COIN_LAPACK_FUNC(name,NAME)  name##_")
-    set(COIN_LAPACK_FUNC_ "COIN_LAPACK_FUNC_(name,NAME) name##__")
-endif ()
-
+file(STRINGS ${CMAKE_CURRENT_BINARY_DIR}/F77Mangle.h CONTENTS REGEX "F77_GLOBAL_\\(.*,.*\\) +(.*)")
+string(REGEX MATCH "F77_GLOBAL_\\(.*,.*\\) +(.*)" RESULT ${CONTENTS})
+set(F77_FUNC_         "F77_FUNC_(name,NAME) ${CMAKE_MATCH_1}")
+set(COIN_LAPACK_FUNC_ "COIN_LAPACK_FUNC_(name,NAME) ${CMAKE_MATCH_1}")
 
 set(F77_DUMMY_MAIN "" CACHE STRING "Define to dummy 'main' function (if any) required to link to the Fortran libraries.")
 set(FC_DUMMY_MAIN  "" CACHE STRING "Define to dummy 'main' function (if any) required to link to the Fortran libraries.")
@@ -469,20 +420,11 @@ mark_as_advanced(F77_FUNC
 # End of coverage
 
 if (USE_FAST_CODE)
-    set(CMAKE_CXX_FLAGS       "${CMAKE_CXX_FLAGS} -O3 -fomit-frame-pointer ")
-    set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS} -O3 -fomit-frame-pointer ")
-    set(CMAKE_Fortran_FLAGS   "${CMAKE_Fortran_FLAGS} -O3 ")
-
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-math-errno -fp-trap=none ")
-        set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fno-math-errno -fp-trap=none ")
-    endif ()
-
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -fno-math-errno -fno-trapping-math ")
-        set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -ffast-math -fno-math-errno -fno-trapping-math ")
-    endif ()
-
+    target_compile_options(std_global_flags INTERFACE
+        $<$<COMPILE_LANGUAGE:CXX>:-O3 -fomit-frame-pointer -ffast-math -fno-math-errno -fno-trapping-math>
+        $<$<COMPILE_LANGUAGE:C>:-O3 -fomit-frame-pointer -ffast-math -fno-math-errno -fno-trapping-math>
+        $<$<COMPILE_LANGUAGE:Fortran>:-O3 -fomit-frame-pointer -ffast-math>
+    )
 endif ()
 
 add_definitions(-DHAVE_CONFIG_H)
@@ -501,68 +443,3 @@ add_subdirectory(ThirdParty)
 #
 
 add_subdirectory(Ipopt)
-
-#
-# Packaging
-#
-
-set(CPACK_PACKAGE_NAME      "${PACKAGE_NAME}")
-set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${IPOPT_VERSION}-${CMAKE_SYSTEM_NAME}")
-
-message(STATUS "Package filename: ${CPACK_PACKAGE_FILE_NAME}")
-
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PACKAGE_NAME}")
-set(CPACK_PACKAGE_VERSION "${IPOPT_VERSION}")
-
-set(CPACK_PACKAGE_RELOCATABLE TRUE)
-
-if (WIN32)
-    set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}")
-    set(CPACK_MONOLITHIC_INSTALL ON)
-    set(CPACK_NSIS_CONTACT "${PACKAGE_BUGREPORT}")
-    set(CPACK_NSIS_MODIFY_PATH ON)
-    set(CPACK_NSIS_PACKAGE_NAME "Ipopt ${IPOPT_VERSION}")
-elseif (APPLE)
-    set(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE ON)
-    set(CPACK_PACKAGE_DEFAULT_LOCATION "/opt/${CPACK_PACKAGE_NAME}")
-    set(CPACK_PACKAGING_INSTALL_PREFIX "/")
-else (WIN32)
-    set(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE ON)
-    set(CPACK_PACKAGE_DEFAULT_LOCATION "/opt/${CPACK_PACKAGE_NAME}")
-    set(CPACK_PACKAGING_INSTALL_PREFIX "/")
-
-    set(CPACK_DEBIAN_PACKAGE_SECTION "Libraries")
-    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${PACKAGE_BUGREPORT}")
-
-    set(CPACK_RPM_COMPONENT_INSTALL ON)
-    set(CPACK_RPM_PACKAGE_RELOCATABLE ON)
-    set(CPACK_RPM_PACKAGE_LICENSE "Copyrighted")
-    set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
-    set(CPACK_RPM_PACKAGE_URL "${PACKAGE_URL}")
-    set(CPACK_RPM_PACKAGE_SUMMARY "Ipopt is a non linear constrained solver library from CoinOR.")
-    set(CPACK_RPM_PACKAGE_DESCRIPTION
-            "The CoinUtils suite includes:
-
-    * The Ipopt non linear constrained solver.
-"
-            )
-endif ()
-
-include(CPack)
-include(CTest)
-
-message(STATUS "Installation directory: ${CMAKE_INSTALL_PREFIX}")
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-
-get_directory_property(ALL_INCLUDES INCLUDE_DIRECTORIES)
-get_directory_property(ALL_LINKS    LINK_DIRECTORIES)
-get_directory_property(ALL_DEFS     COMPILE_DEFINITIONS)
-
-message(STATUS "Include directories:${color_reset}     ${ALL_INCLUDES}")
-message(STATUS "Link directories:${color_reset}        ${ALL_LINKS}")
-message(STATUS "Compilation definitions:${color_reset} ${ALL_DEFS}")
-
-# TODO: remove this temporary solution
-restore_tmp(CMAKE_C_FLAGS        _GLOBL_TMP_CFLAGS       )
-restore_tmp(CMAKE_CXX_FLAGS      _GLOBL_TMP_CXXFLAGS     )
-restore_tmp(CMAKE_Fortran_FLAGS  _GLOBL_TMP_FortranFLAGS )

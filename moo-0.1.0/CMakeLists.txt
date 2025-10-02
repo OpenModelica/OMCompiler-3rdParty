@@ -10,6 +10,9 @@ option(MOO_TESTS "Build MOO with test executables" OFF)
 message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "Fortran Compiler: ${CMAKE_Fortran_COMPILER}")
+message(STATUS "C Flags: ${CMAKE_C_FLAGS}")
+message(STATUS "C++ Flags: ${CMAKE_CXX_FLAGS}")
+message(STATUS "Fortran Flags: ${CMAKE_Fortran_FLAGS}")
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     set(IS_GCC TRUE)
@@ -17,23 +20,10 @@ else()
     set(IS_GCC FALSE)
 endif()
 
-# Attention:
-# force release build if included in 3rdParty tool - explicitly set MOO_BUILD_TYPE to debug for debug build!
-if(NOT DEFINED MOO_BUILD_TYPE)
-  set(MOO_BUILD_TYPE "RelWithDebInfo")
-  message(STATUS "MOO_BUILD_TYPE not defined: defaulting to RelWithDebInfo")
-endif()
-
-if(MOO_NATIVE_BUILD)
-    set(MOO_O3_BUILD_FLAGS
-        -O3
-        -march=native
-    )
-    message(STATUS "Adding native CPU optimizations: ${MOO_O3_BUILD_FLAGS}")
-
+if(CMAKE_BUILD_TYPE STREQUAL "")
+    message(WARNING "CMAKE_BUILD_TYPE not defined - MOO will be slow.")
 else()
-    set(MOO_O3_BUILD_FLAGS -O3)
-    message(STATUS "MOO_NATIVE_BUILD not defined: adding no additional compiler flags")
+    message(STATUS "Using build type: ${CMAKE_BUILD_TYPE}")
 endif()
 
 add_library(moo SHARED)
@@ -100,20 +90,12 @@ target_include_directories(moo PUBLIC src)
 # TODO: Make it a clean build with -Wextra
 set(MOO_COMPILE_OPTIONS -Wall -fno-rtti -Wnon-virtual-dtor -pedantic)
 
-if(IS_GCC AND NOT "${MOO_BUILD_TYPE}" STREQUAL "Debug")
+if(IS_GCC)
     list(APPEND MOO_COMPILE_OPTIONS -fno-var-tracking-assignments)
 endif()
 
-if("${MOO_BUILD_TYPE}" STREQUAL "Debug")
-    message(STATUS "Configuration: Debug")
-    list(APPEND MOO_COMPILE_OPTIONS -O0 -g)
-else()
-    message(STATUS "Configuration: RelWithDebInfo / Release")
-    list(APPEND MOO_COMPILE_OPTIONS -g ${MOO_O3_BUILD_FLAGS})
-endif()
-
 target_compile_options(moo PRIVATE ${MOO_COMPILE_OPTIONS})
-message(STATUS "Compile Options: ${MOO_COMPILE_OPTIONS}")
+message(STATUS "Additional MOO compile options: ${MOO_COMPILE_OPTIONS}")
 
 target_link_libraries(moo PUBLIC fmt)
 target_link_libraries(moo PRIVATE Ipopt::Ipopt)
@@ -122,9 +104,18 @@ if(MOO_WITH_RADAU)
     target_link_libraries(moo PRIVATE radau)
 endif()
 
-# DLL export
+# DLL export / hide symbols
 if(WIN32)
     target_compile_definitions(moo PRIVATE MOO_DLL_EXPORT)
+elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    target_link_libraries(moo PRIVATE dl)
+    target_link_directories(moo PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third-party/Ipopt.cmake/bin)
+    target_link_options(moo PRIVATE -Wl,-hidden-ldmumps -Wl,-hidden-lipopt)
+    target_compile_options(moo PRIVATE -fvisibility=hidden )
+else()
+    target_link_libraries(moo PRIVATE dl)
+    target_link_options(moo PRIVATE -Wl,--exclude-libs,ALL)
+    target_compile_options(moo PRIVATE -fvisibility=hidden)
 endif()
 
 install(TARGETS moo
