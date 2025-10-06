@@ -122,16 +122,12 @@ if (COMPILE_LTO)
     check_ipo_supported()
 endif ()
 
-add_library(std_global_flags INTERFACE)
-
 if (USE_PROCESSOR_EXTENSIONS)
     # Check for SSE* and AVX*
     find_package(SSE)
     if (MMX_FOUND OR SSE2_FOUND OR SSE3_FOUND OR SSSE3_FOUND OR
         SSE4_1_FOUND OR SSE4_2_FOUND OR AVX_FOUND OR AVX2_FOUND)
-        target_compile_options(std_global_flags INTERFACE
-            ${SSE_COMPILER_FLAGS}
-        )
+        add_compile_options(${SSE_COMPILER_FLAGS})
     endif ()
 endif ()
 
@@ -355,7 +351,7 @@ endif ()
 
 if (UNIX)
     if (NOT ENABLE_SHARED_LIBRARIES)
-        target_compile_options(std_global_flags INTERFACE -fPIC)
+        add_compile_options(-fPIC)
     endif ()
 endif ()
 
@@ -420,10 +416,13 @@ mark_as_advanced(F77_FUNC
 # End of coverage
 
 if (USE_FAST_CODE)
-    target_compile_options(std_global_flags INTERFACE
-        $<$<COMPILE_LANGUAGE:CXX>:-O3 -fomit-frame-pointer -ffast-math -fno-math-errno -fno-trapping-math>
-        $<$<COMPILE_LANGUAGE:C>:-O3 -fomit-frame-pointer -ffast-math -fno-math-errno -fno-trapping-math>
-        $<$<COMPILE_LANGUAGE:Fortran>:-O3 -fomit-frame-pointer -ffast-math>
+    set(c_cxx_options -O3 -fomit-frame-pointer -ffast-math -fno-math-errno -fno-trapping-math)
+    set(fortran_options -O3 -fomit-frame-pointer -ffast-math)
+
+    add_compile_options(
+        "$<$<COMPILE_LANGUAGE:C>:${c_cxx_options}>"
+        "$<$<COMPILE_LANGUAGE:CXX>:${c_cxx_options}>"
+        "$<$<COMPILE_LANGUAGE:Fortran>:${fortran_options}>"
     )
 endif ()
 

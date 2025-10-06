@@ -12,7 +12,7 @@ if(MOO_WITH_RADAU)
         dc_lapack.f
     )
 
-    target_compile_options(radau PRIVATE ${CMAKE_Fortran_FLAGS} -fPIC)
+    target_compile_options(radau PRIVATE -fPIC)
     target_include_directories(radau PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 else()
