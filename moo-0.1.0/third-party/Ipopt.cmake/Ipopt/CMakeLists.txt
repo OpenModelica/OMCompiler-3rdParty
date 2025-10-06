@@ -257,8 +257,6 @@ else ()
     target_link_libraries(ipopt PUBLIC quadmath)
 endif ()
 
-target_link_libraries(ipopt PRIVATE std_global_flags)
-
 set_target_properties(ipopt PROPERTIES OUTPUT_NAME "ipopt")
 
 target_include_directories(ipopt PUBLIC ${Ipopt_DIR}/src/Common)
