@@ -614,14 +614,22 @@ set(MUMPS_Z_SRCS src/mumps_c.c
 
 set(LINK_LIBS ${LINK_LIBS} LAPACK_TARGET)
 
-if ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
-    set(fortran_options -w -fcray-pointer -fallow-argument-mismatch -fall-intrinsics -finit-local-zero)
-    add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:${fortran_options}>")
+add_library(mumps_flags INTERFACE)
 
-    link_libraries(gfortran)
+if ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
+    target_compile_options(mumps_flags INTERFACE
+        $<$<COMPILE_LANGUAGE:Fortran>:
+        -w
+        -fcray-pointer
+        -fallow-argument-mismatch
+        -fall-intrinsics
+        -finit-local-zero>
+    )
+
+    target_link_libraries(mumps_flags INTERFACE gfortran)
 endif ()
 
-add_compile_definitions(
+target_compile_definitions(mumps_flags INTERFACE
     ALLOW_NON_INIT
     intel_
     Add_
@@ -658,6 +666,7 @@ endif ()
 
 if (MUMPS_USE_LIBSEQ)
   add_library(seq STATIC ${MUMPS_LIBSEQ_SRCS})
+  target_link_libraries(seq PRIVATE std_global_flags mumps_flags)
 endif ()
 
 if (NOT MUMPS_USE_LIBSEQ)
@@ -672,6 +681,7 @@ if (CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
 endif ()
 
 add_library(mumps_common STATIC ${MUMPS_COMMON_SRCS})
+target_link_libraries(mumps_common PRIVATE std_global_flags mumps_flags)
 target_link_libraries(mumps_common PUBLIC ${LINK_LIBS})
 
 # TODO: add MUMPS single precision
@@ -681,6 +691,7 @@ target_link_libraries(mumps_common PUBLIC ${LINK_LIBS})
 #
 
 add_library(dmumps STATIC ${MUMPS_D_SRCS})
+target_link_libraries(dmumps PRIVATE std_global_flags mumps_flags)
 target_link_libraries(dmumps PUBLIC mumps_common ${LINK_LIBS})
 target_include_directories(dmumps PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(dmumps PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/libseq)
