@@ -234,3 +234,8 @@ endif() # OM_OMC_ENABLE_MOO
 if(OM_OMC_ENABLE_OPTIMIZATION)
     add_library(omc::3rd::ipopt ALIAS ipopt)
 endif() # OM_OMC_ENABLE_OPTIMIZATION
+
+if(OM_OMC_ENABLE_PRIMME)
+    omc_add_subdirectory(primme-3.2.3)
+    add_library(omc::3rd::primme ALIAS primme)
+endif() # OM_OMC_ENABLE_PRIMME
