@@ -176,7 +176,11 @@ if(SS_DIR)
   endforeach()
 
   # add complex int version
-  file(GLOB klu_ZINT_Files "${KLU_DIR}/Source/klu_factor.c" "${KLU_DIR}/Source/klu_refactor.c" "${KLU_DIR}/Source/klu_scale.c")
+  file(GLOB klu_ZINT_Files "${KLU_DIR}/Source/klu.c" "${KLU_DIR}/Source/klu_tsolve.c"
+  "${KLU_DIR}/Source/klu_sort.c" "${KLU_DIR}/Source/klu_solve.c" "${KLU_DIR}/Source/klu_scale.c"
+  "${KLU_DIR}/Source/klu_refactor.c" "${KLU_DIR}/Source/klu_kernel.c" "${KLU_DIR}/Source/klu_free_numeric.c"
+  "${KLU_DIR}/Source/klu_factor.c" "${KLU_DIR}/Source/klu_extract.c" "${KLU_DIR}/Source/klu_dump.c"
+  "${KLU_DIR}/Source/klu_diagnostics.c")
   add_library(klu_object_ZINT OBJECT ${klu_ZINT_Files})
   set_property(TARGET klu_object_ZINT APPEND PROPERTY COMPILE_DEFINITIONS "COMPLEX" "DINT")
   set(KLU_OBJECTS "${KLU_OBJECTS};\$<TARGET_OBJECTS:klu_object_ZINT>")
