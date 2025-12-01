@@ -165,20 +165,22 @@ if(SS_DIR)
   foreach(sFile IN LISTS curFiles)
           list(APPEND KLU_SRC_FILES ${sFile})
   endforeach()
-  set(modes "DINT" "DLONG" "ZINT" "ZLONG")
+  set(modes "DINT" "DLONG")
   foreach(mode IN LISTS modes)
     add_library(klu_object_${mode} OBJECT ${KLU_SRC_FILES})
     # get_target_property(FLAGS klu_object_${mode} COMPILE_DEFINITIONS)
     # list(APPEND FLAGS ${mode})
     # set_target_properties(klu_object_${mode} PROPERTIES COMPILE_DEFINITIONS "${FLAGS}")
     set_property(TARGET klu_object_${mode} APPEND PROPERTY COMPILE_DEFINITIONS "${mode}")
-    if(mode STREQUAL "ZINT" OR mode STREQUAL "ZLONG")
-      set_property(TARGET klu_object_${mode}
-        APPEND PROPERTY COMPILE_DEFINITIONS "COMPLEX"
-      )
-    endif()
     set(KLU_OBJECTS "${KLU_OBJECTS};\$<TARGET_OBJECTS:klu_object_${mode}>")
   endforeach()
+
+  # add complex int version
+  file(GLOB klu_ZINT_Files "${KLU_DIR}/Source/klu_factor.c" "${KLU_DIR}/Source/klu_refactor.c" "${KLU_DIR}/Source/klu_scale.c")
+  add_library(klu_object_ZINT OBJECT ${klu_ZINT_Files})
+  set_property(TARGET klu_object_ZINT APPEND PROPERTY COMPILE_DEFINITIONS "COMPLEX" "DINT")
+  set(KLU_OBJECTS "${KLU_OBJECTS};\$<TARGET_OBJECTS:klu_object_ZINT>")
+
   add_library(klu ${KLU_OBJECTS})
   target_link_libraries(klu btf colamd amd)
   install(TARGETS klu DESTINATION ${CMAKE_INSTALL_LIBDIR})
