@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.14)
 add_executable(test_gdopt
     entry.cpp
     generated.c
+    sanity_check.c
+    full_functionality_check.c
 )
 
 target_include_directories(test_gdopt PRIVATE

@@ -28,7 +28,7 @@
 #include <cmath>
 #include <any>
 
-/* simple typedef for the Number, for using f32 or something later */
+/* simple typedef for the Number */
 typedef double f64;
 
 /* max f64 == _DBL_MAX_  */

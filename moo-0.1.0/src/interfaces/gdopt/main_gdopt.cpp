@@ -22,9 +22,12 @@
 #include <nlp/solvers/ipopt/solver.h>
 #include <nlp/instances/gdop/strategies.h>
 #include <base/log.h>
+#include <base/timing.h>
 
 #include <interfaces/c/problem.h>
 #include <interfaces/gdopt/main_gdopt.h>
+
+#include <string>
 
 // create config for the algorithm (for now basic) not here, this is actually a generic GDOP stuff
 class Config {
@@ -49,10 +52,10 @@ int main_gdopt(int argc, char** argv, c_problem_t* c_problem) {
     auto nlp_solver_settings = NLP::NLPSolverSettings(argc, argv);
     nlp_solver_settings.print();
 
-    // nlp_solver_settings.set(NLP::Option::IpoptDerivativeTest, true);
+    nlp_solver_settings.set(NLP::Option::IpoptDerivativeTest, (c_problem->solver_ctx && c_problem->solver_ctx->derivative_test));
 
-    auto mesh = Mesh::create_equidistant_fixed_stages(100 /* tf */, 1000 /* intervals */, 25 /* stages */);
-    auto problem = C::Problem::create(c_problem, *mesh);
+    // move this into the problem creation!
+    auto problem = C::Problem::create(c_problem);
 
     auto strategies = std::make_unique<GDOP::Strategies>(GDOP::Strategies::default_strategies());
     FixedVector<f64> tolerances(problem.pc->x_size);
@@ -60,8 +63,9 @@ int main_gdopt(int argc, char** argv, c_problem_t* c_problem) {
 
     strategies->simulation = std::make_shared<GDOP::RadauIntegratorSimulation>(*problem.dynamics);
     strategies->initialization = std::make_shared<GDOP::SimulationInitialization>(strategies->initialization, strategies->simulation);
-    strategies->verifier = std::make_shared<GDOP::SimulationVerifier>(GDOP::SimulationVerifier(strategies->simulation, Linalg::Norm::NORM_INF, std::move(tolerances)));
+    strategies->verifier = std::make_shared<GDOP::SimulationVerifier>(strategies->simulation, Linalg::Norm::NORM_INF, std::move(tolerances));
     strategies->emitter = std::make_shared<GDOP::CSVEmitter>("optimal_solution.csv", false);
+    strategies->mesh_refinement = std::make_shared<GDOP::L2BoundaryNorm>(c_problem->mesh_ctx->l2bn_p1_it, c_problem->mesh_ctx->l2bn_p2_it, c_problem->mesh_ctx->l2bn_p2_lvl);
 
     auto gdop = GDOP::GDOP(problem);
 
@@ -70,6 +74,8 @@ int main_gdopt(int argc, char** argv, c_problem_t* c_problem) {
     auto orchestrator = GDOP::MeshRefinementOrchestrator(gdop, std::move(strategies), ipopt_solver);
 
     orchestrator.optimize();
+
+    TimingTree::instance().print_tree_table();
 
     return 0;
 }

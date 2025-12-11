@@ -102,7 +102,7 @@ void Integrator::set_controls(f64 t) {
     last_t = t;
 }
 
-void Integrator::get_dense_jacobian(f64 t, f64* x, f64* out) {
+void Integrator::get_dense_jacobian_col_major(f64 t, f64* x, f64* out) {
     if (!jac_func) return;
 
     set_controls(t);
@@ -114,8 +114,9 @@ void Integrator::get_dense_jacobian(f64 t, f64* x, f64* out) {
         sparse_jac.fill_zero();
         jac_func(x, u.raw(), parameters, t, sparse_jac.raw(), user_data);
 
-        for (int nz = 0; nz < jac_pattern.nnz; nz++) out[jac_pattern.i_row[nz] * x_size + jac_pattern.j_col[nz]] = sparse_jac[nz];
-
+        for (int nz = 0; nz < jac_pattern.nnz; nz++) {
+            out[jac_pattern.j_col[nz] * x_size + jac_pattern.i_row[nz]] = sparse_jac[nz];
+        }
     }
     else if (jac_pattern.jfmt == JacobianFormat::CSC) {
         sparse_jac.fill_zero();
@@ -123,7 +124,7 @@ void Integrator::get_dense_jacobian(f64 t, f64* x, f64* out) {
 
         for (int col = 0; col < x_size; col++) {
             for (int nz = jac_pattern.j_col[col]; nz < jac_pattern.j_col[col + 1]; nz++) {
-                out[jac_pattern.i_row[nz] * x_size + col] = sparse_jac[nz];
+                out[col * x_size + jac_pattern.i_row[nz]] = sparse_jac[nz];
             }
         }
     }

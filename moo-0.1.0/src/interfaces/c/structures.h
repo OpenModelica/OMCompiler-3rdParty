@@ -51,15 +51,29 @@ typedef struct coo_t {
     int nnz;         // total nnz
 } coo_t;
 
+// TODO: refactor how we supply information: YAML or is this C-interface just a blueprint for python callbacks?
+// context the mesh refinement procedure (for now)
+typedef struct mesh_ref_ctx_t {
+    int initial_intervals;
+    int nodes_per_interval;
+    int l2bn_p1_it;
+    int l2bn_p2_it;
+    f64 l2bn_p2_lvl;
+} mesh_ref_ctx_t;
+
+typedef struct solver_ctx_t {
+    bool derivative_test;
+} solver_ctx_t;
+
 typedef struct c_callbacks_t {
     void (*eval_lfg)(const f64* xu, const f64* p, f64 t, const f64* data, f64* out, void* user_data);
     void (*jac_lfg)(const f64* xu, const f64* p, f64 t, const f64* data, f64* out, void* user_data);
-    void (*hes_lfg)(const f64* xu, const f64* p, const f64* lambda, const f64 obj_factor, f64 t, const f64* data, f64* out, void* user_data);
-    void (*eval_mr)(const f64* x0, const f64* xuf, const f64* p, f64 t0, f64 tf,
+    void (*hes_lfg)(const f64* xu, const f64* p, const f64* lambda, const f64 obj_factor, f64 t, const f64* data, f64* out, f64* out_pp, void* user_data);
+    void (*eval_mr)(const f64* xu0, const f64* xuf, const f64* p, f64 t0, f64 tf,
                     const f64* data_t0, const f64* data_tf, f64* out, void* user_data);
-    void (*jac_mr)(const f64* x0, const f64* xuf, const f64* p, f64 t0, f64 tf,
+    void (*jac_mr)(const f64* xu0, const f64* xuf, const f64* p, f64 t0, f64 tf,
                    const f64* data_t0, const f64* data_tf, f64* out, void* user_data);
-    void (*hes_mr)(const f64* x0, const f64* xuf, const f64* p, const f64* lambda, const f64 obj_factor, f64 t0, f64 tf,
+    void (*hes_mr)(const f64* xu0, const f64* xuf, const f64* p, const f64* lambda, const f64 obj_factor, f64 t0, f64 tf,
                    const f64* data_t0, const f64* data_tf, f64* out, void* user_data);
 
     void (*ode_f)(const f64* x, const f64* u, const f64* p, f64 t, const f64* data, f64* f, void* user_data);
@@ -86,12 +100,13 @@ typedef struct c_problem_t {
     bounds_t* x_bounds;
     bounds_t* u_bounds;
     bounds_t* p_bounds;
+    bounds_t* T_bounds; // size == 2 or nullptr
 
     bounds_t* r_bounds;
     bounds_t* g_bounds;
 
-    optional_value_t* x0_fixed;
-    optional_value_t* xf_fixed;
+    optional_value_t* xu0_fixed;
+    optional_value_t* xuf_fixed;
 
     f64* x_nominal;
     f64* u_nominal;
@@ -114,6 +129,11 @@ typedef struct c_problem_t {
     coo_t* ode_jac;
 
     c_callbacks_t* callbacks;
+
+    // make this more general
+    mesh_ref_ctx_t* mesh_ctx;
+    solver_ctx_t* solver_ctx;
+
     void* user_data;
 
 // private

@@ -20,6 +20,7 @@
 
 #include "strategies.h"
 #include "gdop.h"
+#include <base/timing.h>
 
 // TODO: add doxygen everywhere
 
@@ -83,7 +84,7 @@ std::unique_ptr<PrimalDualTrajectory> ConstantInitialization::operator()(const G
     const int p_size = problem.pc->p_size;
 
     // time vector with start and end times
-    std::vector<f64> t = { 0.0, gdop.get_mesh().tf };
+    std::vector<f64> t = { gdop.get_mesh().t0, gdop.get_mesh().tf };
 
     std::vector<std::vector<f64>> x_guess(x_size);
     std::vector<std::vector<f64>> u_guess(u_size);
@@ -93,8 +94,8 @@ std::unique_ptr<PrimalDualTrajectory> ConstantInitialization::operator()(const G
 
     // fill state guesses
     for (int x = 0; x < x_size; x++) {
-        auto x0_opt = problem.pc->x0_fixed[x];
-        auto xf_opt = problem.pc->xf_fixed[x];
+        auto x0_opt = problem.pc->xu0_fixed[x];
+        auto xf_opt = problem.pc->xuf_fixed[x];
 
         if (x0_opt && xf_opt) {
             // initial and final fixed: linear interpolation
@@ -117,11 +118,26 @@ std::unique_ptr<PrimalDualTrajectory> ConstantInitialization::operator()(const G
 
     // fill control guesses: use midpoint of bounds or zero
     for (int u = 0; u < u_size; u++) {
-        f64 val = 0.0;
-        if (problem.pc->u_bounds[u].has_lower() && problem.pc->u_bounds[u].has_upper()) {
-            val = 0.5 * (problem.pc->u_bounds[u].lb + problem.pc->u_bounds[u].ub);
+        auto u0_opt = problem.pc->xu0_fixed[x_size + u];
+        auto uf_opt = problem.pc->xuf_fixed[x_size + u];
+
+        if (u0_opt && uf_opt) {
+            // initial and final fixed: linear interpolation
+            u_guess[u] = { *u0_opt, *uf_opt };
+        } else if (u0_opt) {
+            // initial fixed: constant at initial
+            u_guess[u] = { *u0_opt, *u0_opt };
+        } else if (uf_opt) {
+            // final fixed: constant at final
+            u_guess[u] = { *uf_opt, *uf_opt };
+        } else {
+            // nothing fixed: use midpoint of bounds or zero if unbounded
+            f64 val = 0.0;
+            if (problem.pc->u_bounds[u].has_lower() && problem.pc->u_bounds[u].has_upper()) {
+                val = 0.5 * (problem.pc->u_bounds[u].lb + problem.pc->u_bounds[u].ub);
+            }
+           u_guess[u] = { val, val };
         }
-        u_guess[u] = { val, val };
     }
 
     // fill parameter guesses: use midpoint of bounds or zero
@@ -365,16 +381,31 @@ std::unique_ptr<PrimalDualTrajectory> SimulationInitialization::operator()(const
     auto extracted_parameters = FixedVector<f64>(simple_guess_primal->p);
     auto exctracted_x0        = simple_guess_primal->extract_initial_states();                       // extract x(t_0) from the guess
     auto simulated_guess      = (*simulation)(extracted_controls, extracted_parameters,              // perform simulation using the controls and gdop config
-                                              gdop.get_mesh().node_count, 0.0,
+                                              gdop.get_mesh().node_count, gdop.get_mesh().t0,
                                               gdop.get_mesh().tf, exctracted_x0.raw());
     auto interpolated_sim     = simulated_guess->interpolate_onto_mesh(gdop.get_mesh()); // interpolate simulation to current mesh + collocation
     return std::make_unique<PrimalDualTrajectory>(std::make_unique<Trajectory>(interpolated_sim));
 }
 
 // csv emit
-CSVEmitter::CSVEmitter(std::string filename, bool write_header) : filename(filename), write_header(write_header) {}
+CSVEmitter::CSVEmitter(std::string filename,
+                       bool write_header,
+                       bool emit_costates)
+    : filename(filename),
+      write_header(write_header),
+      emit_costates(emit_costates) {}
 
-int CSVEmitter::operator()(const PrimalDualTrajectory& trajectory) { return trajectory.primals->to_csv(filename, write_header); }
+int CSVEmitter::operator()(const PrimalDualTrajectory& trajectory) {
+    int ret = trajectory.primals->to_csv("primals_" + filename, write_header); if (ret < 0) return ret;
+
+    if (emit_costates) {
+        ret = trajectory.costates->to_csv("costates_" + filename, write_header);             if (ret < 0) return ret;
+        ret = trajectory.lower_costates->to_csv("lower_costates_" + filename, write_header); if (ret < 0) return ret;
+        ret = trajectory.upper_costates->to_csv("upper_costates_" + filename, write_header);
+    }
+
+    return ret;
+}
 
 // print emit
 int PrintEmitter::operator()(const PrimalDualTrajectory& trajectory) { trajectory.primals->print_table(); return 0; }
@@ -397,7 +428,7 @@ bool SimulationVerifier::operator()(const GDOP& gdop, const PrimalDualTrajectory
     int  high_node_count    = 1 * gdop.get_mesh().node_count;
 
     auto simulation_result  = (*simulation)(extracted_controls, extracted_parameters, high_node_count,
-                                            0.0, gdop.get_mesh().tf, exctracted_x0.raw());
+                                            gdop.get_mesh().t0, gdop.get_mesh().tf, exctracted_x0.raw());
 
     // result of high resolution simulation is interpolated onto lower resolution mesh
     auto interpolated_opt   = trajectory_primal->interpolate_polynomial_onto_grid(simulation_result->t);
@@ -667,5 +698,67 @@ Strategies Strategies::default_strategies() {
                                             InterpolationRefinedInitialization(strategies.interpolation, true, true, true));
     return strategies;
 };
+
+std::unique_ptr<PrimalDualTrajectory> Strategies::get_initial_guess(const GDOP& gdop) {
+    ScopedTimer scope{"Strategies::get_initial_guess"};
+    return (*initialization)(gdop);
+}
+
+std::unique_ptr<PrimalDualTrajectory> Strategies::get_refined_initial_guess(const Mesh& old_mesh, const Mesh& new_mesh, const PrimalDualTrajectory& trajectory) {
+    ScopedTimer scope{"Strategies::get_refined_initial_guess"};
+    return (*refined_initialization)(old_mesh, new_mesh, trajectory);
+}
+
+std::unique_ptr<Trajectory> Strategies::simulate(const ControlTrajectory& controls, const FixedVector<f64>& parameters,
+                                                 int num_steps, f64 start_time, f64 stop_time, f64* x_start_values) {
+    ScopedTimer scope{"Strategies::simulate"};
+    return (*simulation)(controls, parameters, num_steps, start_time, stop_time, x_start_values);
+}
+
+void Strategies::simulate_step_activate(const ControlTrajectory& controls, const FixedVector<f64>& parameters) {
+    ScopedTimer scope{"Strategies::simulate_step_activate"};
+    return simulation_step->activate(controls, parameters);
+}
+
+std::unique_ptr<Trajectory> Strategies::simulate_step(f64* x_start_values, f64 start_time, f64 stop_time) {
+    ScopedTimer scope{"Strategies::simulate_step"};
+    return (*simulation_step)(x_start_values, start_time, stop_time);
+}
+
+void Strategies::simulate_step_reset() {
+    ScopedTimer scope{"Strategies::simulate_step_reset"};
+    return simulation_step->reset();
+}
+
+std::unique_ptr<MeshUpdate> Strategies::detect(const Mesh& mesh, const PrimalDualTrajectory& trajectory) {
+    ScopedTimer scope{"Strategies::detect"};
+    return (*mesh_refinement)(mesh, trajectory);
+}
+
+std::vector<f64> Strategies::interpolate(const Mesh& old_mesh, const Mesh& new_mesh, const std::vector<f64>& values) {
+    ScopedTimer scope{"Strategies::interpolate"};
+    return (*interpolation)(old_mesh, new_mesh, values);
+}
+
+int Strategies::emit(const PrimalDualTrajectory& trajectory) {
+    ScopedTimer scope{"Strategies::emit"};
+    return (*emitter)(trajectory);
+}
+
+bool Strategies::verify(const GDOP& gdop, const PrimalDualTrajectory& trajectory) {
+    ScopedTimer scope{"Strategies::verify"};
+    return (*verifier)(gdop, trajectory);
+}
+
+std::shared_ptr<NLP::Scaling> Strategies::create_scaling(const GDOP& gdop) {
+    ScopedTimer scope{"Strategies::create_scaling"};
+    return (*scaling_factory)(gdop);
+}
+
+// add others if we have an internal state that changes during optimization (e.g. mesh refinement iteration count)
+void Strategies::reset(const GDOP& gdop) {
+    ScopedTimer scope{"Strategies::reset"};
+    mesh_refinement->reset(gdop);
+}
 
 } // namespace GDOP

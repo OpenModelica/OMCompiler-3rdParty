@@ -20,10 +20,21 @@
 
 #include <simulation/radau/test.h>
 #include <generated.h>
+#include <sanity_check.h>
+#include <full_functionality_check.h>
 
 #include <base/log.h>
 
 int main(int argc, char** argv) {
+    // simulation test
     Simulation::radau_wrapper_test();
+
+    // test for future generated code
     main_generated(argc, argv);
+
+    // sanity check, testing time optimization for a minimal DAE example
+    main_sanity_check(argc, argv);
+
+    // full functionality test, including all types of constraints + variables + derivative test
+    main_full_functionality(argc, argv);
 }

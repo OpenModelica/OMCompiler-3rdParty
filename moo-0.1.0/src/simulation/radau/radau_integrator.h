@@ -90,6 +90,7 @@ public:
 
     int lwork;
     int liwork;
+    int mljac;
 
     std::vector<f64> work;
     std::vector<int> iwork;
@@ -98,7 +99,6 @@ public:
 
     /* args we dont change at all */
     int itol = 0;
-    int mljac = 0;
     int mujac = 0;
     int imas = 0;
     int mlmas = 0;
