@@ -889,7 +889,7 @@ void GDOP::eval_grad_f(
     FixedVector<f64>& curr_grad_f)
 {
     check_new_x(new_x, curr_x);
-    if (!(evaluation_state.eval_f)) {
+    if (!evaluation_state.eval_f) {
         callback_evaluation(curr_x);
     }
 
@@ -909,7 +909,7 @@ void GDOP::eval_jac_g(
     FixedVector<f64>& curr_jac)
 {
     check_new_x(new_x, curr_x);
-    if (!(evaluation_state.eval_g)) {
+    if (!evaluation_state.eval_g) {
         callback_evaluation(curr_x);
     }
 
@@ -936,8 +936,8 @@ void GDOP::eval_hes(
 
     // ensure Jacobian is available (which itself needs the evaluation) (required for numerical Hessian and esp. free time optimization)
     if (!evaluation_state.hes) {
-        if (!(evaluation_state.jac_g || evaluation_state.grad_f)) {
-            if (!(evaluation_state.eval_f || evaluation_state.eval_g)) {
+        if (!(evaluation_state.jac_g && evaluation_state.grad_f)) {
+            if (!(evaluation_state.eval_f && evaluation_state.eval_g)) {
                 callback_evaluation(curr_x);
             }
             callback_jacobian(curr_x);
