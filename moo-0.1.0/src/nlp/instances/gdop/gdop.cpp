@@ -936,7 +936,7 @@ void GDOP::eval_hes(
 
     // ensure Jacobian is available (which itself needs the evaluation) (required for numerical Hessian and esp. free time optimization)
     if (!evaluation_state.hes) {
-        if (!(evaluation_state.jac_g || !evaluation_state.grad_f)) {
+        if (!(evaluation_state.jac_g || evaluation_state.grad_f)) {
             if (!(evaluation_state.eval_f || evaluation_state.eval_g)) {
                 callback_evaluation(curr_x);
             }
