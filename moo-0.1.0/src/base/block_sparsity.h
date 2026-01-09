@@ -116,7 +116,7 @@ struct MOO_EXPORT DenseRectangularBlockSparsity {
 };
 
 struct MOO_EXPORT OrderedIndexSet {
-    struct Compare {
+    struct MOO_EXPORT Compare {
         bool operator()(const std::pair<int, int>& a, const std::pair<int, int>& b) const;
     };
 
