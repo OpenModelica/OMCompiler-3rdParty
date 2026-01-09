@@ -22,8 +22,6 @@
 #define MOO_BLOCK_SPARSITY_H
 
 #include <set>
-#include <memory>
-#include <stdexcept>
 
 #include <base/fixed_vector.h>
 #include <base/nlp_structs.h>
@@ -60,27 +58,7 @@ struct MOO_EXPORT BlockSparsity {
        . | x x x  
        s | x x x x
     */
-    static BlockSparsity create_lower_triangular(const int size, const BlockType block_type) {
-        BlockSparsity b;
-        b.type = block_type;
-        b.block = FixedField<int, 2>(size);
-
-        for (int i = 0; i < size; i++) {
-            b.block[i] = FixedVector<int>(i + 1);
-        }
-        switch (block_type) {
-            case BlockType::Offset:
-                b.off_prev = 0;
-                break;
-            case BlockType::RowOffset:
-                b.row_offset_prev = FixedVector<int>(size);
-                b.row_size = FixedVector<int>(size);
-                break;
-            default:
-                break;
-        }
-        return b;
-    }
+    static BlockSparsity create_lower_triangular(const int size, const BlockType block_type);
 
     /* creates a dense rectangular block structure Rows x Cols
        0 | 1 2 . C
@@ -89,24 +67,7 @@ struct MOO_EXPORT BlockSparsity {
        . | x x x x
        R | x x x x
     */
-    static BlockSparsity create_rectangular(const int rows, const int cols, const BlockType block_type) {
-        BlockSparsity b;
-        b.type = block_type;
-        b.block = FixedField<int, 2>(rows, cols);
-
-        switch (block_type) {
-            case BlockType::Offset:
-                b.off_prev = 0;
-                break;
-            case BlockType::RowOffset:
-                b.row_offset_prev = FixedVector<int>(rows);
-                b.row_size = FixedVector<int>(rows);
-                break;
-            default:
-                break;
-        }
-        return b;
-    }
+    static BlockSparsity create_rectangular(const int rows, const int cols, const BlockType block_type);
 
     /* creates a dense square block structure Size x Size
        0 | 1 . C
@@ -125,64 +86,58 @@ struct MOO_EXPORT BlockSparsity {
     }
 
     // mapping (row, col) -> index in some larger sparsity structure
-    int access(const int row, const int col) const {
-        switch (type) {
-            case BlockType::Exact:
-                return block[row][col];
-            default:
-                Log::error("Unknown BlockType in BlockSparsity::access().");
-                abort();
-        }
-    }
+    int access(const int row, const int col) const;
 
     // mapping (row, col, block_count) -> index in some larger sparsity structure
-    int access(const int row, const int col, const int block_count) const {
-        switch (type) {
-            // for A -> B: row, col, offset_prev - #nnz at end of blocktype (e.g. |A|), block_count (e.g. (i,j) = (0, 2) => 2)
-            case BlockType::Offset:
-                return off_prev + nnz * block_count + block[row][col];
+    int access(const int row, const int col, const int block_count) const;
 
-            // for E -> F
-            case BlockType::RowOffset:
-                return row_offset_prev[row] + row_size[row] * block_count + block[row][col];
+    void print() const;
+};
 
-            default:
-               return access(row, col);
-        }
-    }
+struct MOO_EXPORT DenseRectangularBlockSparsity {
+    // for row-based offsets (e.g. block F in GDOP)
+    FixedVector<int> row_offset_prev;
+    int row_size; // == #cols here
+    int nnz;
 
-    void print() const {
-        for (auto const& v : block) {
-            v.print();
-        }
+    /* creates a **fully** dense rectangular block structure Rows x Cols
+       0 | 1 2 . C
+       -----------
+       1 | x x x x
+       . | x x x x
+       R | x x x x
+    */
+    static DenseRectangularBlockSparsity create(const int rows, const int cols);
+
+    // mapping (row, col) -> index in some larger sparsity structure
+    inline int access(const int row, const int col, const int block_count) const {
+        return row_offset_prev[row] + row_size * block_count + col;
     }
 };
 
 struct MOO_EXPORT OrderedIndexSet {
     struct Compare {
-        bool operator()(const std::pair<int, int>& a, const std::pair<int, int>& b) const {
-            if (a.first != b.first) {
-                return a.first < b.first;
-            } else {
-                return a.second < b.second;
-            }
-        }
+        bool operator()(const std::pair<int, int>& a, const std::pair<int, int>& b) const;
     };
 
     std::set<std::pair<int, int>, Compare> set;
 
-    void insert_sparsity(const std::vector<HessianSparsity>& hes, int row_off, int col_off) {
-        for (auto coo : hes) {
-            assert(coo.row + row_off >= coo.col + col_off); // Hessian must be lower triangular!
-            set.insert({coo.row + row_off, coo.col + col_off});
-        }
-    }
+    // set to true if the block is on the diagonal (e.g. xu + xu, but not p with xu) => enforces row >= col
+    bool is_diag_block = false;
+
+    // standard Hessian insertion
+    void insert_sparsity(const std::vector<HessianSparsity>& hes, int row_off, int col_off);
+
+    // insertion for Jacobian, e.g. if because of product rule Jacobian terms must be included (see GDOP Block K)
+    //                              these stem from the D * x - deltaT * f(x, u, p) -> partial w.r.t. tf / t0 and p
+    void insert_sparsity(std::vector<int>& rows, const std::vector<JacobianSparsity>& jac, int row_off, int col_off);
 
     inline int size() const {
         return set.size();
     }
 
-    void clear() {
+    inline void clear(bool is_diag) {
+        is_diag_block = is_diag;
         set.clear();
     }
 };

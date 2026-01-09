@@ -61,9 +61,9 @@ public:
           c_callbacks(c_problem->callbacks),
           c_problem(c_problem) {};
 
-    void callback_eval(const f64* x0_nlp, const f64* xuf_nlp, const f64* p) override;
-    void callback_jac(const f64* x0_nlp, const f64* xuf_nlp, const f64* p) override;
-    void callback_hes(const f64* x0_nlp, const f64* xuf_nlp, const f64* p, const f64 mayer_factor, const f64* lambda) override;
+    void callback_eval(const f64* x0_nlp, const f64* xuf_nlp, const f64* p, f64 t0, f64 tf) override;
+    void callback_jac(const f64* x0_nlp, const f64* xuf_nlp, const f64* p, f64 t0, f64 tf) override;
+    void callback_hes(const f64* x0_nlp, const f64* xuf_nlp, const f64* p, f64 t0, f64 tf, const f64 mayer_factor, const f64* lambda) override;
 
 private:
     inline f64* get_data_t0() {
@@ -100,13 +100,13 @@ private:
 
 class Problem : public GDOP::Problem {
 public:
-    static Problem create(c_problem_t* c_problem, const Mesh& mesh);
+    static Problem create(c_problem_t* c_problem);
 
     c_callbacks_t* c_callbacks;
     c_problem_t* c_problem;
 
 private:
-    Problem(c_problem_t* c_problem, const Mesh& mesh, std::shared_ptr<Trajectory[]> raw_data);
+    Problem(c_problem_t* c_problem, std::shared_ptr<Trajectory[]> raw_data);
 
     std::shared_ptr<Trajectory[]> raw_data;           // raw array of Trajectories, read from the user
     std::unique_ptr<Trajectory[]> interpolated_data;  // raw_data but interpolated onto a given mesh

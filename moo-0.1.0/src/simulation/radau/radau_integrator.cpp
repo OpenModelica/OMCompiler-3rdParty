@@ -48,8 +48,9 @@ RadauIntegrator::RadauIntegrator(/* generic Integrator */
       atol(atol),
       rtol(rtol),
       max_it(max_it),
-      lwork(20 + 10 * (x_size + 3 * x_size)),
-      liwork(20 + 8 * x_size),
+      lwork(x_size * (8 * x_size + 24) + 20),
+      liwork(5 * x_size + 20),
+      mljac(x_size),
       work(lwork, 0.0),
       iwork(liwork, 0),
       ijac((jac_func) ? 1 : 0)
@@ -113,7 +114,7 @@ extern "C" void radau_dense_jac_wrapper(
     int* ipar)
 {
     auto* self = static_cast<Simulation::RadauIntegrator*>(radau_integrator);
-    self->get_dense_jacobian(*t, x, dfx);
+    self->get_dense_jacobian_col_major(*t, x, dfx);
 }
 
 extern "C" void radau_no_mass(int* n, f64* an, int* lmas, f64* rpar, int* ipar) {}

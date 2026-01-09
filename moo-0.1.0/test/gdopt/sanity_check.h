@@ -18,35 +18,17 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef OPT_NLP_SOLVER_H
-#define OPT_NLP_SOLVER_H
+#ifndef MOO_C_SANITY_CHECK
+#define MOO_C_SANITY_CHECK
 
-#include "nlp/solvers/nlp_solver_settings.h"
-#include "nlp.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-namespace NLP {
+int main_sanity_check(int argc, char** argv);
 
-class NLPSolver {
-public:
-    NLPSolver(NLP& nlp, NLPSolverSettings& solver_settings);
-
-    virtual ~NLPSolver() = default;
-
-    NLP& nlp;
-    NLPSolverSettings& solver_settings;
-
-    // optimization entry point
-    virtual void optimize() = 0;
-
-    // receive optimizer iteration count
-    virtual int get_iterations() const;
-
-    // times in nanoseconds
-    virtual f64 get_total_time() const;
-    virtual f64 get_solver_time() const;
-    virtual f64 get_callback_time() const;
-};
-
+#ifdef __cplusplus
 }
+#endif
 
-#endif // OPT_NLP_SOLVER_H
+#endif // MOO_C_SANITY_CHECK

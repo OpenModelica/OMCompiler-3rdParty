@@ -51,7 +51,7 @@ public:
     std::unique_ptr<Trajectory> simulate(f64* x_start_values_, f64 t0_, f64 tf_, int steps_);
 
     void get_ode(f64 t, f64* x, f64* out);
-    void get_dense_jacobian(f64 t, f64* x, f64* out);
+    void get_dense_jacobian_col_major(f64 t, f64* x, f64* out);
     // f64* get_sparse_jacobian(f64 t, f64* x);
 
     ODEFunction ode_func;

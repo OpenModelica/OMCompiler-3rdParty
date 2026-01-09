@@ -337,9 +337,11 @@ public:
 class MOO_EXPORT CSVEmitter : public Emitter {
 public:
     std::string filename;
-    bool write_header;
 
-    CSVEmitter(std::string filename, bool write_header = true);
+    bool write_header;
+    bool emit_costates;
+
+    CSVEmitter(std::string filename, bool write_header = true, bool emit_costates = true);
 
     int operator()(const PrimalDualTrajectory& trajectory) override;
 };
@@ -390,55 +392,30 @@ public:
 
     static Strategies default_strategies();
 
-    auto get_initial_guess(const GDOP& gdop) {
-        return (*initialization)(gdop);
-    }
+    std::unique_ptr<PrimalDualTrajectory> get_initial_guess(const GDOP& gdop);
 
-    auto get_refined_initial_guess(const Mesh& old_mesh, const Mesh& new_mesh, const PrimalDualTrajectory& trajectory) {
-        return (*refined_initialization)(old_mesh, new_mesh, trajectory);
-    }
+    std::unique_ptr<PrimalDualTrajectory> get_refined_initial_guess(const Mesh& old_mesh, const Mesh& new_mesh, const PrimalDualTrajectory& trajectory);
 
-    auto simulate(const ControlTrajectory& controls, const FixedVector<f64>& parameters,
-                  int num_steps, f64 start_time, f64 stop_time, f64* x_start_values) {
-        return (*simulation)(controls, parameters, num_steps, start_time, stop_time, x_start_values);
-    }
+    std::unique_ptr<Trajectory> simulate(const ControlTrajectory& controls, const FixedVector<f64>& parameters,
+                                         int num_steps, f64 start_time, f64 stop_time, f64* x_start_values);
 
-    auto simulate_step_activate(const ControlTrajectory& controls, const FixedVector<f64>& parameters) {
-        return simulation_step->activate(controls, parameters);
-    }
+    void simulate_step_activate(const ControlTrajectory& controls, const FixedVector<f64>& parameters);
 
-    auto simulate_step(f64* x_start_values, f64 start_time, f64 stop_time) {
-        return (*simulation_step)(x_start_values, start_time, stop_time);
-    }
+    std::unique_ptr<Trajectory> simulate_step(f64* x_start_values, f64 start_time, f64 stop_time);
 
-    auto simulate_step_reset() {
-        return simulation_step->reset();
-    }
+    void simulate_step_reset();
 
-    auto detect(const Mesh& mesh, const PrimalDualTrajectory& trajectory) {
-        return (*mesh_refinement)(mesh, trajectory);
-    }
+    std::unique_ptr<MeshUpdate> detect(const Mesh& mesh, const PrimalDualTrajectory& trajectory);
 
-    auto interpolate(const Mesh& old_mesh, const Mesh& new_mesh, const std::vector<f64>& values) {
-        return (*interpolation)(old_mesh, new_mesh, values);
-    }
+    std::vector<f64> interpolate(const Mesh& old_mesh, const Mesh& new_mesh, const std::vector<f64>& values);
 
-    auto emit(const PrimalDualTrajectory& trajectory) {
-        return (*emitter)(trajectory);
-    }
+    int emit(const PrimalDualTrajectory& trajectory);
 
-    auto verify(const GDOP& gdop, const PrimalDualTrajectory& trajectory) {
-        return (*verifier)(gdop, trajectory);
-    }
+    bool verify(const GDOP& gdop, const PrimalDualTrajectory& trajectory);
 
-    auto create_scaling(const GDOP& gdop) {
-        return (*scaling_factory)(gdop);
-    }
+    std::shared_ptr<NLP::Scaling> create_scaling(const GDOP& gdop);
 
-    void reset(const GDOP& gdop) {
-        // add others if we have an internal state that changes during optimization (e.g. mesh refinement iteration count)
-        mesh_refinement->reset(gdop);
-    }
+    void reset(const GDOP& gdop);
 };
 
 } // namespace GDOP

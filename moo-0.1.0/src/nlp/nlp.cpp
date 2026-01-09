@@ -252,4 +252,8 @@ void NLP::solver_finalize_solution(
     finalize_solution(curr_obj, curr_x, curr_lambda, z_lb, z_ub);
 }
 
+f64 NLP::get_objective_value() const {
+    return curr_obj;
+}
+
 } // namespace NLP

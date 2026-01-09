@@ -61,6 +61,8 @@ struct MOO_EXPORT JacobianLFG {
     }
 };
 
+// TODO: if these do not work all too good, add dT_* to this
+
 struct MOO_EXPORT HessianLFG {
     // coordinate format hessian for LFG functions
     std::vector<HessianSparsity> dx_dx;
@@ -87,37 +89,74 @@ struct MOO_EXPORT FunctionLFG {
     JacobianLFG jac;
 };
 
-// MR semi-generic boundary function r(x(t0), x(tf), u(tf), p)
+// MR semi-generic boundary function r(x(t0), x(tf), u(tf), p, T), where T = {t0, tf}
 // used for Mayer term (M), boundary constraints (R) in GDOP
 
 struct MOO_EXPORT JacobianMR {
     // coordinate format jacobian for MR functions
     std::vector<JacobianSparsity> dx0;
+    std::vector<JacobianSparsity> du0;
     std::vector<JacobianSparsity> dxf;
     std::vector<JacobianSparsity> duf;
     std::vector<JacobianSparsity> dp;
+    std::vector<JacobianSparsity> dT;
 
     inline int nnz() const {
-        return dx0.size() + dxf.size() + duf.size() + dp.size();
+        return dx0.size() + du0.size() + dxf.size() + duf.size() + dp.size() + dT.size();
+    }
+
+    inline int nnz_time() const {
+        return dT.size();
+    }
+
+    inline int nnz_no_time() const {
+        return dx0.size() + du0.size() + dxf.size() + duf.size() + dp.size();
     }
 };
 
 struct MOO_EXPORT HessianMR {
     // coordinate format hessian for MR functions
     std::vector<HessianSparsity> dx0_dx0;
+    std::vector<HessianSparsity> du0_dx0;
+    std::vector<HessianSparsity> du0_du0;
     std::vector<HessianSparsity> dxf_dx0;
+    std::vector<HessianSparsity> dxf_du0;
     std::vector<HessianSparsity> dxf_dxf;
     std::vector<HessianSparsity> duf_dx0;
+    std::vector<HessianSparsity> duf_du0;
     std::vector<HessianSparsity> duf_dxf;
     std::vector<HessianSparsity> duf_duf;
     std::vector<HessianSparsity> dp_dx0;
+    std::vector<HessianSparsity> dp_du0;
     std::vector<HessianSparsity> dp_dxf;
     std::vector<HessianSparsity> dp_duf;
     std::vector<HessianSparsity> dp_dp;
+    std::vector<HessianSparsity> dT_dx0;
+    std::vector<HessianSparsity> dT_du0;
+    std::vector<HessianSparsity> dT_dxf;
+    std::vector<HessianSparsity> dT_duf;
+    std::vector<HessianSparsity> dT_dp;
+    std::vector<HessianSparsity> dT_dT;
 
     inline int nnz() const {
-        return dx0_dx0.size() + dxf_dx0.size() + dxf_dxf.size() +  duf_dx0.size() + duf_dxf.size() + duf_duf.size()
-                              + dp_dx0.size() + dp_dxf.size() + dp_duf.size() + dp_dp.size();
+        return dx0_dx0.size()
+             + du0_dx0.size() + du0_du0.size()
+             + dxf_dx0.size() + dxf_du0.size() + dxf_dxf.size()
+             + duf_dx0.size() + duf_du0.size() + duf_dxf.size() + duf_duf.size()
+             + dp_dx0.size()  + dp_du0.size()  + dp_dxf.size()  + dp_duf.size() + dp_dp.size()
+             + dT_dx0.size()  + dT_du0.size()  + dT_dxf.size()  + dT_duf.size() + dT_dp.size() + dT_dT.size();
+    }
+
+    inline int nnz_time() const {
+        return dT_dx0.size() + dT_du0.size() + dT_dxf.size()  + dT_duf.size() + dT_dp.size() + dT_dT.size();
+    }
+
+    inline int nnz_no_time() const {
+        return dx0_dx0.size()
+             + du0_dx0.size() + du0_du0.size()
+             + dxf_dx0.size() + dxf_du0.size() + dxf_dxf.size()
+             + duf_dx0.size() + duf_du0.size() + duf_dxf.size() + duf_duf.size()
+             + dp_dx0.size()  + dp_du0.size()  + dp_dxf.size()  + dp_duf.size() + dp_dp.size();
     }
 };
 

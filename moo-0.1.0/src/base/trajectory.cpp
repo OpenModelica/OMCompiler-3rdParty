@@ -461,11 +461,11 @@ bool check_time_compatibility(
     const std::vector<std::vector<std::vector<f64>>>& fields_to_check,
     const Mesh& mesh)
 {
-    const f64 tol = 1e-12;
+    const f64 tol = 1e-12 * (mesh.tf - mesh.t0);
 
     int expected_size = mesh.node_count + 1;
     if (static_cast<int>(t_vec.size()) != expected_size) {
-        Log::warning("Time array is not compatible with given Mesh.");
+        Log::warning("Time array is not compatible with given Mesh: size mismatch = {} vs expected = {}.", static_cast<int>(t_vec.size()), expected_size);
         return false;
     }
 
@@ -473,7 +473,7 @@ bool check_time_compatibility(
     for (int i = 0; i < mesh.intervals; i++) {
         for (int j = 0; j < mesh.nodes[i]; j++) {
             if (std::abs(t_vec[t_idx++] - mesh.t[i][j]) > tol) {
-                Log::warning("Time array is not compatible with given Mesh.");
+                Log::warning("Time array is not compatible with given Mesh: time variable mismatch = {}.", std::abs(t_vec[t_idx] - mesh.t[i][j]));
                 return false;
             }
         }
@@ -482,7 +482,7 @@ bool check_time_compatibility(
     for (const auto& vect : fields_to_check) {
         for (const auto& field : vect) {
             if (static_cast<int>(field.size()) != static_cast<int>(t_vec.size())) {
-                Log::warning("Time array is not compatible with given Mesh.");
+                Log::warning("Time array is not compatible with given Mesh: field size mismatch = {} vs expected = {}.", field.size(), t_vec.size());
                 return false;
             }
         }
@@ -710,7 +710,7 @@ int write_csv(
         abort();
     }
 
-    file << std::fixed << std::setprecision(std::numeric_limits<double>::max_digits10);
+    file << std::fixed << std::setprecision(std::numeric_limits<f64>::max_digits10);
 
     if (write_header) {
         // --- sections / header ---

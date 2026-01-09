@@ -36,11 +36,15 @@ NominalScaling::NominalScaling(FixedVector<f64>&& x_nominal,
     {
         for (size_t x = 0; x < x_scaling.size(); x++) {
             x_scaling[x] = 1.0 / x_scaling[x];
+            assert(std::isfinite(x_scaling[x]) && "Variable vector scaling (x_scaling) contains inf or nan.");
         }
 
         for (size_t g = 0; g < g_scaling.size(); g++) {
             g_scaling[g] = 1.0 / g_scaling[g];
+            assert(std::isfinite(g_scaling[g]) && "Constraint vector scaling (g_scaling) contains inf or nan.");
         }
+
+        assert(std::isfinite(f_scaling) && "Objective function scaling (f_scaling) is inf or nan.");
     }
 
 void NominalScaling::create_grad_scaling(int number_vars) {

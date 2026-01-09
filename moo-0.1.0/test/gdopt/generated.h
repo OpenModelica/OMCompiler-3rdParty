@@ -25,8 +25,6 @@
 extern "C" {
 #endif
 
-#include <base/export.h>
-
 int main_generated(int argc, char** argv);
 
 #ifdef __cplusplus

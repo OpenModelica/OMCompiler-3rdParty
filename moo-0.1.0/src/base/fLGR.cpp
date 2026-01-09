@@ -117,17 +117,20 @@ f64 fLGR::interpolate(int scheme, bool contains_zero, const f64* values, int inc
     const auto& weights = contains_zero ? get_w0(scheme) : get_w(scheme);
     int node_count = scheme + static_cast<int>(contains_zero);
 
-    // rescale T to the [0, 1] nominal interval domain
-    f64 h          = interval_end - interval_start;
     f64 node_start = nodes[0];
     f64 node_end   = nodes[node_count - 1];
 
     // check if interval is empty or if just one point is given -> return constant polynomial
-    if ((std::abs(node_end - node_start) < 1e-14) || (!contains_zero && scheme == 1)) {
+    if ((std::abs(interval_end - interval_start) < 1e-14) || (!contains_zero && scheme == 1)) {
         return values[0];
     }
 
-    f64 point_hat = (point - interval_start) / h * (node_end - node_start) + node_start;
+    // rescale T to the [0, 1] nominal interval domain
+    f64 point_hat = (point - interval_start) / (interval_end - interval_start);
+
+    if (!contains_zero) {
+        point_hat = (node_end - node_start) * point_hat + node_start;
+    }
 
     // check for exact match with any node to avoid division by zero
     for (int j = 0; j < node_count; j++) {

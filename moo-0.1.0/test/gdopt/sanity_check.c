@@ -18,41 +18,76 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+/**
+ * A simple DAE example
+ *
+ * @minimize tf
+ *
+ * s.t.   x' = -x + y + u
+ *        0  = u² - sin(y) - x/4
+ * fixed:
+ *        x(t0) = 1.5
+ *        x(tf) = 1.0
+ *           t0 = -0.5
+ *
+ * variable:
+ *     -inf <= x  <= inf
+ *     -inf <= y  <= inf
+ *     -1.0 <= u  <= 1.0
+ *     -0.5 <= tf <= 5.0
+ */
+
 #include <interfaces/c/structures.h>
 #include <interfaces/gdopt/main_gdopt.h>
 #include <generated.h>
 
+#include <math.h>
+
 // === problem sizes (compile const) ===
 
 #define X_SIZE 1
-#define U_SIZE 1
-#define P_SIZE 1
+#define U_SIZE 2
+#define P_SIZE 0
 
-#define RP_SIZE 1
+#define RP_SIZE 0
 
 #define R_SIZE 0
-#define G_SIZE 0
+#define G_SIZE 1
 
-#define HAS_MAYER false
-#define HAS_LAGRANGE true
+#define HAS_MAYER true
+#define HAS_LAGRANGE false
 
 
 #define FILE_COUNT 0
 
-// === declare global variables (values can be influenced by runtime parameters) ===
+// === flat indices for sparsity
+
+#define X_LFG_IDX(i)  (0 + (i))
+#define U_LFG_IDX(i)  (X_SIZE + (i))
+#define P_LFG_IDX(i)  (X_SIZE + U_SIZE + (i))
+
+#define X0_MR_IDX(i)  (0 + (i))
+#define U0_MR_IDX(i)  (X_SIZE + (i))
+#define XF_MR_IDX(i)  (X_SIZE + U_SIZE + (i))
+#define UF_MR_IDX(i)  (2 * X_SIZE + U_SIZE + (i))
+#define P_MR_IDX(i)   (2 * (X_SIZE + U_SIZE) + (i))
+#define T0_MR_IDX     (2 * (X_SIZE + U_SIZE) + P_SIZE)
+#define TF_MR_IDX     (2 * (X_SIZE + U_SIZE) + P_SIZE + 1)
 
 #define XU_SIZE (X_SIZE + U_SIZE)
 
-static bounds_t globl_x_bounds[X_SIZE] = { { -DBL_MAX, DBL_MAX } };
-static bounds_t globl_u_bounds[U_SIZE] = { { -10, 10} };
-static bounds_t globl_p_bounds[P_SIZE] = { { -0.5, 0.5 } };
-static bounds_t globl_T_bounds[2]      = { { 5.0, 5.0 }, { 11.0, 10505.0 } };
+// === declare global variables (values can be influenced by runtime parameters) ===
 
-static bounds_t globl_g_bounds[G_SIZE];
+static bounds_t globl_x_bounds[X_SIZE] = { { -DBL_MAX, DBL_MAX } };
+static bounds_t globl_u_bounds[U_SIZE] = { { -1, 1}, {-5, 5 } };
+static bounds_t globl_p_bounds[P_SIZE];
+static bounds_t globl_T_bounds[2]      = { { -0.5, -0.5 }, { -0.5, 5.0 } };
+
+static bounds_t globl_g_bounds[G_SIZE] = { { 0, 0 } };
 static bounds_t globl_r_bounds[R_SIZE];
 
-static optional_value_t globl_xu0_fixed[XU_SIZE] = { {1.5, true}, {0, false} };
-static optional_value_t globl_xuf_fixed[XU_SIZE] = { {1,   true}, {0, false} };
+static optional_value_t globl_xu0_fixed[XU_SIZE] = { {1.5, true}, {0, false}, {0, false} };
+static optional_value_t globl_xuf_fixed[XU_SIZE] = { {1,   true}, {0, false}, {0, false} };
 
 static f64 globl_x_nominal[X_SIZE];
 static f64 globl_u_nominal[U_SIZE];
@@ -65,30 +100,9 @@ static f64 globl_r_nominal[R_SIZE];
 
 static f64 globl_rp[RP_SIZE];
 
-// TODO: include also csv for file init?
-
 // === include data from csv-like files ===
 
 static const char* data[FILE_COUNT]; // = { "inputpath.csv" };
-
-/* data is available in the callback functions as f64* data (data at time of evaluation)
-   the control columns of the csvs are extracted and sorted as a flat array
-        [CSV1: [col1, col2, ..., colN], CSV2: [col1, col2, ..., colM], ...]
-   the constant parameters (static section) are written to the passed runtime parameter array
-   these do not change over time
-
- example CSV like format
-
-# time: 0                      // time column = 0.00000000000000000, ...
-# dynamic: "x", [1]            // dynamic (time-varying) column for states = 1.50000000000000000, ...
-# dynamic: "u", [2]            // dynamic (time-varying) column for controls = -0.62864318974690347, ...
-# static: "p", [3]             // static (time-varying) column for parameters = 0.02500176076771821
-t,x_0,u_0,p_0
-0.00000000000000000,1.50000000000000000,-0.62864318974690347,0.02500176076771821
-0.01445750910019651,1.46989539310990791,-0.61617345328311646
-0.07616008346272038,1.34811292027240026,-0.56572950137448774
-
-*/
 
 // === optimization sparsity and evaluation structures (compile const) ===
 
@@ -97,28 +111,28 @@ static eval_structure_t globl_lfg_eval = {
 };
 
 static coo_t globl_lfg_jac = {
-    .row = (int[]){0, 0, 1, 1, 1},
-    .col = (int[]){0, 1, 0, 1, 2},
-    .buf_index = (int[]){0, 1, 2, 3, 4},
-    .nnz = 5
+    .row = (int[]){0, 0, 0, 1, 1, 1},
+    .col = (int[]){X_LFG_IDX(0), U_LFG_IDX(0), U_LFG_IDX(1), X_LFG_IDX(0), U_LFG_IDX(0), U_LFG_IDX(1)},
+    .buf_index = (int[]){0, 1, 2, 3, 4, 5},
+    .nnz = 6
 };
 
 static coo_t globl_lfg_lt_hes = {
-    .row = (int[]){0, 1},
-    .col = (int[]){0, 1},
+    .row = (int[]){U_LFG_IDX(0), U_LFG_IDX(1)},
+    .col = (int[]){U_LFG_IDX(0), U_LFG_IDX(1)},
     .buf_index = (int[]){0, 1},
     .nnz = 2
 };
 
 static eval_structure_t globl_mr_eval = {
-    .buf_index = (int[]){}
+    .buf_index = (int[]){0}
 };
 
 static coo_t globl_mr_jac = {
-    .row = (int[]){},
-    .col = (int[]){},
+    .row = (int[]){0},
+    .col = (int[]){TF_MR_IDX},
     .buf_index = (int[]){},
-    .nnz = 0
+    .nnz = 1
 };
 
 static coo_t globl_mr_lt_hes = {
@@ -132,13 +146,13 @@ static coo_t globl_mr_lt_hes = {
 
 static coo_t globl_ode_jac = {
     .row = (int[1]){0},
-    .col = (int[1]){0},
+    .col = (int[1]){X_LFG_IDX(0)},
     .buf_index = (int[1]){0},
     .nnz = 1
 };
 
 static void ode_eval_f(const f64* x, const f64* u, const f64* p, f64 t, const f64* data, f64* f, void* user_data) {
-    f[0] = -x[0] + u[0] + p[0];
+    f[0] = -x[0] + u[0] + u[1];
 }
 
 static void ode_jac_f(const f64* x, const f64* u, const f64* p, f64 t, const f64* data, f64* dfdx, void* user_data) {
@@ -152,8 +166,8 @@ static void eval_lfg(const f64* xu, const f64* p, f64 t, const f64* data, f64* o
     const f64* x = xu;
     const f64* u = xu + X_SIZE;
 
-    out[0] /* L */ = 0.5 * (x[0] * x[0] + u[0] * u[0]);
-    out[1] /* f */ = -x[0] + u[0] + p[0];
+    out[0] /* f */ = -x[0] + u[0] + u[1];
+    out[1] /* g */ = u[0] * u[0] - sin(u[1]) - 0.25 * x[0];
 }
 
 // ∇ [L, f, g]
@@ -161,17 +175,21 @@ static void jac_lfg(const f64* xu, const f64* p, f64 t, const f64* data, f64* ou
     const f64* x = xu;
     const f64* u = xu + X_SIZE;
 
-    out[0] = x[0]; /* L_x */
-    out[1] = u[0]; /* L_u */
-    out[2] = -1; /* f_x  */
-    out[3] = 1; /* f_u */
-    out[4] = 1; /* f_p */
+    out[0] = -1; /* f_x  */
+    out[1] = 1; /* f_u */
+    out[2] = 1; /* f_y */
+    out[3] = -0.25; /* g_x */
+    out[4] = 2 * u[0]; /* g_u */
+    out[5] = -cos(u[1]); /* g_y */
 }
 
 // σ ∇² L + λ^T ∇² [f, g] (lower triangle)
 static void hes_lfg(const f64* xu, const f64* p, const f64* lambda, const f64 obj_factor, f64 t, const f64* data, f64* out, f64* out_pp, void* user_data) {
-    out[0] = obj_factor; /* xx */
-    out[1] = obj_factor; /* uu */
+    const f64* x = xu;
+    const f64* u = xu + X_SIZE;
+
+    out[0] = 2 * lambda[1];
+    out[1] = lambda[1] * sin(u[1]);
 }
 
 // [M, r]
@@ -179,11 +197,13 @@ static void eval_mr(const f64* xu0, const f64* xuf, const f64* p, f64 t0, f64 tf
     const f64* xf = xuf;
     const f64* uf = xuf + X_SIZE;
 
+    out[0] = tf;
 }
 
 // ∇ [M, r]
 static void jac_mr(const f64* xu0, const f64* xuf, const f64* p, f64 t0, f64 tf,
             const f64* data_t0, const f64* data_tf, f64* out, void* user_data) {
+    out[0] = 1.0;
 }
 
 // σ ∇² M + λ^T ∇² r (lower triangle)
@@ -207,10 +227,10 @@ static c_callbacks_t globl_callbacks = {
 };
 
 static mesh_ref_ctx_t globl_mesh_ctx = {
-    .initial_intervals = 50,
-    .nodes_per_interval = 3,
-    .l2bn_p1_it = 2,
-    .l2bn_p2_it = 3,
+    .initial_intervals = 10,
+    .nodes_per_interval = 5,
+    .l2bn_p1_it = 1,
+    .l2bn_p2_it = 0,
     .l2bn_p2_lvl = 0.0
 };
 
@@ -260,6 +280,6 @@ static c_problem_t globl_c_problem = {
 };
 
 
-int main_generated(int argc, char** argv) {
+int main_sanity_check(int argc, char** argv) {
     return main_gdopt(argc, argv, &globl_c_problem);
 }

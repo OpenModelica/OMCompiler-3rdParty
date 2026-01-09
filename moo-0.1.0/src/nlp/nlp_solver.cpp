@@ -18,35 +18,27 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef OPT_NLP_SOLVER_H
-#define OPT_NLP_SOLVER_H
-
-#include "nlp/solvers/nlp_solver_settings.h"
-#include "nlp.h"
+#include "nlp_solver.h"
 
 namespace NLP {
 
-class NLPSolver {
-public:
-    NLPSolver(NLP& nlp, NLPSolverSettings& solver_settings);
+NLPSolver::NLPSolver(NLP& nlp, NLPSolverSettings& solver_settings)
+    : nlp(nlp), solver_settings(solver_settings) {}
 
-    virtual ~NLPSolver() = default;
-
-    NLP& nlp;
-    NLPSolverSettings& solver_settings;
-
-    // optimization entry point
-    virtual void optimize() = 0;
-
-    // receive optimizer iteration count
-    virtual int get_iterations() const;
-
-    // times in nanoseconds
-    virtual f64 get_total_time() const;
-    virtual f64 get_solver_time() const;
-    virtual f64 get_callback_time() const;
+int NLPSolver::get_iterations() const {
+    return 0;
 };
 
-}
+f64 NLPSolver::get_total_time() const {
+    return 0.0;
+};
 
-#endif // OPT_NLP_SOLVER_H
+f64 NLPSolver::get_solver_time() const {
+    return 0.0;
+};
+
+f64 NLPSolver::get_callback_time() const {
+    return 0.0;
+};
+
+} // namespace NLP

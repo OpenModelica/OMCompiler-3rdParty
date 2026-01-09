@@ -35,24 +35,48 @@ public:
 
     Orchestrator(GDOP& gdop,
                  std::unique_ptr<Strategies> strategies,
-                 NLP::NLPSolver& solver)
-    : gdop(gdop),
-      strategies(std::move(strategies)),
-      solver(solver) {}
+                 NLP::NLPSolver& solver);
 
     virtual ~Orchestrator() = default;
 
     virtual void optimize() = 0;
 };
 
+class MOO_EXPORT MeshRefinementHistoryBlock {
+    friend class MeshRefinementHistory;
+
+    f64 objective;
+    int intervals;
+    int nlp_solver_iters;
+    f64 nlp_solver_total_nano;
+    f64 nlp_solver_self_nano;
+    f64 nlp_solver_callback_nano;
+
+    MeshRefinementHistoryBlock(const GDOP& gdop, const NLP::NLPSolver& solver);
+};
+
+class MOO_EXPORT MeshRefinementHistory {
+public:
+    std::vector<MeshRefinementHistoryBlock> blocks;
+    std::vector<f64> strategy_timings_nano;
+
+    MeshRefinementHistory() = default;
+
+    void add_block(const GDOP& gdop, const NLP::NLPSolver& solver);
+    MeshRefinementHistory& finalize();
+    void print();
+};
+
 class MOO_EXPORT MeshRefinementOrchestrator : public Orchestrator {
 public:
     MeshRefinementOrchestrator(GDOP& gdop,
                                std::unique_ptr<Strategies> strategies,
-                               NLP::NLPSolver& solver)
-    : Orchestrator(gdop, std::move(strategies), solver) {}
+                               NLP::NLPSolver& solver);
 
     void optimize() override;
+
+private:
+    MeshRefinementHistory history{};
 };
 
 } // namespace GDOP
