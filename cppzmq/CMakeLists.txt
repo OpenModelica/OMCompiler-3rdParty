@@ -1,59 +1,31 @@
-cmake_minimum_required(VERSION 2.8.0)
-
-if(${CMAKE_VERSION} VERSION_LESS "3.0.0") 
-    
-message("Project doesn't work with CMake < 3.0.0, just installing the header")
-
-set(CPPZMQ_HEADERS
-    zmq.hpp
-    zmq_addon.hpp
-)
-
-include(GNUInstallDirs)
-install(FILES ${CPPZMQ_HEADERS}
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
-    
-else() # CMAKE >= 3.0.0
-
-if (POLICY CMP0048)
-  cmake_policy(SET CMP0048 NEW)
-endif (POLICY CMP0048)
+cmake_minimum_required(VERSION 3.11)
 
 list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include (DetectCPPZMQVersion)
 
 project(cppzmq VERSION ${DETECTED_CPPZMQ_VERSION})
 
-find_package(ZeroMQ QUIET)
+if (NOT TARGET libzmq AND NOT TARGET libzmq-static)
+  find_package(ZeroMQ QUIET)
 
-# libzmq autotools install: fallback to pkg-config
-if(NOT ZeroMQ_FOUND)
+  # libzmq autotools install: fallback to pkg-config
+  if(NOT ZeroMQ_FOUND)
     message(STATUS "CMake libzmq package not found, trying again with pkg-config (normal install of zeromq)")
     list (APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/libzmq-pkg-config)
     find_package(ZeroMQ REQUIRED)
-endif()
+  endif()
 
-# TODO "REQUIRED" above should already cause a fatal failure if not found, but this doesn't seem to work
-if(NOT ZeroMQ_FOUND)
+  # TODO "REQUIRED" above should already cause a fatal failure if not found, but this doesn't seem to work
+  if(NOT ZeroMQ_FOUND)
     message(FATAL_ERROR "ZeroMQ was not found, neither as a CMake package nor via pkg-config")
-endif()
+  endif()
 
-if (ZeroMQ_FOUND AND (NOT TARGET libzmq OR NOT TARGET libzmq-static))
-  message(FATAL_ERROR "ZeroMQ version not supported!")
+  if (ZeroMQ_FOUND AND NOT (TARGET libzmq OR TARGET libzmq-static))
+    message(FATAL_ERROR "ZeroMQ version not supported!")
+  endif()
 endif()
-
-if (EXISTS "${CMAKE_SOURCE_DIR}/.git")
-    OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" ON)
-else ()
-    OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" OFF)
-endif ()
-if (ENABLE_DRAFTS)
-    ADD_DEFINITIONS (-DZMQ_BUILD_DRAFT_API)
-    set (pkg_config_defines "-DZMQ_BUILD_DRAFT_API=1")
-else (ENABLE_DRAFTS)
-    set (pkg_config_defines "")
-endif (ENABLE_DRAFTS)
 
 message(STATUS "cppzmq v${cppzmq_VERSION}")
 
@@ -92,9 +64,23 @@ export(EXPORT ${PROJECT_NAME}-targets
 configure_package_config_file(${PROJECT_NAME}Config.cmake.in
                               "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
                               INSTALL_DESTINATION ${CPPZMQ_CMAKECONFIG_INSTALL_DIR})
+# Workaround until ARCH_INDEPENDENT flag can be used with cmake 3.14.
+# The ConigVersion.cmake file contains checks for the architecture is was
+# generated on, which can cause problems for header only libraries
+# used with e.g. the Conan package manager. Since it is header only we
+# can/should omit those checks.
+set(CPPZMQ_SIZEOF_VOID_P ${CMAKE_SIZEOF_VOID_P})
+set(CMAKE_SIZEOF_VOID_P "") # a simple unset is not sufficient
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
                                  VERSION ${CPPZMQ_VERSION}
                                  COMPATIBILITY AnyNewerVersion)
+set(CMAKE_SIZEOF_VOID_P ${CPPZMQ_SIZEOF_VOID_P})
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cppzmq.pc.in
+               ${CMAKE_CURRENT_BINARY_DIR}/cppzmq.pc @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cppzmq.pc
+              DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
 install(EXPORT ${PROJECT_NAME}-targets
         FILE ${PROJECT_NAME}Targets.cmake
         DESTINATION ${CPPZMQ_CMAKECONFIG_INSTALL_DIR})
@@ -109,6 +95,7 @@ option(CPPZMQ_BUILD_TESTS "Whether or not to build the tests" ON)
 if (CPPZMQ_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+    if (CMAKE_CXX_STANDARD AND NOT CMAKE_CXX_STANDARD EQUAL 98 AND CMAKE_CXX_STANDARD GREATER_EQUAL 11)
+        add_subdirectory(examples)
+    endif()
 endif()
-
-endif() #  cmake version check

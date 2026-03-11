@@ -376,7 +376,10 @@ private:
 public:
     enum kind_type {
         isolated,
-        bound
+        bound,
+        outside1,
+        outside2,
+        outside3
     };
 
     enum traits_type {
