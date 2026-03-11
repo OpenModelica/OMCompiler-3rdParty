@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <zmq.hpp>
 #ifdef ZMQ_CPP11
 
@@ -8,7 +8,7 @@ static_assert(std::is_nothrow_swappable_v<zmq::socket_ref>);
 static_assert(sizeof(zmq::socket_ref) == sizeof(void *), "size mismatch");
 static_assert(alignof(zmq::socket_ref) == alignof(void *), "alignment mismatch");
 static_assert(ZMQ_IS_TRIVIALLY_COPYABLE(zmq::socket_ref),
-              "needs to be trivially copyable");
+    "needs to be trivially copyable");
 
 TEST_CASE("socket_ref default init", "[socket_ref]")
 {
@@ -111,7 +111,7 @@ TEST_CASE("socket_ref type punning", "[socket_ref]")
     CHECK(socket.handle() != nullptr);
     svp.p = socket.handle();
     // static_cast to silence incorrect warning
-    std::memcpy(static_cast<void*>(&ssr), &svp, sizeof(ssr));
+    std::memcpy(static_cast<void *>(&ssr), &svp, sizeof(ssr));
     CHECK(ssr.sr == socket);
 }
 
