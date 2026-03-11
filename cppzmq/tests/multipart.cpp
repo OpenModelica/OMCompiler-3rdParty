@@ -1,7 +1,23 @@
-#include <catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <zmq_addon.hpp>
 
 #ifdef ZMQ_HAS_RVALUE_REFS
+
+#ifdef ZMQ_CPP17
+static_assert(std::is_invocable<decltype(&zmq::multipart_t::send),
+                                zmq::multipart_t *,
+                                zmq::socket_ref,
+                                int>::value,
+              "Can't multipart_t::send with socket_ref");
+static_assert(std::is_invocable<decltype(&zmq::multipart_t::recv),
+                                zmq::multipart_t *,
+                                zmq::socket_ref,
+                                int>::value,
+              "Can't multipart_t::recv with socket_ref");
+#endif
+static_assert(std::is_constructible<zmq::multipart_t, zmq::socket_ref>::value,
+              "Can't construct with socket_ref");
+
 /// \todo split this up into separate test cases
 ///
 TEST_CASE("multipart legacy test", "[multipart]")
@@ -59,6 +75,21 @@ TEST_CASE("multipart legacy test", "[multipart]")
     assert(ok);
     assert(copy.equal(&multipart));
 
+    // Test equality operators
+    assert(copy == multipart);
+    assert(multipart == copy);
+
+    multipart.pop();
+
+    assert(copy != multipart);
+    assert(multipart != copy);
+
+    multipart_t emptyMessage1 {};
+    multipart_t emptyMessage2 {};
+
+    assert(emptyMessage1 == emptyMessage2);
+    assert(emptyMessage2 == emptyMessage1);
+
     multipart.clear();
     assert(multipart.empty());
 
@@ -74,12 +105,12 @@ TEST_CASE("multipart legacy test", "[multipart]")
     multipart.pushtyp(1.0f);
     multipart.pushmem("Frame0", 6);
     assert(multipart.size() == 10);
-    
-    const message_t& front_msg = multipart.front();
+
+    const message_t &front_msg = multipart.front();
     assert(multipart.size() == 10);
     assert(std::string(front_msg.data<char>(), front_msg.size()) == "Frame0");
-    
-    const message_t& back_msg = multipart.back();
+
+    const message_t &back_msg = multipart.back();
     assert(multipart.size() == 10);
     assert(std::string(back_msg.data<char>(), back_msg.size()) == "Frame9");
 
