@@ -128,4 +128,9 @@ zlib/build/
 
 ryu/ryu/tests/*.test
 
+<<<<<<< Updated upstream
 simdjson/build/
+=======
+gopher-mcp.git
+gopher-mcp/build/
+>>>>>>> Stashed changes

@@ -1,0 +1,295 @@
+/**
+ * HTTP Routing Filter Implementation
+ *
+ * Provides endpoint routing for HTTP requests using HttpCodecFilter
+ * for proper HTTP protocol parsing. Uses MCP Buffer abstraction throughout.
+ */
+
+#include "mcp/filter/http_routing_filter.h"
+
+#include <sstream>
+
+#include "mcp/logging/log_macros.h"
+#include "mcp/network/connection.h"
+
+namespace mcp {
+namespace filter {
+
+HttpRoutingFilter::HttpRoutingFilter(
+    HttpCodecFilter::MessageCallbacks* next_callbacks,
+    HttpCodecFilter::MessageEncoder* encoder,
+    bool is_server)
+    : next_callbacks_(next_callbacks),
+      encoder_(encoder),
+      is_server_(is_server) {
+  // Set up default handler that passes through to next layer
+  default_handler_ = [](const RequestContext&) {
+    // Return special status code 0 to indicate pass-through
+    Response resp;
+    resp.status_code = 0;  // Signal to pass through
+    return resp;
+  };
+}
+
+void HttpRoutingFilter::registerHandler(const std::string& method,
+                                        const std::string& path,
+                                        HandlerFunc handler) {
+  std::string key = buildRouteKey(method, path);
+  handlers_[key] = handler;
+}
+
+void HttpRoutingFilter::registerDefaultHandler(HandlerFunc handler) {
+  default_handler_ = handler;
+}
+
+// Removed onData, onNewConnection, onWrite, and initialize callbacks methods
+// as this filter no longer implements network::Filter interface
+
+// HttpCodecFilter::MessageCallbacks implementation
+void HttpRoutingFilter::onHeaders(
+    const std::map<std::string, std::string>& headers, bool keep_alive) {
+  GOPHER_LOG_DEBUG(
+      "HttpRoutingFilter::onHeaders called with {} headers, is_server={}, "
+      "keep_alive={}",
+      headers.size(), is_server_, keep_alive);
+
+  // In client mode, we're receiving responses, not requests - skip routing
+  if (!is_server_) {
+    GOPHER_LOG_DEBUG(
+        "HttpRoutingFilter: client mode, passing through response");
+    if (next_callbacks_) {
+      next_callbacks_->onHeaders(headers, keep_alive);
+    }
+    return;
+  }
+
+  // Server mode: route incoming requests
+  std::string method = extractMethod(headers);
+  std::string path =
+      extractPath(headers);  // Path without query string for routing
+
+  // Get full URL including query string for handler context
+  std::string full_url = path;
+  auto url_it = headers.find("url");
+  if (url_it != headers.end()) {
+    full_url = url_it->second;
+  } else {
+    auto path_it = headers.find(":path");
+    if (path_it != headers.end()) {
+      full_url = path_it->second;
+    }
+  }
+
+  GOPHER_LOG_DEBUG("HttpRoutingFilter: method={} path={}", method, path);
+
+  // Check if we have a handler for this endpoint
+  std::string key = buildRouteKey(method, path);
+  auto handler_it = handlers_.find(key);
+
+  if (handler_it != handlers_.end()) {
+    // We have a handler
+    RequestContext ctx;
+    ctx.method = method;
+    ctx.path = full_url;  // Full URL with query string for handler
+    ctx.headers = headers;
+    ctx.keep_alive = keep_alive;
+    // Note: body not available yet in onHeaders
+
+    // For POST/PUT requests, defer handler until we have the body
+    if (method == "POST" || method == "PUT" || method == "PATCH") {
+      pending_post_request_ = true;
+      pending_context_ = ctx;
+      pending_handler_ = handler_it->second;
+      accumulated_body_.clear();
+      return;  // Wait for body
+    }
+
+    // For GET/OPTIONS etc, execute immediately
+    Response resp = handler_it->second(ctx);
+    if (resp.status_code != 0) {
+      // Handler wants to handle this - send response immediately
+      // This is appropriate for endpoints that don't need the body
+      sendResponse(resp);
+      return;  // Don't forward to next layer
+    }
+  }
+
+  // No handler or handler returned 0 - pass through
+  if (next_callbacks_) {
+    next_callbacks_->onHeaders(headers, keep_alive);
+  }
+}
+
+void HttpRoutingFilter::onBody(const std::string& data, bool end_stream) {
+  // If we're accumulating body for a POST handler, buffer it
+  if (pending_post_request_) {
+    accumulated_body_ += data;
+    return;  // Don't forward - we'll handle in onMessageComplete
+  }
+
+  // Otherwise pass through
+  if (next_callbacks_) {
+    next_callbacks_->onBody(data, end_stream);
+  }
+}
+
+void HttpRoutingFilter::onMessageComplete() {
+  GOPHER_LOG_DEBUG("HttpRoutingFilter::onMessageComplete called");
+
+  // If we have a pending POST request, now we have the complete body
+  if (pending_post_request_) {
+    pending_context_.body = accumulated_body_;
+    Response resp = pending_handler_(pending_context_);
+    if (resp.status_code != 0) {
+      sendResponse(resp);
+    }
+    // Reset state
+    pending_post_request_ = false;
+    accumulated_body_.clear();
+    return;
+  }
+
+  // Otherwise pass through
+  if (next_callbacks_) {
+    next_callbacks_->onMessageComplete();
+  }
+}
+
+void HttpRoutingFilter::onError(const std::string& error) {
+  // Stateless - always pass through errors
+  if (next_callbacks_) {
+    next_callbacks_->onError(error);
+  }
+}
+
+void HttpRoutingFilter::sendResponse(const Response& response) {
+  GOPHER_LOG_DEBUG("HttpRoutingFilter::sendResponse called with status {}",
+                   response.status_code);
+
+  // Build complete HTTP response
+  std::ostringstream http_response;
+
+  // Status line (use HTTP/1.1 for now)
+  http_response << "HTTP/1.1 " << response.status_code << " ";
+
+  // Add status text based on code
+  switch (response.status_code) {
+    case 200:
+      http_response << "OK";
+      break;
+    case 201:
+      http_response << "Created";
+      break;
+    case 204:
+      http_response << "No Content";
+      break;
+    case 400:
+      http_response << "Bad Request";
+      break;
+    case 404:
+      http_response << "Not Found";
+      break;
+    case 500:
+      http_response << "Internal Server Error";
+      break;
+    default:
+      http_response << "Unknown";
+      break;
+  }
+  http_response << "\r\n";
+
+  // Add headers
+  for (const auto& header : response.headers) {
+    http_response << header.first << ": " << header.second << "\r\n";
+  }
+
+  // End headers
+  http_response << "\r\n";
+
+  // Add body if present
+  if (!response.body.empty()) {
+    http_response << response.body;
+  }
+
+  // Send the complete response directly through write callbacks
+  if (write_callbacks_) {
+    std::string response_str = http_response.str();
+    OwnedBuffer response_buffer;
+    response_buffer.add(response_str);
+    write_callbacks_->connection().write(response_buffer, false);
+
+    GOPHER_LOG_DEBUG("HttpRoutingFilter sent response: {} bytes",
+                     response_str.length());
+  }
+}
+
+std::string HttpRoutingFilter::buildRouteKey(const std::string& method,
+                                             const std::string& path) const {
+  return method + " " + path;
+}
+
+std::string HttpRoutingFilter::extractMethod(
+    const std::map<std::string, std::string>& headers) {
+  // The HTTP codec filter doesn't directly expose the method in headers
+  // We need to get it from the parser through the codec
+  // For now, we'll parse it from the URL header which contains the full request
+  // line or look for a method header that some parsers add
+
+  // Check for :method pseudo-header (HTTP/2 style)
+  auto it = headers.find(":method");
+  if (it != headers.end()) {
+    return it->second;
+  }
+
+  // For HTTP/1.1, we need to extract from the request line
+  // The parser stores the method internally but we can infer it
+  // from the request context
+
+  // Default to GET if not found
+  return "GET";
+}
+
+std::string HttpRoutingFilter::extractPath(
+    const std::map<std::string, std::string>& headers) {
+  std::string full_path;
+
+  // Check for :path pseudo-header (HTTP/2 style)
+  auto it = headers.find(":path");
+  if (it != headers.end()) {
+    full_path = it->second;
+  } else {
+    // For HTTP/1.1, the codec stores the URL in a "url" header
+    it = headers.find("url");
+    if (it != headers.end()) {
+      full_path = it->second;
+    } else {
+      // Default to root if not found
+      return "/";
+    }
+  }
+
+  // Strip query string for routing purposes
+  size_t query_pos = full_path.find('?');
+  if (query_pos != std::string::npos) {
+    return full_path.substr(0, query_pos);
+  }
+  return full_path;
+}
+
+// Factory methods
+std::shared_ptr<HttpRoutingFilter>
+HttpRoutingFilterFactory::createWithHealthCheck() {
+  // Note: This needs a dispatcher to be passed in
+  // For now, return nullptr as we need to refactor the factory
+  return nullptr;
+}
+
+std::shared_ptr<HttpRoutingFilter> HttpRoutingFilterFactory::createWithHandlers(
+    const std::map<std::string, HttpRoutingFilter::HandlerFunc>& handlers) {
+  // Note: This needs a dispatcher to be passed in
+  // For now, return nullptr as we need to refactor the factory
+  return nullptr;
+}
+
+}  // namespace filter
+}  // namespace mcp

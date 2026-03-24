@@ -1,0 +1,5 @@
+function(FetchContent_Declare)
+endfunction()
+function(FetchContent_MakeAvailable pkgName)
+add_subdirectory(_deps/${pkgName}-src)
+endfunction()
