@@ -1,0 +1,1 @@
+git subtree add --squash --prefix simdjson https://github.com/simdjson/simdjson master
