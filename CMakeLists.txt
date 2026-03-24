@@ -112,6 +112,9 @@ set (ZMQ_BUILD_SHARED OFF CACHE BOOL "Whether or not to build the shared object"
 omc_add_subdirectory(libzmq)
 add_library(omc::3rd::libzmq ALIAS libzmq-static)
 
+# simdjson
+omc_add_subdirectory(simdjson)
+add_library(omc::3rd::simdjson ALIAS simdjson)
 
 #lis
 omc_add_subdirectory(lis-1.4.12)
