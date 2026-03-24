@@ -127,3 +127,5 @@ tbb/build_cmake/
 zlib/build/
 
 ryu/ryu/tests/*.test
+
+simdjson/build/
