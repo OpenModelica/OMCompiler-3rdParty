@@ -1,5 +1,7 @@
 project(OMCompiler_3rdParty)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 # ryu
 omc_add_subdirectory(ryu)
 add_library(omc::3rd::ryu ALIAS ryu)
@@ -94,12 +96,20 @@ add_library(omc::3rd::omcgc ALIAS omcgc)
 
 
 
-#libffi
-omc_add_subdirectory(libffi)
-target_include_directories(ffi INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/libffi/include)
-# Currently the libffi setup puts the configure-generated headers in the
-# `build directory`/include folder
-target_include_directories(ffi INTERFACE ${libffi_BINARY_DIR}/include)
+# libffi
+option(OM_USE_SYSTEM_LIBFFI "Use system libffi" OFF)
+if (OM_USE_SYSTEM_LIBFFI)
+  find_package(LibFFI MODULE REQUIRED)
+  add_library(ffi INTERFACE)
+  target_include_directories(ffi INTERFACE ${LIBFFI_INCLUDE_DIRS})
+  target_link_libraries(ffi INTERFACE ${LIBFFI_LIBRARIES})
+else ()
+  omc_add_subdirectory(libffi)
+  target_include_directories(ffi INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/libffi/include)
+  # Currently the libffi setup puts the configure-generated headers in the
+  # `build directory`/include folder
+  target_include_directories(ffi INTERFACE ${libffi_BINARY_DIR}/include)
+endif ()
 add_library(omc::3rd::ffi ALIAS ffi)
 
 
