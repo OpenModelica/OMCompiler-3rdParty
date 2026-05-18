@@ -116,11 +116,20 @@ add_library(omc::3rd::ffi ALIAS ffi)
 
 
 # libzmq
-set (ZMQ_BUILD_TESTS OFF CACHE BOOL "Build the tests for ZeroMQ")
-set (ZMQ_BUILD_STATIC ON CACHE BOOL "Whether or not to build the static object")
-set (ZMQ_BUILD_SHARED OFF CACHE BOOL "Whether or not to build the shared object")
-omc_add_subdirectory(libzmq)
-add_library(omc::3rd::libzmq ALIAS libzmq-static)
+option(OM_USE_SYSTEM_ZMQ "Use system zmq" OFF)
+if (OM_USE_SYSTEM_ZMQ)
+  find_package(ZeroMQ CONFIG REQUIRED)
+  add_library(zmq INTERFACE)
+  target_link_libraries(zmq INTERFACE libzmq)
+  add_library(omc::3rd::libzmq ALIAS zmq)
+else ()
+  set (ZMQ_BUILD_TESTS OFF CACHE BOOL "Build the tests for ZeroMQ")
+  set (ZMQ_BUILD_STATIC ON CACHE BOOL "Whether or not to build the static object")
+  set (ZMQ_BUILD_SHARED OFF CACHE BOOL "Whether or not to build the shared object")
+  omc_add_subdirectory(libzmq)
+  add_library(omc::3rd::libzmq ALIAS libzmq-static)
+endif ()
+
 
 # simdjson
 omc_add_subdirectory(simdjson)
