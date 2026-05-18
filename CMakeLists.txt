@@ -19,7 +19,14 @@ omc_add_subdirectory(Cdaskr)
 add_library(omc::3rd::cdaskr ALIAS cdaskr)
 
 # CMinpack
-omc_add_subdirectory(CMinpack)
+option(OM_USE_SYSTEM_CMINPACK "Use system cminpack" OFF)
+if (OM_USE_SYSTEM_CMINPACK)
+  find_package(CMinpack CONFIG REQUIRED)
+  add_library(cminpack INTERFACE)
+  target_link_libraries(cminpack INTERFACE cminpack::cminpack)
+else ()
+  omc_add_subdirectory(CMinpack)
+endif ()
 add_library(omc::3rd::cminpack ALIAS cminpack)
 
 # # cppzmq
