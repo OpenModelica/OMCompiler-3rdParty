@@ -283,7 +283,7 @@ if(MSVC)
             ERROR_VARIABLE IGNORE
             RESULT_VARIABLE SYMBOL_UNDERSCORE_EXITCODE)
     endif()
-elseif()
+else(MSVC)
     execute_process(
         COMMAND sh -c "${CMAKE_C_COMPILER} ${CMAKE_C_FLAGS} -xc -c -o conftest.o conftest.c 2>&1;
                        ${DUMPTOOL_CMD} conftest.o 2>&1 | grep -q _nm_test_func"
@@ -291,7 +291,7 @@ elseif()
         OUTPUT_VARIABLE IGNORE
         ERROR_VARIABLE IGNORE
         RESULT_VARIABLE SYMBOL_UNDERSCORE_EXITCODE)
-endif()
+endif(MSVC)
 
 file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/conftest.*)
 
