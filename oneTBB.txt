@@ -1,0 +1,9 @@
+oneTBB (oneAPI Threading Building Blocks): https://github.com/uxlfoundation/oneTBB
+
+Vendored as a plain git tree of release tag v2023.0.0:
+> git clone --depth 1 --branch v2023.0.0 https://github.com/uxlfoundation/oneTBB.git oneTBB
+> rm -rf oneTBB/.git oneTBB/.github
+# to update: repeat with a newer tag into a fresh oneTBB/ dir
+
+Previously (Intel TBB 2020.2, OpenModelica GC-patched fork):
+> git subtree add --prefix tbb https://github.com/mahge/tbb.git tbb_om_boehm_gc

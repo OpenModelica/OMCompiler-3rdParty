@@ -140,14 +140,42 @@ target_include_directories(metis INTERFACE metis-5.1.0/include)
 omc_add_subdirectory(open62541)
 add_library(omc::3rd::opcua ALIAS opcua)
 
-# Intel TBB
-option(TBB_BUILD_TESTS "Build TBB tests and enable testing infrastructure" OFF)
-option(TBB_BUILD_SHARED "Build TBB shared library" OFF)
-option(TBB_BUILD_TBBMALLOC "Build TBB malloc library" OFF)
-option(TBB_BUILD_TBBMALLOC_PROXY "Build TBB malloc proxy library" OFF)
-omc_add_subdirectory(tbb)
-add_library(omc::3rd::tbb ALIAS tbb_static)
-# add_library(omc::3rd::tbb::shared ALIAS tbb)
+# Intel oneTBB (github.com/uxlfoundation/oneTBB)
+set(TBB_TEST OFF CACHE BOOL "Enable oneTBB testing" FORCE)
+set(TBB_EXAMPLES OFF CACHE BOOL "Enable oneTBB examples" FORCE)
+set(TBB_STRICT OFF CACHE BOOL "Treat oneTBB compiler warnings as errors" FORCE)
+set(TBBMALLOC_BUILD OFF CACHE BOOL "Enable tbbmalloc build" FORCE)
+set(TBB_INSTALL OFF CACHE BOOL "Enable oneTBB installation" FORCE)
+# Build oneTBB statically, matching the previous (wjakob/tbb 2020.2) setup.
+# Scope BUILD_SHARED_LIBS to the tbb subdirectory only so other 3rdParty libs are unaffected.
+set(_omc_saved_build_shared_libs ${BUILD_SHARED_LIBS})
+set(BUILD_SHARED_LIBS OFF)
+omc_add_subdirectory(oneTBB)
+set(BUILD_SHARED_LIBS ${_omc_saved_build_shared_libs})
+add_library(omc::3rd::tbb ALIAS tbb)
+
+# Install oneTBB (under its own default library name) next to the other omc
+# runtime libraries so generated --parmodauto simulators can link against it.
+install(TARGETS tbb ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+# Resolve oneTBB's default library name for the active build type (it appends a
+# _debug postfix in Debug builds) and expose it so the code generator can emit the
+# matching -l flag via Autoconf.parModelicaAutoLibs. Unix Makefiles/Ninja are
+# single-config, so CMAKE_BUILD_TYPE selects the right postfix here.
+get_target_property(_omc_tbb_output_name tbb OUTPUT_NAME)
+if(NOT _omc_tbb_output_name)
+  set(_omc_tbb_output_name tbb)
+endif()
+set(_omc_tbb_postfix "")
+if(CMAKE_BUILD_TYPE)
+  string(TOUPPER "${CMAKE_BUILD_TYPE}" _omc_tbb_cfg)
+  get_target_property(_omc_tbb_cfg_postfix tbb ${_omc_tbb_cfg}_POSTFIX)
+  if(_omc_tbb_cfg_postfix)
+    set(_omc_tbb_postfix "${_omc_tbb_cfg_postfix}")
+  endif()
+endif()
+set(OMC_PARMODELICA_TBB_LINK_NAME "${_omc_tbb_output_name}${_omc_tbb_postfix}"
+    CACHE INTERNAL "oneTBB library name generated --parmodauto simulators link against")
 
 
 # regex
