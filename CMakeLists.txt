@@ -7,8 +7,17 @@ omc_add_subdirectory(ryu)
 add_library(omc::3rd::ryu ALIAS ryu)
 
 # zlib
-omc_add_subdirectory(zlib)
-add_library(omc::3rd::zlib ALIAS zlib)
+option(OM_USE_SYSTEM_ZLIB "Use system zlib" OFF)
+if (OM_USE_SYSTEM_ZLIB)
+  set(ZLIB_USE_STATIC_LIBS ON)
+  find_package(ZLIB MODULE REQUIRED)
+  unset(ZLIB_USE_STATIC_LIBS)
+  add_library(omc::3rd::zlib INTERFACE)
+  target_link_libraries(omc::3rd::zlib INTERFACE ZLIB::ZLIB)
+else ()
+  omc_add_subdirectory(zlib)
+  add_library(omc::3rd::zlib ALIAS zlib)
+endif ()
 
 # antlr
 omc_add_subdirectory(antlr)
