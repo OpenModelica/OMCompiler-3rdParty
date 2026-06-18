@@ -39,7 +39,7 @@ integer ilaenv_(integer *ispec, char *name__, char *opts, integer *n1,
     integer nbmin;
     logical sname;
     extern integer ieeeck_(integer *, real *, real *);
-    char subnam[1];
+    char subnam[6];
     extern integer iparmq_(integer *, char *, char *, integer *, integer *, 
 	    integer *, integer *);
 
