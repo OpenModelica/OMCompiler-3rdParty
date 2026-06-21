@@ -211,33 +211,37 @@ if(MSVC)
 endif()
 
 
-# SuiteSparse
-omc_add_subdirectory(SuiteSparse-5.8.1)
-add_library(omc::3rd::suitesparse::klu ALIAS klu)
-target_include_directories(klu INTERFACE SuiteSparse-5.8.1/KLU/Include)
+# SuiteSparse v7 (DrTimothyAldenDavis/SuiteSparse, submodule pinned to v7.12.2)
+# The hand-written 5.8.1 wrapper was replaced with a submodule and we delegate
+# the build to upstream by including the top-level SuiteSparse/CMakeLists.txt.
+# Only the subset required by OMC and Sundials is enabled.
+set(SUITESPARSE_ENABLE_PROJECTS "suitesparse_config;amd;colamd;btf;klu;umfpack" CACHE STRING "SuiteSparse projects to build" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(BUILD_STATIC_LIBS ON CACHE BOOL "" FORCE)
+set(SUITESPARSE_USE_OPENMP OFF CACHE BOOL "" FORCE)
+set(SUITESPARSE_USE_CUDA OFF CACHE BOOL "" FORCE)
+set(SUITESPARSE_USE_FORTRAN OFF CACHE BOOL "" FORCE)
+set(SUITESPARSE_DEMOS OFF CACHE BOOL "" FORCE)
+set(SUITESPARSE_USE_STRICT OFF CACHE BOOL "" FORCE)
+set(KLU_USE_CHOLMOD OFF CACHE BOOL "" FORCE)
+set(UMFPACK_USE_CHOLMOD OFF CACHE BOOL "" FORCE)
 
-add_library(omc::3rd::suitesparse::umfpack ALIAS umfpack)
-target_include_directories(umfpack INTERFACE SuiteSparse-5.8.1/UMFPACK/Include)
+omc_add_subdirectory(SuiteSparse)
 
-add_library(omc::3rd::suitesparse::amd ALIAS amd)
-target_include_directories(amd INTERFACE SuiteSparse-5.8.1/AMD/Include)
-
-add_library(omc::3rd::suitesparse::colamd ALIAS colamd)
-target_include_directories(colamd INTERFACE SuiteSparse-5.8.1/COLAMD/Include)
-
-add_library(omc::3rd::suitesparse::btf ALIAS btf)
-target_include_directories(btf INTERFACE SuiteSparse-5.8.1/BTF/Include)
-
-add_library(omc::3rd::suitesparse::config ALIAS suitesparseconfig)
-target_include_directories(suitesparseconfig INTERFACE SuiteSparse-5.8.1/SuiteSparse_config/)
+add_library(omc::3rd::suitesparse::config ALIAS SuiteSparseConfig_static)
+add_library(omc::3rd::suitesparse::amd ALIAS AMD_static)
+add_library(omc::3rd::suitesparse::colamd ALIAS COLAMD_static)
+add_library(omc::3rd::suitesparse::btf ALIAS BTF_static)
+add_library(omc::3rd::suitesparse::klu ALIAS KLU_static)
+add_library(omc::3rd::suitesparse::umfpack ALIAS UMFPACK_static)
 
 
 # sundials
-set(KLU_LIBRARY klu)
-set(AMD_LIBRARY amd)
-set(COLAMD_LIBRARY colamd)
-set(BTF_LIBRARY btf)
-set(SUITESPARSECONFIG_LIBRARY suitesparseconfig)
+set(KLU_LIBRARY KLU_static)
+set(AMD_LIBRARY AMD_static)
+set(COLAMD_LIBRARY COLAMD_static)
+set(BTF_LIBRARY BTF_static)
+set(SUITESPARSECONFIG_LIBRARY SuiteSparseConfig_static)
 
 option(SUNDIALS_BUILD_STATIC_LIBS "Build static libraries" ON)
 option(SUNDIALS_BUILD_SHARED_LIBS "Build shared libraries" OFF)
