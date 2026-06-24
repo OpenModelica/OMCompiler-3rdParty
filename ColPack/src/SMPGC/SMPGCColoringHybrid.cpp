@@ -55,7 +55,8 @@ int SMPGCColoring::D1_OMP_HBJP(int nT, int&colors, vector<int>& vtxColors, const
     tim_Wgt =-omp_get_wtime();
     vector<int> WeightRnd(N);
     for(int i=0; i<N; i++) WeightRnd[i]=i;
-    std::random_shuffle(WeightRnd.begin(), WeightRnd.end());
+    std::default_random_engine g_hybrid(std::random_device{}());
+    std::shuffle(WeightRnd.begin(), WeightRnd.end(), g_hybrid);
     //if(N>1) for(int i=0; i<N-1; i++) { uniform_int_distribution<int> dist(i, N-1); swap(WeightRnd[i], WeightRnd[dist(mt)]); }
     tim_Wgt +=omp_get_wtime();
     

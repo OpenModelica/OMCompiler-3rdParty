@@ -470,7 +470,8 @@ int SMPGCColoring::D1_OMP_LB(int nT, int&colors, vector<int>&vtxColors, const in
     tim_Wgt =-omp_get_wtime();
     vector<int> WeightRnd(N);
     for(int i=0; i<N; i++) WeightRnd[i]=i;
-    std::random_shuffle(WeightRnd.begin(), WeightRnd.end());
+    std::default_random_engine g(std::random_device{}());
+    std::shuffle(WeightRnd.begin(), WeightRnd.end(), g);
     //if(N>1) for(int i=0; i<N-1; i++) { uniform_int_distribution<int> dist(i, N-1); swap(WeightRnd[i], WeightRnd[dist(mt)]); }
     tim_Wgt +=omp_get_wtime();
     
@@ -615,7 +616,8 @@ int SMPGCColoring::D1_OMP_JP(int nT, int&colors, vector<int>&vtxColors, const in
     tim_Wgt =-omp_get_wtime();
     vector<int> WeightRnd(N);
     for(int i=0; i<N; i++) WeightRnd[i]=i;
-    std::random_shuffle(WeightRnd.begin(), WeightRnd.end());
+    std::default_random_engine g2(std::random_device{}());
+    std::shuffle(WeightRnd.begin(), WeightRnd.end(), g2);
     //if(N>1) for(int i=0; i<N-1; i++) { uniform_int_distribution<int> dist(i, N-1); swap(WeightRnd[i], WeightRnd[dist(mt)]); }
     tim_Wgt +=omp_get_wtime();
     
