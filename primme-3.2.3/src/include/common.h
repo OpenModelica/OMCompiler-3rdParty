@@ -53,7 +53,7 @@
 #endif /* PRIMME_WITH_MAGMA */
 
 
-#include <limits.h>    
+#include <limits.h>
 #include <float.h>
 #include <stdint.h>
 #include <stdlib.h>   /* malloc, free */
@@ -178,8 +178,18 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_cublas_wprimme;
 
 #define PRIMME_OP_HREAL PRIMME_OP_HSCALAR
 
-/* complex.h may be defined in primme.h or here; so undefine I */
-#ifdef I
+/* complex.h may be defined in primme.h or here; so undefine I.
+ *
+ * Skip this on musl libc (e.g. Alpine): glibc's tgmath.h (since it switched
+ * to C11 _Generic dispatch) never references the I macro after it has been
+ * included, so undefining I here is harmless. musl's tgmath.h still uses the
+ * classic sizeof(x+I) trick and textually re-expands a reference to I at
+ * every call site throughout the translation unit, so undefining it here
+ * would break every later use of sqrt/fabs/pow/etc. musl has no dedicated
+ * feature-test macro, so detect it as "Linux without __GLIBC__" (__GLIBC__
+ * is pulled in transitively by the stdlib.h/string.h/stdio.h includes above
+ * on glibc systems). */
+#if defined(I) && !(defined(__linux__) && !defined(__GLIBC__))
 #   undef I
 #endif
 
@@ -390,7 +400,7 @@ static inline const char *__compose_function_name(const char *path,
       free((void*)ctx.path); \
       ctx.path = old_path; \
    }
- 
+
 #else
 #define PROFILE_BEGIN(CALL)
 #define PROFILE_END
