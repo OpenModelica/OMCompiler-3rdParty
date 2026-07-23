@@ -132,7 +132,7 @@ namespace d1 {
         r1::call_itt_notify(static_cast<int>(t), ptr);
     }
 
-#if (_WIN32||_WIN64) && !__MINGW32__
+#if (_WIN32||_WIN64) // && !__MINGW32__  // removed for MinGW Makefiles builds, see https://github.com/uxlfoundation/oneTBB/issues/1052
     inline void itt_set_sync_name(void* obj, const wchar_t* name) {
         r1::itt_set_sync_name(obj, name);
     }
