@@ -243,59 +243,83 @@ add_library(omc::3rd::suitesparse::klu ALIAS KLU_static)
 add_library(omc::3rd::suitesparse::umfpack ALIAS UMFPACK_static)
 
 
-# sundials
-set(KLU_LIBRARY KLU_static)
-set(AMD_LIBRARY AMD_static)
-set(COLAMD_LIBRARY COLAMD_static)
-set(BTF_LIBRARY BTF_static)
-set(SUITESPARSECONFIG_LIBRARY SuiteSparseConfig_static)
+# SUNDIALS (LLNL/sundials, submodule pinned to v7.8.0)
+# The patched 5.4.0 source copy was replaced by a pristine submodule, so
+# everything we used to patch into those sources is configured from here.
+# See sundials.txt for what those patches were and why they are (or are no
+# longer) needed.
 
-option(SUNDIALS_BUILD_STATIC_LIBS "Build static libraries" ON)
-option(SUNDIALS_BUILD_SHARED_LIBS "Build shared libraries" OFF)
-option(SUNDIALS_KLU_ENABLE "Enable KLU support" ON)
-option(SUNDIALS_EXAMPLES_ENABLE_C "Build SUNDIALS C examples" OFF)
+# Static only, like the rest of 3rdParty. BUILD_STATIC_LIBS/BUILD_SHARED_LIBS are
+# already forced above for SuiteSparse; SUNDIALS reads the same two variables.
 
-# If Fortran support is not available for OpenModelica, manually set
-# the name mangling scheme for Fortand calls. Sundails wants to do its
-# own check of functionality of Lapack. And for that it wants to have either
-# a Fortran compiler available (to detect the scheme) OR the name mangling scheme
-# specified explicitly by the user.
-# I am guessing this is a good default option since almost all of the Fortan to
-# C converted functions I have seen are named lower case with one underscore.
+# The OMC runtimes and the generated simulation code assume doubles and a 64 bit
+# sunindextype (which also has to match SuiteSparse's int64 KLU entry points).
+set(SUNDIALS_PRECISION "DOUBLE" CACHE STRING "SUNDIALS floating point precision" FORCE)
+set(SUNDIALS_INDEX_SIZE "64" CACHE STRING "SUNDIALS sunindextype size in bits" FORCE)
+
+# KLU. SUNDIALS' FindKLU prefers an already existing SuiteSparse::KLU target as
+# long as we do not point KLU_INCLUDE_DIR/KLU_LIBRARY_DIR/KLU_LIBRARY somewhere
+# else, so it picks up the in-tree SuiteSparse built above on its own - do not
+# hand it anything. The compatibility checks have to be off: they try_compile()
+# against SUNDIALS::KLU, which here is an alias for an in-tree target rather than
+# an IMPORTED one, so it is not visible to the separate try_compile project.
+# NOTE: FindKLU tries a find_package(KLU CONFIG) first. On distros that ship
+# SuiteSparse' CMake package files this prints a "found KLUConfig.cmake but it set
+# KLU_FOUND to FALSE" warning; it is harmless. Because SuiteSparse::KLU is already
+# a target by the time we get here, the system package can neither be imported nor
+# override it, so the in-tree KLU_static wins either way.
+set(SUNDIALS_ENABLE_KLU ON CACHE BOOL "Enable KLU support" FORCE)
+set(SUNDIALS_ENABLE_KLU_CHECKS OFF CACHE BOOL "Enable KLU compatibility checks" FORCE)
+
+set(SUNDIALS_ENABLE_LAPACK ON CACHE BOOL "Enable LAPACK support" FORCE)
+# SUNDIALS needs a Fortran compiler to infer the LAPACK name-mangling scheme. If
+# OpenModelica is built without Fortran, spell the scheme out instead - almost
+# every Fortran-to-C converted LAPACK we have seen is lower case with one
+# underscore.
 if(NOT OM_OMC_ENABLE_FORTRAN)
-  set(SUNDIALS_F77_FUNC_CASE "LOWER")
-  set(SUNDIALS_F77_FUNC_UNDERSCORES "ONE")
+  set(SUNDIALS_LAPACK_CASE "lower" CACHE STRING "Case of LAPACK function names" FORCE)
+  set(SUNDIALS_LAPACK_UNDERSCORES "one" CACHE STRING "Underscores appended to LAPACK function names" FORCE)
 endif()
-option(SUNDIALS_LAPACK_ENABLE "Enable Lapack support" ON)
 
-omc_add_subdirectory(sundials-5.4.0)
+# We use the C interfaces only, and want neither examples, benchmarks nor tests.
+set(SUNDIALS_ENABLE_FORTRAN OFF CACHE BOOL "Enable SUNDIALS Fortran interfaces" FORCE)
+set(SUNDIALS_ENABLE_C_EXAMPLES OFF CACHE BOOL "Build SUNDIALS C examples" FORCE)
+set(SUNDIALS_ENABLE_CXX_EXAMPLES OFF CACHE BOOL "Build SUNDIALS C++ examples" FORCE)
+set(SUNDIALS_ENABLE_EXAMPLES_INSTALL OFF CACHE BOOL "Install SUNDIALS examples" FORCE)
+set(SUNDIALS_ENABLE_BENCHMARKS OFF CACHE BOOL "Enable the SUNDIALS benchmark suite" FORCE)
+set(SUNDIALS_TEST_ENABLE_UNIT_TESTS OFF CACHE BOOL "Enable SUNDIALS unit tests" FORCE)
 
-## Sundials thoughtfully has organized its headers cleanly in one include/ directory
-## Take advantage of that to transitively provide the headers when an external target links to
-## any one of the sundials' libs.
-add_library(sundials_interface INTERFACE)
-target_include_directories(sundials_interface INTERFACE ${sundials_SOURCE_DIR}/include/)
-## The sundials_config.h files are generated in the build directory. Add it as an include dir.
-target_include_directories(sundials_interface INTERFACE ${sundials_BINARY_DIR}/include/)
+# Upstream turns the extensive error checks on by default for Debug builds (and
+# warns about the performance hit while configuring). Keep SUNDIALS behaving the
+# same way in all OMC build types.
+set(SUNDIALS_ENABLE_ERROR_CHECKS OFF CACHE BOOL "Enable SUNDIALS error checking" FORCE)
 
-## Add an interface lib for linking ot the static libs. This will transitively add
-## DLINK_SUNDIALS_STATIC to anything that links to the static sundials libs.
-add_library(sundials_interface_static INTERFACE)
-target_link_libraries(sundials_interface_static INTERFACE sundials_interface)
-target_compile_definitions(sundials_interface_static INTERFACE LINK_SUNDIALS_STATIC)
+# OMC installs the SUNDIALS headers under <includedir>/sundials, which
+# SimulationRuntime/cpp, SimulationRuntime/OMSICpp and
+# SimulationRuntime/c/Makefile.common all hardcode. SUNDIALS installs everything
+# relative to CMAKE_INSTALL_INCLUDEDIR, so bump that for the subdirectory only.
+set(_omc_saved_install_includedir "${CMAKE_INSTALL_INCLUDEDIR}")
+set(CMAKE_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}/sundials")
 
-## Now that the includes and defines are attached to a utility interface library (sundials_interface_static) link it
-## to the sundials static libs so they can be found when the sundials lib is linked-to from an external lib.
-### Note! It should have been enough for the scope here to be INTERFACE instead of PUBLIC. However,
-### that does not seem to work. This should be fine anyway.
-target_link_libraries(sundials_cvode_static PUBLIC sundials_interface_static)
-target_link_libraries(sundials_ida_static PUBLIC sundials_interface_static)
-target_link_libraries(sundials_idas_static PUBLIC sundials_interface_static)
-target_link_libraries(sundials_kinsol_static PUBLIC sundials_interface_static)
-target_link_libraries(sundials_sunlinsolklu_static PUBLIC sundials_interface_static)
-target_link_libraries(sundials_sunlinsollapackdense_static PUBLIC sundials_interface_static)
+omc_add_subdirectory(sundials)
+
+set(CMAKE_INSTALL_INCLUDEDIR "${_omc_saved_install_includedir}")
+unset(_omc_saved_install_includedir)
+
+# SUNDIALS declares CMAKE_C_STANDARD and CMAKE_C_EXTENSIONS as *cache* variables
+# (cmake/SundialsSetupCompilers.cmake), so configuring it would otherwise drag the
+# whole OpenModelica build down to C99. OMC deliberately leaves the C standard at
+# the compiler default, see the top-level CMakeLists.txt. SUNDIALS' own targets
+# already captured the standard when they were created above, so dropping the
+# cache entries here only affects everything that comes after.
+unset(CMAKE_C_STANDARD CACHE)
+unset(CMAKE_C_EXTENSIONS CACHE)
 
 ## Add aliases for the static libs. For readability.
+## Linking one of these already provides the SUNDIALS include directories and the
+## SUNDIALS_STATIC_DEFINE compile definition transitively - sundials_add_library()
+## attaches both as PUBLIC usage requirements - so unlike with 5.4.0 we do not
+## need an interface library of our own on top.
 add_library(omc::3rd::sundials::cvode ALIAS sundials_cvode_static)
 add_library(omc::3rd::sundials::ida ALIAS sundials_ida_static)
 add_library(omc::3rd::sundials::idas ALIAS sundials_idas_static)
