@@ -23,6 +23,22 @@ typedef enum fmi2_xml_model_description_status_enu_t {
     fmi2_xml_model_description_enu_error
 } fmi2_xml_model_description_status_enu_t;
 
+#define FMI2_DEFAULT_EXPERIMENT_TOLERANCE 1e-4
+#define FMI2_DEFAULT_EXPERIMENT_STEPSIZE 1e-2
+typedef struct fmi2_xml_default_experiment {
+    double  startTime;
+    int     startTimeDefined;
+
+    double  stopTime;
+    int     stopTimeDefined;
+
+    double  tolerance;
+    int     toleranceDefined;
+
+    double  stepSize;
+    int     stepSizeDefined;
+} fmi2_xml_default_experiment;
+
 /*  ModelDescription is the entry point for the package*/
 struct fmi2_xml_model_description_t {
 
@@ -52,22 +68,11 @@ struct fmi2_xml_model_description_t {
 
     size_t numberOfEventIndicators;
 
-    double defaultExperimentStartTime;
-
-    double defaultExperimentStopTime;
-
-#define FMI2_DEFAULT_EXPERIMENT_TOLERANCE 1e-4
-
-    double defaultExperimentTolerance;
-
-#define FMI2_DEFAULT_EXPERIMENT_STEPSIZE 1e-2
-
-    double defaultExperimentStepSize;
-
+    fmi2_xml_default_experiment defaultExperiment;
 
     jm_vector(char) modelIdentifierME;
 
-	jm_vector(char) modelIdentifierCS;
+    jm_vector(char) modelIdentifierCS;
 
     jm_vector(jm_string) sourceFilesME;
     jm_vector(jm_string) sourceFilesCS;
@@ -75,7 +80,7 @@ struct fmi2_xml_model_description_t {
     jm_vector(jm_string) logCategories;
     jm_vector(jm_string) logCategoryDescriptions;
 
-	jm_vector(jm_string) vendorList;
+    jm_vector(jm_string) vendorList;
 
     jm_vector(jm_named_ptr) unitDefinitions;
     jm_vector(jm_named_ptr) displayUnitDefinitions;
@@ -84,27 +89,18 @@ struct fmi2_xml_model_description_t {
 
     jm_string_set descriptions;
 
-	jm_vector(jm_named_ptr) variablesByName;
+    jm_vector(jm_named_ptr) variablesByName;
 
     jm_vector(jm_voidp)* variablesOrigOrder;
 
-	jm_vector(jm_voidp)* variablesByVR;
+    jm_vector(jm_voidp)* variablesByVR;
 
     fmi2_fmu_kind_enu_t fmuKind;
 
     unsigned int capabilities[fmi2_capabilities_Num];
 
-	fmi2_xml_model_structure_t* modelStructure;
+    fmi2_xml_model_structure_t* modelStructure;
 };
-
-void fmi2_xml_report_error(fmi2_xml_model_description_t* md, const char* module, const char* fmt, ...);
-
-void fmi2_xml_report_error_v(fmi2_xml_model_description_t* md, const char* module, const char* fmt, va_list ap);
-
-void fmi2_xml_report_warning(fmi2_xml_model_description_t* md, const char* module, const char* fmt, ...);
-
-void fmi2_xml_report_warning_v(fmi2_xml_model_description_t* md, const char* module, const char* fmt, va_list ap);
-
 
 #ifdef __cplusplus
 }

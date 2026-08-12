@@ -1,1 +1,1 @@
-http://www.jmodelica.org/downloads/FMIL/FMILibrary-2.0-src.zip
+https://github.com/modelon-community/fmi-library/releases/tag/3.0.4

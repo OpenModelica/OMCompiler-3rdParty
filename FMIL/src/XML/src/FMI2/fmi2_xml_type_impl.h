@@ -33,7 +33,7 @@ extern "C" {
   For each basic type (Real, Integer, each Enumeration, String & Boolean)
   there is a default instance of fmi2_xml_variable_type_base_t with
   structKind=fmi2_xml_type_struct_enu_props. Those instances have
-  baseTypeStruct = NULL.
+  nextLayer = NULL.
 
   Each type definition creates 1 or 2 instances:
   (1)  instance with structKind=fmi2_xml_type_struct_enu_typedef
@@ -60,30 +60,36 @@ typedef enum {
 
 typedef struct fmi2_xml_variable_type_base_t fmi2_xml_variable_type_base_t;
 
+/*
+   This is the super type for all type related structs. The typical workflow is to check the 'structKind' field,
+   and then typecast accordingly.
+
+   The complete variable information is an aggregate of several 'structKind' structs, placed in an ordered list
+   'nextLayer'. An attempt to show the ordering is made in the 'diagrams.drawio' file.
+*/
 struct fmi2_xml_variable_type_base_t {
-    fmi2_xml_variable_type_base_t* baseTypeStruct; /* The fmi2_xml_variable_type_base structs are put on a list that provide needed info on a variable */
+    fmi2_xml_variable_type_base_t* nextLayer;   /* the next layer in the type aggregate */
+    fmi2_xml_type_struct_kind_enu_t structKind; /* the actual (sub) type */
+    fmi2_base_type_enu_t baseType;              /* the FMI base type */
+    char isRelativeQuantity;                    /* relativeQuantity flag (only used in fmi2_xml_real_type_props_t) */
+    char isUnbounded;                           /* unbounded flag        (only used in fmi2_xml_real_type_props_t) */
 
-    fmi2_xml_variable_type_base_t* next;    /** dynamically allocated fmi2_xml_variable_type_base structs are put on a linked list to prevent memory leaks*/
-
-    fmi2_xml_type_struct_kind_enu_t structKind; /* one of fmi2_xml_type_contrains_kind.*/
-    char baseType;   /* one of fmi2_xml_base_type */
-    char isRelativeQuantity;   /* relativeQuantity flag set. Only used in fmi2_xml_real_type_props_t) */
-	char isUnbounded;          /* unbounded flag set only used in fmi2_xml_real_type_props_t) */
-} ;
+    fmi2_xml_variable_type_base_t* next;        /* should only be used for deallocation */
+};
 
 /*
-	Variable type definition is general and is used for all types.
-	This is done to enable easy handling of SimpleType XML element
-	(specific type element comes next).
+    Variable type definition is general and is used for all types.
+    This is done to enable easy handling of SimpleType XML element
+    (specific type element comes next).
 */
 struct fmi2_xml_variable_typedef_t {
-    fmi2_xml_variable_type_base_t typeBase;
+    fmi2_xml_variable_type_base_t super;
     jm_string description;
     char typeName[1];
 };
 
 typedef struct fmi2_xml_real_type_props_t {
-    fmi2_xml_variable_type_base_t typeBase;
+    fmi2_xml_variable_type_base_t super;
     jm_string quantity;
 
     fmi2_xml_display_unit_t* displayUnit;
@@ -94,7 +100,7 @@ typedef struct fmi2_xml_real_type_props_t {
 } fmi2_xml_real_type_props_t;
 
 typedef struct fmi2_xml_integer_type_props_t {
-    fmi2_xml_variable_type_base_t typeBase;
+    fmi2_xml_variable_type_base_t super;
 
     jm_string  quantity;
 
@@ -107,20 +113,12 @@ typedef fmi2_xml_variable_type_base_t fmi2_xml_bool_type_props_t;
 
 typedef struct fmi2_xml_enum_type_item_t {
     jm_string itemName;
-	int value;
-    char itemDesciption[1];
+    int value;
+    char itemDescription[1];
 } fmi2_xml_enum_type_item_t;
 
-static int fmi1_xml_compare_enum_val (const void* first, const void* second) {
-	const jm_named_ptr* a = first;
-	const jm_named_ptr* b = second;
-	fmi2_xml_enum_type_item_t* ai = a->ptr;
-	fmi2_xml_enum_type_item_t* bi = b->ptr;
-	return (ai->value - bi->value);
-}
-
 typedef struct fmi2_xml_enum_variable_props_t {
-    fmi2_xml_variable_type_base_t typeBase;
+    fmi2_xml_variable_type_base_t super;
 
     jm_string  quantity;
 
@@ -129,23 +127,23 @@ typedef struct fmi2_xml_enum_variable_props_t {
 } fmi2_xml_enum_variable_props_t;
 
 typedef struct fmi2_xml_enum_typedef_props_t {
-	fmi2_xml_enum_variable_props_t base;
+    fmi2_xml_enum_variable_props_t base;
     jm_vector(jm_named_ptr) enumItems;
 } fmi2_xml_enum_typedef_props_t;
 
 typedef struct fmi2_xml_variable_start_real_t {
-    fmi2_xml_variable_type_base_t typeBase;
+    fmi2_xml_variable_type_base_t super;
     double start;
 } fmi2_xml_variable_start_real_t ;
 
 /* fmi2_xml_variable_start_integer is used for boolean and enums as well*/
 typedef struct fmi2_xml_variable_start_integer_t {
-    fmi2_xml_variable_type_base_t typeBase;
+    fmi2_xml_variable_type_base_t super;
     int start;
 } fmi2_xml_variable_start_integer_t ;
 
 typedef struct fmi2_xml_variable_start_string_t {
-    fmi2_xml_variable_type_base_t typeBase;
+    fmi2_xml_variable_type_base_t super;
     char start[1];
 } fmi2_xml_variable_start_string_t;
 
@@ -153,7 +151,7 @@ static fmi2_xml_variable_type_base_t* fmi2_xml_find_type_struct(fmi2_xml_variabl
     fmi2_xml_variable_type_base_t* typeBase = type;
     while(typeBase) {
         if(typeBase->structKind == kind) return typeBase;
-        typeBase = typeBase->baseTypeStruct;
+        typeBase = typeBase->nextLayer;
     }
     return 0;
 }
@@ -162,7 +160,7 @@ static fmi2_xml_variable_type_base_t* fmi2_xml_find_type_props(fmi2_xml_variable
     fmi2_xml_variable_type_base_t* typeBase = type;
     while(typeBase) {
         if(typeBase->structKind == fmi2_xml_type_struct_enu_props) return typeBase;
-        typeBase = typeBase->baseTypeStruct;
+        typeBase = typeBase->nextLayer;
     }
     return 0;
 }
@@ -200,14 +198,6 @@ fmi2_xml_real_type_props_t* fmi2_xml_parse_real_type_properties(fmi2_xml_parser_
 fmi2_xml_integer_type_props_t *fmi2_xml_parse_integer_type_properties(fmi2_xml_parser_context_t* context, fmi2_xml_elm_enu_t elmID);
 
 extern int fmi2_check_last_elem_is_specific_type(fmi2_xml_parser_context_t *context);
-
-extern jm_named_ptr fmi2_xml_variable_type_alloc(fmi2_xml_parser_context_t* context, jm_vector(char)* name, jm_vector(char)* description, size_t size);
-
-extern void* fmi2_xml_variable_type_create(fmi2_xml_parser_context_t* context, size_t size, jm_vector(jm_named_ptr)* typeList );
-
-extern fmi2_xml_real_typedef_t* fmi2_xml_variable_type_create_real(fmi2_xml_parser_context_t* context, fmi2_xml_elm_enu_t elmID, jm_vector(jm_named_ptr)* typeList );
-
-extern fmi2_xml_integer_typedef_t* fmi2_xml_variable_type_create_integer(fmi2_xml_parser_context_t* context, fmi2_xml_elm_enu_t elmID, jm_vector(jm_named_ptr)* typeList );
 
 fmi2_xml_variable_type_base_t* fmi2_get_declared_type(fmi2_xml_parser_context_t *context, fmi2_xml_elm_enu_t elmID, fmi2_xml_variable_type_base_t* defaultType);
 

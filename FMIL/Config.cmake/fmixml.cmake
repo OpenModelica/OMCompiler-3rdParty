@@ -1,18 +1,18 @@
 #    Copyright (C) 2012 Modelon AB
-
+#
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the BSD style license.
-
-# #    This program is distributed in the hope that it will be useful,
+#
+#    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    FMILIB_License.txt file for more details.
-
+#
 #    You should have received a copy of the FMILIB_License.txt file
 #    along with this program. If not, contact Modelon AB <http://www.modelon.com>.
 
 if(NOT FMIXMLDIR)
-set(FMIXMLDIR ${FMILIBRARYHOME}/src/XML/)
+set(FMIXMLDIR ${CMAKE_SOURCE_DIR}/src/XML/)
 include(jmutil)
 
 ################################################################################
@@ -23,6 +23,14 @@ if (WIN32)
     if (${FMILIB_BUILD_LEX_AND_PARSER_FILES})
         set(BISON_COMMAND ${FMILIB_THIRDPARTYLIBS}/winflexbison/win_bison.exe CACHE PATH "Command for running bison, e.g C:/win_bison.exe")
         set(FLEX_COMMAND ${FMILIB_THIRDPARTYLIBS}/winflexbison/win_flex.exe CACHE PATH "Command for running flex, e.g C:/win_flex.exe")
+
+        # Verify that flex and bison exists - they are not included by default
+        # in ThirdParty directory, and must be downloaded from some 3rd party.
+        foreach(cmd BISON_COMMAND FLEX_COMMAND)
+            if (NOT EXISTS ${${cmd}})
+                message(FATAL_ERROR "Can't find program: ${${cmd}}")
+            endif()
+        endforeach()
     else()
         #Remove variables from cache -> GUI if not used
         unset(BISON_COMMAND CACHE)
@@ -36,40 +44,52 @@ set(FMIXMLGENDIR ${FMIXMLDIR}/src-gen)
 #Build BISON files
 set(USE_DEVELOPER_BUILD FALSE) #Enable/disable developer(debug) build
 if (${USE_DEVELOPER_BUILD})
-	set(BISON_FMIX_COMMAND_DEBUG -v -t)
-	set(BISON_FMI2_OUT_DEBUG ${FMIXMLGENDIR}/FMI2/fmi2_xml_variable_name_parser.output)
-	set(BISON_FMI1_OUT_DEBUG ${FMIXMLGENDIR}/FMI1/fmi1_xml_variable_name_parser.output)
+    set(BISON_FMIX_COMMAND_DEBUG -v -t)
+    set(BISON_FMI3_OUT_DEBUG ${FMIXMLGENDIR}/FMI3/fmi3_xml_variable_name_parser.output)
+    set(BISON_FMI2_OUT_DEBUG ${FMIXMLGENDIR}/FMI2/fmi2_xml_variable_name_parser.output)
+    set(BISON_FMI1_OUT_DEBUG ${FMIXMLGENDIR}/FMI1/fmi1_xml_variable_name_parser.output)
 endif()
+set(BISON_FMI3_SRC ${FMIXMLDIR}/src/FMI3/fmi3_xml_variable_name_parser.y)
 set(BISON_FMI2_SRC ${FMIXMLDIR}/src/FMI2/fmi2_xml_variable_name_parser.y)
 set(BISON_FMI1_SRC ${FMIXMLDIR}/src/FMI1/fmi1_xml_variable_name_parser.y)
+set(BISON_FMI3_OUT_HEADERS ${FMIXMLGENDIR}/FMI3/fmi3_xml_variable_name_parser.tab.h)
 set(BISON_FMI2_OUT_HEADERS ${FMIXMLGENDIR}/FMI2/fmi2_xml_variable_name_parser.tab.h)
 set(BISON_FMI1_OUT_HEADERS ${FMIXMLGENDIR}/FMI1/fmi1_xml_variable_name_parser.tab.h)
+set(BISON_FMI3_OUT_SRC ${FMIXMLGENDIR}/FMI3/fmi3_xml_variable_name_parser.tab.c)
 set(BISON_FMI2_OUT_SRC ${FMIXMLGENDIR}/FMI2/fmi2_xml_variable_name_parser.tab.c)
 set(BISON_FMI1_OUT_SRC ${FMIXMLGENDIR}/FMI1/fmi1_xml_variable_name_parser.tab.c)
+set(BISON_FMI3_OUT ${BISON_FMI3_OUT_SRC} ${BISON_FMI3_OUT_HEADERS} ${BISON_FMI3_OUT_DEBUG})
 set(BISON_FMI2_OUT ${BISON_FMI2_OUT_SRC} ${BISON_FMI2_OUT_HEADERS} ${BISON_FMI2_OUT_DEBUG})
 set(BISON_FMI1_OUT ${BISON_FMI1_OUT_SRC} ${BISON_FMI1_OUT_HEADERS} ${BISON_FMI1_OUT_DEBUG})
 if (${FMILIB_BUILD_LEX_AND_PARSER_FILES})
-	add_custom_command(OUTPUT ${BISON_FMI2_OUT} COMMAND ${BISON_COMMAND} ${BISON_FMIX_COMMAND_DEBUG} --no-lines -Dapi.prefix=yyfmi2 -d ${BISON_FMI2_SRC} DEPENDS ${BISON_FMI2_SRC} WORKING_DIRECTORY ${FMIXMLGENDIR}/FMI2)
-	add_custom_command(OUTPUT ${BISON_FMI1_OUT} COMMAND ${BISON_COMMAND} ${BISON_FMIX_COMMAND_DEBUG} --no-lines -Dapi.prefix=yyfmi1 -d ${BISON_FMI1_SRC} DEPENDS ${BISON_FMI1_SRC} WORKING_DIRECTORY ${FMIXMLGENDIR}/FMI1)
+    add_custom_command(OUTPUT ${BISON_FMI3_OUT} COMMAND ${BISON_COMMAND} ${BISON_FMIX_COMMAND_DEBUG} --no-lines -Dapi.prefix=yyfmi3 -d ${BISON_FMI3_SRC} DEPENDS ${BISON_FMI3_SRC} WORKING_DIRECTORY ${FMIXMLGENDIR}/FMI3)
+    add_custom_command(OUTPUT ${BISON_FMI2_OUT} COMMAND ${BISON_COMMAND} ${BISON_FMIX_COMMAND_DEBUG} --no-lines -Dapi.prefix=yyfmi2 -d ${BISON_FMI2_SRC} DEPENDS ${BISON_FMI2_SRC} WORKING_DIRECTORY ${FMIXMLGENDIR}/FMI2)
+    add_custom_command(OUTPUT ${BISON_FMI1_OUT} COMMAND ${BISON_COMMAND} ${BISON_FMIX_COMMAND_DEBUG} --no-lines -Dapi.prefix=yyfmi1 -d ${BISON_FMI1_SRC} DEPENDS ${BISON_FMI1_SRC} WORKING_DIRECTORY ${FMIXMLGENDIR}/FMI1)
 endif()
 
 #Build FLEX files
+set(FLEX_FMI3_SRC ${FMIXMLDIR}/src/FMI3/fmi3_xml_variable_name_scan.l)
 set(FLEX_FMI2_SRC ${FMIXMLDIR}/src/FMI2/fmi2_xml_variable_name_scan.l)
 set(FLEX_FMI1_SRC ${FMIXMLDIR}/src/FMI1/fmi1_xml_variable_name_scan.l)
+set(FLEX_FMI3_OUT_HEADERS ${FMIXMLGENDIR}/FMI3/fmi3_xml_variable_name_lex.h)
 set(FLEX_FMI2_OUT_HEADERS ${FMIXMLGENDIR}/FMI2/fmi2_xml_variable_name_lex.h)
 set(FLEX_FMI1_OUT_HEADERS ${FMIXMLGENDIR}/FMI1/fmi1_xml_variable_name_lex.h)
+set(FLEX_FMI3_OUT_SRC ${FMIXMLGENDIR}/FMI3/lex.yyfmi3.c)
 set(FLEX_FMI2_OUT_SRC ${FMIXMLGENDIR}/FMI2/lex.yyfmi2.c)
 set(FLEX_FMI1_OUT_SRC ${FMIXMLGENDIR}/FMI1/lex.yyfmi1.c)
+set(FLEX_FMI3_OPT_ARG --noline --header-file=${FLEX_FMI3_OUT_HEADERS} -Pyyfmi3)
 set(FLEX_FMI2_OPT_ARG --noline --header-file=${FLEX_FMI2_OUT_HEADERS} -Pyyfmi2)
 set(FLEX_FMI1_OPT_ARG --noline --header-file=${FLEX_FMI1_OUT_HEADERS} -Pyyfmi1)
 
 if (CMAKE_HOST_WIN32)
-	set(FLEX_FMI2_OPT_ARG ${FLEX_FMI2_OPT_ARG})
-	set(FLEX_FMI1_OPT_ARG ${FLEX_FMI1_OPT_ARG})
+    set(FLEX_FMI3_OPT_ARG ${FLEX_FMI3_OPT_ARG})
+    set(FLEX_FMI2_OPT_ARG ${FLEX_FMI2_OPT_ARG})
+    set(FLEX_FMI1_OPT_ARG ${FLEX_FMI1_OPT_ARG})
 endif()
 if (${FMILIB_BUILD_LEX_AND_PARSER_FILES})
-	add_custom_command(OUTPUT ${FLEX_FMI2_OUT_SRC} ${FLEX_FMI2_OUT_HEADERS} COMMAND ${FLEX_COMMAND} ${FLEX_FMI2_OPT_ARG} ${FLEX_FMI2_SRC} DEPENDS ${BISON_FMI2_OUT} ${FLEX_FMI2_SRC} WORKING_DIRECTORY ${FMIXMLGENDIR}/FMI2)
-	add_custom_command(OUTPUT ${FLEX_FMI1_OUT_SRC} ${FLEX_FMI1_OUT_HEADERS} COMMAND ${FLEX_COMMAND} ${FLEX_FMI1_OPT_ARG} ${FLEX_FMI1_SRC} DEPENDS ${BISON_FMI1_OUT} ${FLEX_FMI1_SRC} WORKING_DIRECTORY ${FMIXMLGENDIR}/FMI1)
+    add_custom_command(OUTPUT ${FLEX_FMI3_OUT_SRC} ${FLEX_FMI3_OUT_HEADERS} COMMAND ${FLEX_COMMAND} ${FLEX_FMI3_OPT_ARG} ${FLEX_FMI3_SRC} DEPENDS ${BISON_FMI3_OUT} ${FLEX_FMI3_SRC} WORKING_DIRECTORY ${FMIXMLGENDIR}/FMI3)
+    add_custom_command(OUTPUT ${FLEX_FMI2_OUT_SRC} ${FLEX_FMI2_OUT_HEADERS} COMMAND ${FLEX_COMMAND} ${FLEX_FMI2_OPT_ARG} ${FLEX_FMI2_SRC} DEPENDS ${BISON_FMI2_OUT} ${FLEX_FMI2_SRC} WORKING_DIRECTORY ${FMIXMLGENDIR}/FMI2)
+    add_custom_command(OUTPUT ${FLEX_FMI1_OUT_SRC} ${FLEX_FMI1_OUT_HEADERS} COMMAND ${FLEX_COMMAND} ${FLEX_FMI1_OPT_ARG} ${FLEX_FMI1_SRC} DEPENDS ${BISON_FMI1_OUT} ${FLEX_FMI1_SRC} WORKING_DIRECTORY ${FMIXMLGENDIR}/FMI1)
 endif()
 
 if(WIN32)
@@ -81,13 +101,12 @@ endif()
 
 # set(DOXYFILE_EXTRA_SOURCES "${DOXYFILE_EXTRA_SOURCES} \"${FMIXMLDIR}/include\"")
 
-include_directories("${FMIXMLDIR}/include" "${FMILIB_THIRDPARTYLIBS}/FMI/")
-set(FMIXML_LIBRARIES fmixml)
-set(FMIXML_EXPAT_DIR "${FMILIB_THIRDPARTYLIBS}/Expat/expat-2.1.0") 
-
 set(FMIXMLHEADERS
-	include/FMI/fmi_xml_context.h
-	src/FMI/fmi_xml_context_impl.h
+    include/FMI/fmi_xml_context.h
+    src/FMI/fmi_xml_context_impl.h
+    include/FMI/fmi_xml_terminals_and_icons.h
+    src/FMI/fmi_xml_terminals_and_icons_impl.h
+    include/FMI/fmi_xml_terminals_and_icons_scheme.h
 
     include/FMI1/fmi1_xml_model_description.h
     src/FMI1/fmi1_xml_model_description_impl.h
@@ -114,10 +133,30 @@ set(FMIXMLHEADERS
     src/FMI2/fmi2_xml_unit_impl.h
     include/FMI2/fmi2_xml_variable.h
     src/FMI2/fmi2_xml_variable_impl.h
- )
+
+    include/FMI3/fmi3_xml_model_description.h
+    src/FMI3/fmi3_xml_model_description_impl.h
+    include/FMI3/fmi3_xml_model_structure.h
+    src/FMI3/fmi3_xml_model_structure_impl.h
+    include/FMI3/fmi3_xml_model_description_scheme.h
+    src/FMI3/fmi3_xml_parser_util.h
+    src/FMI3/fmi3_xml_parser.h
+    include/FMI3/fmi3_xml_type.h
+    src/FMI3/fmi3_xml_type_impl.h
+    include/FMI3/fmi3_xml_unit.h
+    src/FMI3/fmi3_xml_unit_impl.h
+    include/FMI3/fmi3_xml_variable.h
+    src/FMI3/fmi3_xml_variable_impl.h
+    include/FMI3/fmi3_xml_parser_scheme.h
+    include/FMI3/fmi3_xml_parser_scheme_base.h
+    src/FMI3/fmi3_xml_parser_context_impl.h
+    src/
+    )
 
 set(FMIXMLSOURCE
-	src/FMI/fmi_xml_context.c
+    src/FMI/fmi_xml_context.c
+    src/FMI/fmi_xml_terminals_and_icons.c
+    src/FMI/fmi_xml_terminals_and_icons_scheme.c
 
     src/FMI1/fmi1_xml_parser.c
     src/FMI1/fmi1_xml_model_description.c
@@ -133,108 +172,173 @@ set(FMIXMLSOURCE
     src/FMI2/fmi2_xml_model_structure.c
     src/FMI2/fmi2_xml_type.c
     src/FMI2/fmi2_xml_unit.c
-	src/FMI2/fmi2_xml_vendor_annotations.c
-	src/FMI2/fmi2_xml_variable.c
+    src/FMI2/fmi2_xml_vendor_annotations.c
+    src/FMI2/fmi2_xml_variable.c
+
+    src/FMI3/fmi3_xml_parser.c
+    src/FMI3/fmi3_xml_parser_util.c
+    src/FMI3/fmi3_xml_model_description.c
+    src/FMI3/fmi3_xml_model_structure.c
+    src/FMI3/fmi3_xml_type.c
+    src/FMI3/fmi3_xml_unit.c
+    src/FMI3/fmi3_xml_vendor_annotations.c
+    src/FMI3/fmi3_xml_variable.c
+    src/FMI3/fmi3_xml_model_description_scheme.c
+    src/FMI3/fmi3_xml_parser_scheme.c
 )
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DXML_STATIC -DFMI_XML_QUERY")
+if(FMILIB_SYSTEM_EXPAT)
+    # On success defines (at least) the following variables:
+    #   - EXPAT_INCLUDE_DIRS
+    #   - EXPAT_LIBRARIES
+    # And the following target:
+    #   - expat
+    find_package(EXPAT REQUIRED)
+elseif(FMILIB_EXPAT_AS_SUBPROJECT)
+    # OpenModelica: build the bundled Expat as a normal subdirectory instead of an
+    # ExternalProject. ExternalProject does not inherit the toolchain and flags of the
+    # outer build, and it only leaves behind an imported target, which cannot be used
+    # by targets outside of this directory. The rest of the OpenModelica build links
+    # against expat, so it has to be a real target.
+    set(FMIXML_EXPAT_DIR "${FMILIB_THIRDPARTYLIBS}/Expat/expat-2.6.4")
 
-### mahge: There seems to be no need to add expat as an external project and
-### configure and build it as such. It uses cmake build and should follow the 
-### configurations given to FMIL as far I can see.
+    set(EXPAT_BUILD_TOOLS OFF CACHE BOOL "Build the xmlwf tool for expat library")
+    set(EXPAT_BUILD_EXAMPLES OFF CACHE BOOL "Build the examples for expat library")
+    set(EXPAT_BUILD_TESTS OFF CACHE BOOL "Build the tests for expat library")
+    set(EXPAT_BUILD_DOCS OFF CACHE BOOL "Build man page for xmlwf")
+    set(EXPAT_BUILD_PKGCONFIG OFF CACHE BOOL "Build pkg-config file")
+    set(EXPAT_SHARED_LIBS OFF CACHE BOOL "Build a shared expat library")
+    set(EXPAT_ENABLE_INSTALL OFF CACHE BOOL "Install expat files in cmake install target")
+    set(EXPAT_DTD OFF CACHE BOOL "Define to make parameter entity parsing functionality available")
+    set(EXPAT_NS OFF CACHE BOOL "Define to make XML Namespaces functionality available")
+    if(MSVC)
+        set(EXPAT_MSVC_STATIC_CRT ${FMILIB_BUILD_WITH_STATIC_RTLIB} CACHE BOOL "Use /MT flag (static CRT) when compiling in MSVC")
+    endif()
 
-### The way it is used now it can lead to dependencies on non existing targets. 
-### Just set up the options and add it as a subdirectory.  
-### include(ExternalProject)
+    add_subdirectory(${FMIXML_EXPAT_DIR} ${CMAKE_BINARY_DIR}/ExpatEx)
 
-# set(EXPAT_SETTINGS
-# 		-DBUILD_tools:BOOLEAN=OFF
-# 		-DBUILD_examples:BOOLEAN=OFF
-# 		-DBUILD_tests:BOOLEAN=OFF
-# 		-DBUILD_shared:BOOLEAN=OFF
-# 		-DXML_DTD:BOOLEAN=OFF
-# 		-DXML_NS:BOOLEAN=OFF
-# 		-DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-# 		-DCMAKE_SYSTEM_NAME:STRING=${CMAKE_SYSTEM_NAME}
-# 		-DCMAKE_RC_COMPILER:STRING=${CMAKE_RC_COMPILER}
-# 		-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
-# 		-DCMAKE_C_FLAGS_DEBUG:STRING=${CMAKE_C_FLAGS_DEBUG}
-# 		-DCMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
-# 		-DCMAKE_C_FLAGS_MINSIZEREL:STRING=${CMAKE_C_FLAGS_MINSIZEREL}
-# 		-DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO}
-# 		-DCMAKE_EXE_LINKER_FLAGS:STRING=${CMAKE_EXE_LINKER_FLAGS}
-# 		-DCMAKE_LINK_LIBRARY_FLAG:STRING=${CMAKE_LINK_LIBRARY_FLAG}
-# 		-DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}
-# 		-DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}	
-# 		-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR}/ExpatEx/install
-# )
+    set(EXPAT_INCLUDE_DIRS ${FMIXML_EXPAT_DIR}/lib)
+else()
+    include(ExternalProject)
 
-# ExternalProject_Add(
-# 	expatex
-# 	PREFIX "${FMIXML_EXPAT_DIR}"
-# 	SOURCE_DIR "${FMIXML_EXPAT_DIR}"
-# 	CMAKE_CACHE_ARGS ${EXPAT_SETTINGS}
-# 	BINARY_DIR ${CMAKE_BINARY_DIR}/ExpatEx
-# 	INSTALL_DIR ${CMAKE_BINARY_DIR}/ExpatEx/install
-# 	TMP_DIR     ${CMAKE_BINARY_DIR}/ExpatEx/tmp
-#     STAMP_DIR   ${CMAKE_BINARY_DIR}/ExpatEx/stamp
-# )
+    # The *_POSTFIX variables are set because it makes it easier to determine the name of
+    # the lib expat will produce at configure time. Note that Expat has some special handling
+    # for it for MSVC which this in effect negates. https://github.com/libexpat/libexpat/pull/316
+    set(EXPAT_SETTINGS
+        -DEXPAT_BUILD_TOOLS:BOOL=OFF
+        -DEXPAT_BUILD_EXAMPLES:BOOL=OFF
+        -DEXPAT_BUILD_TESTS:BOOL=OFF
+        -DEXPAT_SHARED_LIBS:BOOL=OFF
+        -DEXPAT_DTD:BOOL=OFF
+        -DEXPAT_NS:BOOL=OFF
+        -DEXPAT_MSVC_STATIC_CRT:BOOL=${FMILIB_BUILD_WITH_STATIC_RTLIB}
+        -DEXPAT_DEBUG_POSTFIX:STRING=
+        -DEXPAT_RELEASE_POSTFIX:STRING=
+        -DEXPAT_MINSIZEREL_POSTFIX:STRING=
+        -DEXPAT_RELWITHDEBINFO_POSTFIX:STRING=
+        -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
+        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+        -DCMAKE_EXE_LINKER_FLAGS:STRING=${CMAKE_EXE_LINKER_FLAGS}
+        -DCMAKE_LINK_LIBRARY_FLAG:STRING=${CMAKE_LINK_LIBRARY_FLAG}
+        -DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}
+        -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR}/ExpatEx/install
+    )
 
-# ExternalProject_Add_Step(
-# 	expatex dependent_reconfigure
-# 	DEPENDEES configure
-# 	DEPENDERS build
-# 	COMMAND ${CMAKE_COMMAND} -E echo "Running:  ${CMAKE_COMMAND} -G " ${CMAKE_GENERATOR} " ${EXPAT_SETTINGS} ${FMIXML_EXPAT_DIR}"
-# 	COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" ${EXPAT_SETTINGS} "${FMIXML_EXPAT_DIR}"
-# 	DEPENDS ${CMAKE_BINARY_DIR}/CMakeCache.txt
-# 	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/ExpatEx
-# )
+    set(FMIXML_EXPAT_DIR "${FMILIB_THIRDPARTYLIBS}/Expat/expat-2.6.4")
 
-# add_dependencies(expatex ${CMAKE_BINARY_DIR}/CMakeCache.txt ${FMILIBRARYHOME}/CMakeLists.txt)
-  
-# set(expatlib "${CMAKE_BINARY_DIR}/ExpatEx/${CMAKE_CFG_INTDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}expat${CMAKE_STATIC_LIBRARY_SUFFIX}")
-  
-# add_library(expat STATIC IMPORTED)
+    ExternalProject_Add(
+        expatex
+        PREFIX "${FMIXML_EXPAT_DIR}"
+        SOURCE_DIR "${FMIXML_EXPAT_DIR}"
+        CMAKE_CACHE_ARGS ${EXPAT_SETTINGS}
+        BINARY_DIR ${CMAKE_BINARY_DIR}/ExpatEx
+        INSTALL_DIR ${CMAKE_BINARY_DIR}/ExpatEx/install
+        TMP_DIR     ${CMAKE_BINARY_DIR}/ExpatEx/tmp
+        STAMP_DIR   ${CMAKE_BINARY_DIR}/ExpatEx/stamp
+    )
 
-# set_target_properties(
-# 	expat PROPERTIES 
-# 		IMPORTED_LOCATION "${expatlib}"
-# )
+    ExternalProject_Add_Step(
+        expatex dependent_reconfigure
+        DEPENDEES configure
+        DEPENDERS build
+        COMMAND ${CMAKE_COMMAND} -E echo "Running:  ${CMAKE_COMMAND} -G \"${CMAKE_GENERATOR}\"  ${EXPAT_SETTINGS} ${FMIXML_EXPAT_DIR}"
+        COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" ${EXPAT_SETTINGS} "${FMIXML_EXPAT_DIR}"
+        DEPENDS ${CMAKE_BINARY_DIR}/CMakeCache.txt
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/ExpatEx
+    )
 
-# add_dependencies(expat expatex)
+    # XXX: Maybe we could use FetchContent to find targets of expat? Then we hopefully
+    # wouldn't need below workarounds for guessing expatlib's location and name.
+    # Requires CMake 3.16 though.
 
-# if(FMILIB_INSTALL_SUBLIBS)
-# 	install(FILES 
-# 	"${CMAKE_BINARY_DIR}/ExpatEx/install/lib/${CMAKE_STATIC_LIBRARY_PREFIX}expat${CMAKE_STATIC_LIBRARY_SUFFIX}"
-# 	DESTINATION lib)
-# endif()
+    if(MSVC)
+        # Expat uses special naming with MSVC, which is mirrored here.
+        set(EXPAT_LIB_PREFIX lib)
+    else()
+        set(EXPAT_LIB_PREFIX ${CMAKE_STATIC_LIBRARY_PREFIX})
+    endif()
 
-# set(EXPAT_INCLUDE_DIRS ${CMAKE_BINARY_DIR}/ExpatEx/install/include)
+    if("${CMAKE_CFG_INTDIR}" STREQUAL ".")
+        # Ninja complains about 'ExpatEx/./libexpat.a' otherwise. Probably because
+        # generator expressions in mergestaticlibs give slighlty different paths.
+        set(expatlib "${CMAKE_BINARY_DIR}/ExpatEx/${EXPAT_LIB_PREFIX}expat${CMAKE_STATIC_LIBRARY_SUFFIX}")
+    else()
+        set(expatlib "${CMAKE_BINARY_DIR}/ExpatEx/${CMAKE_CFG_INTDIR}/${EXPAT_LIB_PREFIX}expat${CMAKE_STATIC_LIBRARY_SUFFIX}")
+    endif()
 
-### Add the options of expat to the cache and add it as subdirectory.
-set(BUILD_tools OFF CACHE BOOL "build the xmlwf tool for expat library")
-set(BUILD_examples OFF CACHE BOOL "build the examples for expat library")
-set(BUILD_tests OFF CACHE BOOL "build the tests for expat library")
-set(BUILD_shared OFF CACHE BOOL "build a shared expat library")
-add_subdirectory(ThirdParty/Expat/expat-2.1.0)
+    # Workaround to make it explicit that target 'expatex' produces 'expatlib'. (Ninja complains otherwise.)
+    add_custom_command(
+        OUTPUT "${expatlib}"
+        DEPENDS expatex
+    )
+    add_custom_target(tmp_expatlib DEPENDS ${expatlib})
 
-set(EXPAT_INCLUDE_DIRS ThirdParty/Expat/expat-2.1.0/lib)
-include_directories("${EXPAT_INCLUDE_DIRS}" "${FMILIB_THIRDPARTYLIBS}/FMI/" "${FMIXMLGENDIR}/FMI1" "${FMIXMLGENDIR}/FMI2")
+    add_library(expat STATIC IMPORTED)
+    set_target_properties(
+        expat PROPERTIES
+            IMPORTED_LOCATION "${expatlib}"
+    )
+    add_dependencies(expat tmp_expatlib)
+
+    if(FMILIB_INSTALL_SUBLIBS)
+        install(FILES "${expatlib}" DESTINATION lib)
+    endif()
+
+    set(EXPAT_INCLUDE_DIRS ${CMAKE_BINARY_DIR}/ExpatEx/install/include)
+endif()
 
 PREFIXLIST(FMIXMLSOURCE  ${FMIXMLDIR}/)
 PREFIXLIST(FMIXMLHEADERS ${FMIXMLDIR}/)
 
 list(APPEND FMIXMLSOURCE
+    ${BISON_FMI3_OUT_SRC}
     ${BISON_FMI2_OUT_SRC}
     ${BISON_FMI1_OUT_SRC}
+    ${FLEX_FMI3_OUT_SRC}
     ${FLEX_FMI2_OUT_SRC}
     ${FLEX_FMI1_OUT_SRC}
 )
 
-debug_message(STATUS "adding fmixml")
-
-add_library(fmixml ${FMILIBKIND} ${FMIXMLSOURCE} ${FMIXMLHEADERS})
-
-target_link_libraries(fmixml ${JMUTIL_LIBRARIES} expat)
+add_library(fmixml STATIC ${FMIXMLSOURCE} ${FMIXMLHEADERS})
+if(MSVC)
+    target_compile_definitions(fmixml PUBLIC XML_STATIC)
+endif()
+target_link_libraries(fmixml
+    PRIVATE expat
+    PUBLIC  jmutils
+)
+target_include_directories(fmixml
+    PRIVATE
+        ${EXPAT_INCLUDE_DIRS}
+        ${FMILIB_THIRDPARTYLIBS}/FMI/
+        ${FMIXMLGENDIR}/FMI1
+        ${FMIXMLGENDIR}/FMI2
+        ${FMIXMLGENDIR}/FMI3
+        ${CMAKE_BINARY_DIR}/src/XML
+    PUBLIC
+        ${FMILIB_CONFIG_INCLUDE_DIR}
+        ${FMIXMLDIR}/include
+)
 
 endif(NOT FMIXMLDIR)
