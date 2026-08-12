@@ -26,6 +26,7 @@
 #include <FMI1/fmi1_xml_model_description.h>
 
 #include "../FMI/fmi_import_context_impl.h"
+#include "../src/FMI/fmi_util_options_impl.h"
 #include "../src/FMI1/fmi1_capi_impl.h"
 
 
@@ -33,15 +34,16 @@
 extern "C" {
 #endif
 
-struct fmi1_import_t {	
-	char* dirPath;
-	char* location;
-	jm_callbacks* callbacks;
-	fmi1_xml_model_description_t* md;
-	fmi1_capi_t* capi;
-	int registerGlobally;
-	jm_vector(char) logMessageBufferCoded;
-	jm_vector(char) logMessageBufferExpanded;
+struct fmi1_import_t {    
+    char* dirPath;
+    char* location;
+    jm_callbacks* callbacks;
+    fmi1_xml_model_description_t* md;
+    fmi1_capi_t* capi;
+    int registerGlobally;
+    jm_vector(char) logMessageBufferCoded;
+    jm_vector(char) logMessageBufferExpanded;
+    fmi_util_options_t* options;
 };
 
 extern jm_callbacks fmi1_import_active_fmu_store_callbacks;

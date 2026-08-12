@@ -24,6 +24,18 @@ typedef enum fmi1_xml_model_description_status_enu_t {
     fmi1_xml_model_description_enu_error
 } fmi1_xml_model_description_status_enu_t;
 
+#define FMI1_DEFAULT_EXPERIMENT_TOLERANCE 1e-4
+typedef struct fmi1_xml_default_experiment {
+    double  startTime;
+    int     startTimeDefined;
+
+    double  stopTime;
+    int     stopTimeDefined;
+
+    double  tolerance;
+    int     toleranceDefined;
+} fmi1_xml_default_experiment;
+
 /*  ModelDescription is the entry point for the package*/
 struct fmi1_xml_model_description_t {
 
@@ -53,13 +65,7 @@ struct fmi1_xml_model_description_t {
 
     unsigned int numberOfEventIndicators;
 
-    double defaultExperimentStartTime;
-
-    double defaultExperimentStopTime;
-
-#define FMI1_DEFAULT_EXPERIMENT_TOLERANCE 1e-4
-
-    double defaultExperimentTolerance;
+    fmi1_xml_default_experiment defaultExperiment;
 
     jm_vector(jm_voidp) vendorList;
 
@@ -70,15 +76,15 @@ struct fmi1_xml_model_description_t {
 
     jm_string_set descriptions;
 
-	jm_vector(jm_named_ptr) variablesByName;
+    jm_vector(jm_named_ptr) variablesByName;
 
     jm_vector(jm_voidp)* variablesOrigOrder;
 
-	jm_vector(jm_voidp)* variablesByVR;
+    jm_vector(jm_voidp)* variablesByVR;
 
-	jm_vector(jm_voidp)* inputVariables;
+    jm_vector(jm_voidp)* inputVariables;
 
-	jm_vector(jm_voidp)* outputVariables;
+    jm_vector(jm_voidp)* outputVariables;
 
     fmi1_fmu_kind_enu_t fmuKind;
 
@@ -89,15 +95,6 @@ struct fmi1_xml_model_description_t {
     int manual_start;
     jm_vector(jm_string) additionalModels;
 };
-
-void fmi1_xml_report_error(fmi1_xml_model_description_t* md, const char* module, const char* fmt, ...);
-
-void fmi1_xml_report_error_v(fmi1_xml_model_description_t* md, const char* module, const char* fmt, va_list ap);
-
-void fmi1_xml_report_warning(fmi1_xml_model_description_t* md, const char* module, const char* fmt, ...);
-
-void fmi1_xml_report_warning_v(fmi1_xml_model_description_t* md, const char* module, const char* fmt, va_list ap);
-
 
 #ifdef __cplusplus
 }

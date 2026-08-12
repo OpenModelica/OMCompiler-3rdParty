@@ -35,9 +35,9 @@ fmi1_xml_model_description_t * fmi1_xml_allocate_model_description( jm_callbacks
     }
     md = (fmi1_xml_model_description_t*)cb->malloc(sizeof(fmi1_xml_model_description_t));
     if(!md) {
-		jm_log_fatal(cb, module, "Could not allocate memory");
-		return 0;
-	}
+        jm_log_fatal(cb, module, "Could not allocate memory");
+        return 0;
+    }
 
     md->callbacks = cb;
 
@@ -58,11 +58,13 @@ fmi1_xml_model_description_t * fmi1_xml_allocate_model_description( jm_callbacks
     md->numberOfContinuousStates = 0;
     md->numberOfEventIndicators = 0;
 
-    md->defaultExperimentStartTime = 0;
-
-    md->defaultExperimentStopTime = 1.0;
-
-    md->defaultExperimentTolerance = FMI1_DEFAULT_EXPERIMENT_TOLERANCE;
+    /* DefaultExperiment: we must initialize '*Defined' variables since the element is optional */
+    md->defaultExperiment.startTimeDefined = 0;
+    md->defaultExperiment.stopTimeDefined  = 0;
+    md->defaultExperiment.toleranceDefined = 0;
+    md->defaultExperiment.startTime = 0;
+    md->defaultExperiment.stopTime = 1.0;
+    md->defaultExperiment.tolerance = FMI1_DEFAULT_EXPERIMENT_TOLERANCE;
 
     jm_vector_init(jm_voidp)(&md->vendorList, 0, cb);
 
@@ -73,13 +75,13 @@ fmi1_xml_model_description_t * fmi1_xml_allocate_model_description( jm_callbacks
 
     jm_vector_init(jm_named_ptr)(&md->variablesByName, 0, cb);
 
-	md->variablesOrigOrder = 0;
+    md->variablesOrigOrder = 0;
 
-	md->variablesByVR = 0;
+    md->variablesByVR = 0;
 
-	md->inputVariables = 0;
+    md->inputVariables = 0;
 
-	md->outputVariables = 0;
+    md->outputVariables = 0;
 
     jm_vector_init(jm_string)(&md->descriptions, 0, cb);
 
@@ -114,11 +116,9 @@ void fmi1_xml_clear_model_description( fmi1_xml_model_description_t* md) {
     md->numberOfContinuousStates = 0;
     md->numberOfEventIndicators = 0;
 
-    md->defaultExperimentStartTime = 0;
-
-    md->defaultExperimentStopTime = 0;
-
-    md->defaultExperimentTolerance = 0;
+    md->defaultExperiment.startTime = 0;
+    md->defaultExperiment.stopTime = 0;
+    md->defaultExperiment.tolerance = 0;
 
     jm_vector_foreach(jm_voidp)(&md->vendorList, (void(*)(void*))fmi1_xml_vendor_free);
     jm_vector_free_data(jm_voidp)(&md->vendorList);
@@ -130,24 +130,24 @@ void fmi1_xml_clear_model_description( fmi1_xml_model_description_t* md) {
 
     jm_vector_foreach(jm_named_ptr)(&md->variablesByName, fmi1_xml_free_direct_dependencies);
     jm_named_vector_free_data(&md->variablesByName);
-	if(md->variablesOrigOrder) {
-		jm_vector_free(jm_voidp)(md->variablesOrigOrder);
-		md->variablesOrigOrder = 0;
-	}
+    if(md->variablesOrigOrder) {
+        jm_vector_free(jm_voidp)(md->variablesOrigOrder);
+        md->variablesOrigOrder = 0;
+    }
     if(md->variablesByVR) {
-		jm_vector_free(jm_voidp)(md->variablesByVR);
-		md->variablesByVR = 0;
-	}
+        jm_vector_free(jm_voidp)(md->variablesByVR);
+        md->variablesByVR = 0;
+    }
 
-	if(md->inputVariables) {
-		jm_vector_free(jm_voidp)(md->inputVariables);
-		md->inputVariables = 0;
-	}
+    if(md->inputVariables) {
+        jm_vector_free(jm_voidp)(md->inputVariables);
+        md->inputVariables = 0;
+    }
 
-	if(md->outputVariables) {
-		jm_vector_free(jm_voidp)(md->outputVariables);
-		md->outputVariables = 0;
-	}
+    if(md->outputVariables) {
+        jm_vector_free(jm_voidp)(md->outputVariables);
+        md->outputVariables = 0;
+    }
 
 
     jm_vector_foreach(jm_string)(&md->descriptions, (void(*)(const char*))md->callbacks->free);
@@ -166,19 +166,19 @@ int fmi1_xml_is_model_description_empty(fmi1_xml_model_description_t* md) {
 }
 
 const char* fmi1_xml_get_last_error(fmi1_xml_model_description_t* md) {
-	return jm_get_last_error(md->callbacks);
+    return jm_get_last_error(md->callbacks);
 }
 
 void fmi1_xml_clear_last_error(fmi1_xml_model_description_t* md) {
-	jm_clear_last_error(md->callbacks);
+    jm_clear_last_error(md->callbacks);
 
     /* return (md->status != fmi1_xml_model_description_enu_error); */
 }
 
 void fmi1_xml_free_model_description(fmi1_xml_model_description_t* md) {
     jm_callbacks* cb;
-	if(!md) return;
-	cb = md->callbacks;
+    if(!md) return;
+    cb = md->callbacks;
     fmi1_xml_clear_model_description(md);
     cb->free(md->capabilities);
     cb->free(md);
@@ -234,50 +234,71 @@ unsigned int fmi1_xml_get_number_of_event_indicators(fmi1_xml_model_description_
     return md->numberOfEventIndicators;
 }
 
+int fmi1_xml_get_default_experiment_has_start(fmi1_xml_model_description_t* md) {
+    return md->defaultExperiment.startTimeDefined;
+}
+
+int fmi1_xml_get_default_experiment_has_stop(fmi1_xml_model_description_t* md) {
+    return md->defaultExperiment.stopTimeDefined;
+}
+
+int fmi1_xml_get_default_experiment_has_tolerance(fmi1_xml_model_description_t* md) {
+    return md->defaultExperiment.toleranceDefined;
+}
+
+#define LOG_WARN_IF_ATTR_NOT_DEFINED(ATTRIBUTE) \
+    if (!fmi1_xml_get_default_experiment_has_##ATTRIBUTE(md)) { \
+        jm_log(md->callbacks, module, jm_log_level_warning, "fmi1_xml_get_default_experiment_" #ATTRIBUTE ": returning default value, since no attribute was defined in modelDescription"); \
+    }
+
 double fmi1_xml_get_default_experiment_start(fmi1_xml_model_description_t* md) {
-    return md->defaultExperimentStartTime;
+    LOG_WARN_IF_ATTR_NOT_DEFINED(start);
+    return md->defaultExperiment.startTime;
 }
 
 void fmi1_xml_set_default_experiment_start(fmi1_xml_model_description_t* md, double t){
-    md->defaultExperimentStartTime = t;
+    md->defaultExperiment.startTime = t;
 }
 
 double fmi1_xml_get_default_experiment_stop(fmi1_xml_model_description_t* md){
-    return md->defaultExperimentStopTime;
+    LOG_WARN_IF_ATTR_NOT_DEFINED(stop);
+    return md->defaultExperiment.stopTime;
 }
 
 void fmi1_xml_set_default_experiment_stop(fmi1_xml_model_description_t* md, double t){
-    md->defaultExperimentStopTime = t;
+    md->defaultExperiment.stopTime = t;
 }
 
 double fmi1_xml_get_default_experiment_tolerance(fmi1_xml_model_description_t* md){
-    return md->defaultExperimentTolerance;
+    LOG_WARN_IF_ATTR_NOT_DEFINED(tolerance);
+    return md->defaultExperiment.tolerance;
 }
 
 void fmi1_xml_set_default_experiment_tolerance(fmi1_xml_model_description_t* md, double tol){
-    md->defaultExperimentTolerance = tol;
+    md->defaultExperiment.tolerance = tol;
 }
+#undef LOG_WARN_IF_ATTR_NOT_DEFINED
 
 fmi1_xml_vendor_list_t* fmi1_xml_get_vendor_list(fmi1_xml_model_description_t* md) {
-	assert(md);
+    assert(md);
     return (fmi1_xml_vendor_list_t*)&md->vendorList;
 }
 
 unsigned int  fmi1_xml_get_number_of_vendors(fmi1_xml_vendor_list_t* vl) {
-	if(!vl) {
-		assert(vl && "Vendor list cannot be NULL");
-		return 0;
-	}
+    if(!vl) {
+        assert(vl && "Vendor list cannot be NULL");
+        return 0;
+    }
     return (unsigned int)jm_vector_get_size(jm_voidp)(&vl->vendors);
 }
 
 fmi1_xml_vendor_t* fmi1_xml_get_vendor(fmi1_xml_vendor_list_t* v, unsigned int  index) {
     jm_vector(jm_voidp)* vl;
-	if(!v) {
-		assert(v && "Vendor list cannot be NULL");
-		return 0;
-	}
-	vl = &v->vendors;
+    if(!v) {
+        assert(v && "Vendor list cannot be NULL");
+        return 0;
+    }
+    vl = &v->vendors;
     if(index >= jm_vector_get_size(jm_voidp)(vl)) return 0;
     return (fmi1_xml_vendor_t*)jm_vector_get_item(jm_voidp)(vl, index);
 }
@@ -287,15 +308,15 @@ fmi1_xml_unit_definitions_t* fmi1_xml_get_unit_definitions(fmi1_xml_model_descri
 }
 
 unsigned int  fmi1_xml_get_unit_definitions_number(fmi1_xml_unit_definitions_t* ud) {
-	if(!ud) {
-		assert(ud && "Unit definitions cannot be NULL");
-		return 0;
-	}
+    if(!ud) {
+        assert(ud && "Unit definitions cannot be NULL");
+        return 0;
+    }
     return (unsigned int)jm_vector_get_size(jm_named_ptr)(&ud->definitions);
 }
 
 fmi1_xml_type_definitions_t* fmi1_xml_get_type_definitions(fmi1_xml_model_description_t* md) {
-	assert(md);
+    assert(md);
     return &md->typeDefinitions;
 }
 
@@ -308,7 +329,7 @@ int fmi1_xml_handle_fmiModelDescription(fmi1_xml_parser_context_t *context, cons
             fmi1_xml_parse_fatal(context, "fmi1_xml_model_description must be the root XML element");
             return -1;
         }
-		jm_log_verbose(context->callbacks, module, "Parsing XML element fmiModelDescription");
+        jm_log_verbose(context->callbacks, module, "Parsing XML element fmiModelDescription");
         /* process the attributes */
         return (
                     /* <xs:attribute name="fmiVersion" type="xs:normalizedString" use="required" fixed="1.0"/> */
@@ -347,13 +368,21 @@ int fmi1_xml_handle_DefaultExperiment(fmi1_xml_parser_context_t *context, const 
     if(!data) {
         fmi1_xml_model_description_t* md = context->modelDescription;
         /* process the attributes */
+
+        /* save if attributes are defined */
+        md->defaultExperiment.startTimeDefined  = fmi1_xml_is_attr_defined(context, fmi_attr_id_startTime);
+        md->defaultExperiment.stopTimeDefined   = fmi1_xml_is_attr_defined(context, fmi_attr_id_stopTime);
+        md->defaultExperiment.toleranceDefined  = fmi1_xml_is_attr_defined(context, fmi_attr_id_tolerance);
+
+        /* save attribute values: from XML if exists, else defaults */
+        /* NOTE: the default values are hard-coded in the API documentation as well */
         return (
         /* <xs:attribute name="startTime" type="xs:double"/> */
-                    fmi1_xml_set_attr_double(context, fmi1_xml_elmID_DefaultExperiment, fmi_attr_id_startTime, 0, &md->defaultExperimentStartTime, 0) ||
+                    fmi1_xml_set_attr_double(context, fmi1_xml_elmID_DefaultExperiment, fmi_attr_id_startTime, 0, &md->defaultExperiment.startTime, 0) ||
         /* <xs:attribute name="stopTime" type="xs:double"/>  */
-                    fmi1_xml_set_attr_double(context, fmi1_xml_elmID_DefaultExperiment, fmi_attr_id_stopTime, 0, &md->defaultExperimentStopTime, 1) ||
+                    fmi1_xml_set_attr_double(context, fmi1_xml_elmID_DefaultExperiment, fmi_attr_id_stopTime, 0, &md->defaultExperiment.stopTime, 1) ||
         /* <xs:attribute name="tolerance" type="xs:double">  */
-                    fmi1_xml_set_attr_double(context, fmi1_xml_elmID_DefaultExperiment, fmi_attr_id_tolerance, 0, &md->defaultExperimentTolerance, FMI1_DEFAULT_EXPERIMENT_TOLERANCE)
+                    fmi1_xml_set_attr_double(context, fmi1_xml_elmID_DefaultExperiment, fmi_attr_id_tolerance, 0, &md->defaultExperiment.tolerance, FMI1_DEFAULT_EXPERIMENT_TOLERANCE)
                     );
     }
     else {
@@ -364,38 +393,38 @@ int fmi1_xml_handle_DefaultExperiment(fmi1_xml_parser_context_t *context, const 
 }
 
 jm_vector(jm_voidp)* fmi1_xml_get_variables_original_order(fmi1_xml_model_description_t* md) {
-	return md->variablesOrigOrder;
+    return md->variablesOrigOrder;
 }
 
 jm_vector(jm_named_ptr)* fmi1_xml_get_variables_alphabetical_order(fmi1_xml_model_description_t* md){
-	return &md->variablesByName;
+    return &md->variablesByName;
 }
 
 jm_vector(jm_voidp)* fmi1_xml_get_variables_vr_order(fmi1_xml_model_description_t* md) {
-	return md->variablesByVR;
+    return md->variablesByVR;
 }
 
 
 fmi1_xml_variable_t* fmi1_xml_get_variable_by_name(fmi1_xml_model_description_t* md, const char* name) {
-	jm_named_ptr key, *found;
+    jm_named_ptr key, *found;
     key.name = name;
     found = jm_vector_bsearch(jm_named_ptr)(&md->variablesByName, &key, jm_compare_named);
-	if(!found) return 0;
-	return found->ptr;
+    if(!found) return 0;
+    return found->ptr;
 }
 
 
 fmi1_xml_variable_t* fmi1_xml_get_variable_by_vr(fmi1_xml_model_description_t* md, fmi1_base_type_enu_t baseType, fmi1_value_reference_t vr) {
     fmi1_xml_variable_t key;
     fmi1_xml_variable_t *pkey = &key;
-	fmi1_xml_variable_type_base_t keyType;
-	fmi1_xml_variable_t *v = 0;
+    fmi1_xml_variable_type_base_t keyType;
+    fmi1_xml_variable_t *v = 0;
     void ** found;
-	if(!md->variablesByVR) return 0;
-	keyType.structKind = fmi1_xml_type_struct_enu_base;
-	keyType.baseType = baseType;
-	key.typeBase = &keyType;
-	key.vr = vr;
+    if(!md->variablesByVR) return 0;
+    keyType.structKind = fmi1_xml_type_struct_enu_base;
+    keyType.baseType = baseType;
+    key.type = &keyType;
+    key.vr = vr;
     key.aliasKind = fmi1_variable_is_not_alias;
 
     found = jm_vector_bsearch(jm_voidp)(md->variablesByVR,(void**)&pkey, fmi1_xml_compare_vr);
@@ -406,5 +435,5 @@ fmi1_xml_variable_t* fmi1_xml_get_variable_by_vr(fmi1_xml_model_description_t* m
 
 
 jm_vector(jm_voidp)* fmi1_xml_get_input_variable_list(fmi1_xml_model_description_t* md) {
-	return md->inputVariables;
+    return md->inputVariables;
 }

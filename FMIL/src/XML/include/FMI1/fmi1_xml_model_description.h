@@ -35,7 +35,7 @@ extern "C" {
 /**
 \addtogroup fmi_xml
   @{
-	\addtogroup fmi1_xml
+    \addtogroup fmi1_xml
   @}
 */
 /**
@@ -89,12 +89,12 @@ typedef struct fmi1_xml_unit_definitions_t fmi1_xml_unit_definitions_t;
 /**@{ */
 typedef struct fmi1_xml_capabilities_t fmi1_xml_capabilities_t;
 /**@} */
-/**	\addtogroup fmi1_xml_gen General information retrieval*/
-/**	\addtogroup fmi1_xml_init  Constuction, destruction and error checking */
+/**    \addtogroup fmi1_xml_gen General information retrieval*/
+/**    \addtogroup fmi1_xml_init  Constuction, destruction and error checking */
 
 /** @} */
 
-/**	\addtogroup fmi1_xml_init
+/**    \addtogroup fmi1_xml_init
 @{ */
 /**
    \brief Allocate the ModelDescription structure and initialize as empty model.
@@ -119,7 +119,7 @@ fmi1_xml_model_description_t* fmi1_xml_allocate_model_description( jm_callbacks*
     @param fileName A name (full path) of the XML file name with model definition.
     @param configuration Specifies how to parse the model description, 0 is
            default. Other possible configuration is FMI_XML_NAME_CHECK.
-   @return 0 if parsing was successfull. Non-zero value indicates an error.
+   @return 0 if parsing was successful. Non-zero value indicates an error.
 */
 int fmi1_xml_parse_model_description( fmi1_xml_model_description_t* md,
                                       const char* fileName,
@@ -187,16 +187,16 @@ unsigned int fmi1_xml_get_number_of_continuous_states(fmi1_xml_model_description
 
 unsigned int fmi1_xml_get_number_of_event_indicators(fmi1_xml_model_description_t* md);
 
+int fmi1_xml_get_default_experiment_has_start(fmi1_xml_model_description_t* md);
+int fmi1_xml_get_default_experiment_has_stop(fmi1_xml_model_description_t* md);
+int fmi1_xml_get_default_experiment_has_tolerance(fmi1_xml_model_description_t* md);
+
 double fmi1_xml_get_default_experiment_start(fmi1_xml_model_description_t* md);
-
-void fmi1_xml_set_default_experiment_start(fmi1_xml_model_description_t* md, double);
-
 double fmi1_xml_get_default_experiment_stop(fmi1_xml_model_description_t* md);
-
-void fmi1_xml_set_default_experiment_stop(fmi1_xml_model_description_t* md, double);
-
 double fmi1_xml_get_default_experiment_tolerance(fmi1_xml_model_description_t* md);
 
+void fmi1_xml_set_default_experiment_start(fmi1_xml_model_description_t* md, double);
+void fmi1_xml_set_default_experiment_stop(fmi1_xml_model_description_t* md, double);
 void fmi1_xml_set_default_experiment_tolerance(fmi1_xml_model_description_t* md, double);
 
 fmi1_fmu_kind_enu_t fmi1_xml_get_fmu_kind(fmi1_xml_model_description_t* md);
@@ -210,19 +210,19 @@ jm_vector(jm_named_ptr)* fmi1_xml_get_variables_alphabetical_order(fmi1_xml_mode
 jm_vector(jm_voidp)* fmi1_xml_get_variables_vr_order(fmi1_xml_model_description_t* md);
 
 /**
-	\brief Get variable by variable name.
-	\param md - the model description
-	\param name - variable name
-	\return variable pointer.
+    \brief Get variable by variable name.
+    @param md - the model description
+    @param name - variable name
+    @return variable pointer.
 */
 fmi1_xml_variable_t* fmi1_xml_get_variable_by_name(fmi1_xml_model_description_t* md, const char* name);
 
 /**
-	\brief Get variable by value reference.
-	\param md - the model description
-	\param baseType - basic data type
-	\param vr - value reference
-	\return variable pointer.
+    \brief Get variable by value reference.
+    @param md - the model description
+    @param baseType - basic data type
+    @param vr - value reference
+    @return variable pointer.
 */
 fmi1_xml_variable_t* fmi1_xml_get_variable_by_vr(fmi1_xml_model_description_t* md, fmi1_base_type_enu_t baseType, fmi1_value_reference_t vr);
 

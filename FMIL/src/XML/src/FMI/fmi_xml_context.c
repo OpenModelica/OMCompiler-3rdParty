@@ -17,37 +17,37 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include "JM/jm_callbacks.h"
 #include "fmi_xml_context_impl.h"
 
 static char* MODULE="FMIXML";
 
-fmi_xml_context_t* fmi_xml_allocate_context( jm_callbacks* callbacks) {
-	jm_callbacks* cb;
-	fmi_xml_context_t* c;
+fmi_xml_context_t* fmi_xml_allocate_context(jm_callbacks* callbacks) {
+    jm_callbacks* cb;
+    fmi_xml_context_t* c;
 
-	jm_log_debug(callbacks, MODULE, "Allocating context for XML parsing module");
-
-    if(callbacks) {
+    if (callbacks) {
         cb = callbacks;
-    }
-    else {
+    } else {
         cb = jm_get_default_callbacks();
     }
+    jm_log_debug(callbacks, MODULE, "Allocating context for XML parsing module");
+
     c = cb->malloc(sizeof(fmi_xml_context_t));
-    if(!c) {
-		jm_log_fatal(callbacks, MODULE, "Could not allocate memory");
-		return 0;
-	}
-	c->callbacks = callbacks;
-	c->parser = 0;
-	c->fmi_version = fmi_version_unknown_enu;
+    if (!c) {
+        jm_log_fatal(callbacks, MODULE, "Could not allocate memory");
+        return 0;
+    }
+    c->callbacks = cb;
+    c->parser = 0;
+    c->fmi_version = fmi_version_unknown_enu;
     c->configuration = 0;
-	jm_log_debug(callbacks, MODULE, "Returning allocated context");
+    jm_log_debug(c->callbacks, MODULE, "Returning allocated context");
     return c;
 }
 
 void fmi_xml_free_context(fmi_xml_context_t *context) {
-	jm_log_debug(context->callbacks, MODULE, "Releasing XML parsing module memory");
+    jm_log_debug(context->callbacks, MODULE, "Releasing XML parsing module memory");
     if(!context) return;
     if(context->parser) {
         XML_ParserFree(context->parser);
@@ -60,54 +60,61 @@ void fmi_xml_set_configuration(fmi_xml_context_t *context, int configuration) {
     context->configuration = configuration;
 }
 
+void fmi_xml_fatal(fmi_xml_context_t *context, const char* fmt, ...) jm_printf_format(2);
 void fmi_xml_fatal(fmi_xml_context_t *context, const char* fmt, ...) {
     va_list args;
 
     va_start (args, fmt);
 
-	jm_log_fatal_v(context->callbacks, MODULE, fmt, args);
+    jm_log_fatal_v(context->callbacks, MODULE, fmt, args);
 
     va_end (args);
 
-	XML_StopParser(context->parser,0);
+    XML_StopParser(context->parser,0);
 }
 
 void XMLCALL fmi_xml_parse_element_start(void *c, const char *elm, const char **attr) {
-	fmi_xml_context_t *context = (fmi_xml_context_t*)c;
-	const char* fmiVersion = 0;
-	int i = 0;
+    fmi_xml_context_t *context = (fmi_xml_context_t*)c;
+    const char* fmiVersion = 0;
+    int i = 0;
 
-	if(strcmp(elm, "fmiModelDescription") != 0) {
-		fmi_xml_fatal(context, "First element in XML must be fmiModelDescription");
-		return;
-	}
-	while(attr[i]) {
-		if(strcmp(attr[i], "fmiVersion") == 0) {
-			fmiVersion = attr[i+1];
-			break;
-		}
-		i+=2;
-	}
-	if(!fmiVersion) {
-		fmi_xml_fatal(context, "Could not find fmiVersion attribute in the XML. Cannot proceed.");
-		return;
-	}
-	if( strcmp(fmiVersion, "1.0") == 0 ) {
-		jm_log_verbose(context->callbacks, MODULE, "XML specifies FMI 1.0");
-		context->fmi_version = fmi_version_1_enu;
-		XML_StopParser(context->parser,0);
-		return;
-	}
-	else if( strcmp(fmiVersion, "2.0") == 0 ) {
-		jm_log_verbose(context->callbacks, MODULE, "XML specifies FMI 2.0");
-		context->fmi_version = fmi_version_2_0_enu;
-		XML_StopParser(context->parser,0);
-		return;
-	}
-	else {
-		fmi_xml_fatal(context, "This version of FMI standard is not supported (fmiVersion=%s)", fmiVersion);
-		return;
-	}
+    if(strcmp(elm, "fmiModelDescription") != 0) {
+        fmi_xml_fatal(context, "First element in XML must be fmiModelDescription");
+        return;
+    }
+    while(attr[i]) {
+        if(strcmp(attr[i], "fmiVersion") == 0) {
+            fmiVersion = attr[i+1];
+            break;
+        }
+        i+=2;
+    }
+    if(!fmiVersion) {
+        fmi_xml_fatal(context, "Could not find fmiVersion attribute in the XML. Cannot proceed.");
+        return;
+    }
+    if( strcmp(fmiVersion, "1.0") == 0 ) {
+        jm_log_verbose(context->callbacks, MODULE, "XML specifies FMI 1.0");
+        context->fmi_version = fmi_version_1_enu;
+        XML_StopParser(context->parser,0);
+        return;
+    }
+    else if( strcmp(fmiVersion, "2.0") == 0 ) {
+        jm_log_verbose(context->callbacks, MODULE, "XML specifies FMI 2.0");
+        context->fmi_version = fmi_version_2_0_enu;
+        XML_StopParser(context->parser,0);
+        return;
+    }
+    else if( strcmp(fmiVersion, "3.0") == 0 ) {
+        jm_log_verbose(context->callbacks, MODULE, "XML specifies FMI 3.0");
+        context->fmi_version = fmi_version_3_0_enu;
+        XML_StopParser(context->parser,0);
+        return;
+    }
+    else {
+        fmi_xml_fatal(context, "This version of FMI standard is not supported (fmiVersion=%s)", fmiVersion);
+        return;
+    }
 }
 
 void XMLCALL fmi_xml_parse_element_end(void* c, const char *elm) {
@@ -121,12 +128,18 @@ fmi_version_enu_t fmi_xml_get_fmi_version(fmi_xml_context_t* context, const char
     XML_Parser parser = NULL;
     FILE* file;
 
-	jm_log_verbose(context->callbacks, MODULE, "Parsing XML to detect FMI standard version");
+    jm_log_verbose(context->callbacks, MODULE, "Parsing XML to detect FMI standard version");
 
-	memsuite.malloc_fcn = context->callbacks->malloc;
+    memsuite.malloc_fcn = context->callbacks->malloc;
     memsuite.realloc_fcn = context->callbacks->realloc;
     memsuite.free_fcn = context->callbacks->free;
-    context -> parser = parser = XML_ParserCreate_MM(0, &memsuite, 0);
+
+    /* If context already has allocated a parser, then just allocate a new
+     * parser to avoid issues with internal parser states. */
+    if (context->parser != NULL) {
+        XML_ParserFree(context->parser);
+    }
+    context->parser = parser = XML_ParserCreate_MM(0, &memsuite, 0);
 
     if(! parser) {
         fmi_xml_fatal(context, "Could not initialize XML parsing library.");
@@ -146,7 +159,7 @@ fmi_version_enu_t fmi_xml_get_fmi_version(fmi_xml_context_t* context, const char
         return fmi_version_unknown_enu;
     }
 
-	context->fmi_version = fmi_version_unknown_enu;
+    context->fmi_version = fmi_version_unknown_enu;
 
 #define XML_BLOCK_SIZE 1000
 
@@ -165,13 +178,13 @@ fmi_version_enu_t fmi_xml_get_fmi_version(fmi_xml_context_t* context, const char
              fclose(file);
              return fmi_version_unknown_enu; /* failure */
         }
-		if(context->fmi_version != fmi_version_unknown_enu) break;
+        if(context->fmi_version != fmi_version_unknown_enu) break;
     }
     fclose(file);
 
-	if(context->fmi_version == fmi_version_unknown_enu) {
+    if(context->fmi_version == fmi_version_unknown_enu) {
              fmi_xml_fatal(context, "Could not detect FMI standard version");
-	}
+    }
 
     return context->fmi_version;
 }
