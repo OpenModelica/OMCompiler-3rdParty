@@ -1,1 +1,5 @@
-include/
+# The OpenModelica build assembles a top level include/ directory out of the
+# headers scattered around src/ (see ../CMakeLists.txt). Only that generated
+# directory is ignored -- the pattern has to stay anchored, or it also matches
+# the src/*/include/ directories that hold the real headers.
+/include/
