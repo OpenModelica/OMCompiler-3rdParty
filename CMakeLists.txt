@@ -50,6 +50,12 @@ set (FMILIB_BUILD_SHARED_LIB OFF CACHE BOOL "Build the library as shared (dll/so
 # Build the bundled Expat as a subdirectory. FMIL builds it as an ExternalProject by
 # default, which leaves an imported target that the rest of the build cannot link to.
 set (FMILIB_EXPAT_AS_SUBPROJECT ON CACHE BOOL "Build the bundled Expat with add_subdirectory")
+# On Windows, Expat defaults to appending a "d" postfix to its Debug build output
+# (EXPAT_DEBUG_POSTFIX), producing libexpatd.a instead of libexpat.a. No other
+# static lib in this tree does that, and the OMSI/OMSU FMU packaging Makefile
+# (CodegenOMSIC.tpl) copies it via the glob "lib$(EXPAT_LIB).*", which only
+# matches the plain name. Force the postfix empty to keep the filename stable.
+set (EXPAT_DEBUG_POSTFIX "" CACHE STRING "Library filename postfix for Debug builds" FORCE)
 # zlib is added above, so FMIL picks up that target instead of building its own copy.
 omc_add_subdirectory(FMIL)
 
@@ -89,7 +95,12 @@ add_library(omc::3rd::fmilib ALIAS fmilib)
 add_library(omc::3rd::FMIL::minizip ALIAS minizip)
 add_library(omc::3rd::FMIL::expat ALIAS expat)
 
-
+# FMIL's own Config.cmake/fmixml.cmake forces EXPAT_ENABLE_INSTALL OFF
+# The OMSI/OMSU FMU packaging Makefile (EXPAT_LIBDIR=$(OMLIB)/omc in CodegenOMSIC.tpl)
+# needs libexpat installed next to the other omc runtime libraries though
+install(TARGETS expat ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+                      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+                      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # Boehm GC
 # We use pthreads API even on Windows
