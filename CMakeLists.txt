@@ -171,6 +171,15 @@ else()
   set(ZMQ_BUILD_STATIC ON CACHE BOOL "Whether or not to build the static object")
   set(ZMQ_BUILD_SHARED OFF CACHE BOOL "Whether or not to build the shared object")
   omc_add_subdirectory(libzmq)
+  # libzmq's own configure defines this; its CMakeLists does not. Without it
+  # yqueue_t malloc()s the chunks holding command_t, which is aligned(64): at
+  # -march=x86-64-v3 or above the compiler stores a command with 32-byte
+  # aligned vmovaps into 16-byte aligned memory and zmq_bind segfaults.
+  include(CheckFunctionExists)
+  check_function_exists(posix_memalign OMC_ZMQ_HAVE_POSIX_MEMALIGN)
+  if (OMC_ZMQ_HAVE_POSIX_MEMALIGN)
+    target_compile_definitions(libzmq-static PRIVATE HAVE_POSIX_MEMALIGN)
+  endif()
   add_library(omc::3rd::libzmq ALIAS libzmq-static)
 endif()
 
