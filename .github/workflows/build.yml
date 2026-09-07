@@ -101,12 +101,14 @@ jobs:
           submodules: recursive
 
       - name: Install dependencies
-        run: brew install gcc
+        run: brew install gcc libomp
 
       - name: Configure
+        # ColPack needs OpenMP
         run: |
           cmake -S . -B build -G "Unix Makefiles" \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build-type }}
+            -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+            -DOpenMP_ROOT=$(brew --prefix libomp)
 
       - name: Build
         run: cmake --build build -j$(sysctl -n hw.ncpu)

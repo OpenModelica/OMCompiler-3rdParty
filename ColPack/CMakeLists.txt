@@ -56,6 +56,24 @@ target_include_directories(colpack PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/src/SMPGC
 )
 
+# ColPack's SMPGC sources are OpenMP based: several headers include <omp.h>
+# unconditionally and the coloring loops are #pragma omp parallel. Upstream
+# enables OpenMP in both of its build systems -- build/cmake/CMakeLists.txt does
+# find_package(OpenMP REQUIRED) and build/automake/Makefile.am passes -fopenmp --
+# but upstream ships those under build/, not at the repository root, so they were
+# missed when this CMakeLists was written for the vendored copy. Without them the
+# pragmas were silently ignored (ColPack ran serially) and <omp.h> only resolved
+# on compilers that bundle it, which broke the macOS build where Apple clang
+# does not.
+#
+# OpenMP::OpenMP_CXX is PUBLIC: it carries both the compile flags and the runtime
+# library, so everything linking colpack gets the omp_*/GOMP_* symbols resolved.
+option(COLPACK_ENABLE_OPENMP "Build ColPack with OpenMP support." ON)
+if(COLPACK_ENABLE_OPENMP)
+  find_package(OpenMP REQUIRED)
+  target_link_libraries(colpack PUBLIC OpenMP::OpenMP_CXX)
+endif()
+
 set_target_properties(colpack PROPERTIES
   POSITION_INDEPENDENT_CODE ON
 )
