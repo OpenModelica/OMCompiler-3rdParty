@@ -24,7 +24,9 @@ if(OM_USE_SYSTEM_ZLIB)
   target_link_libraries(omc::3rd::zlib INTERFACE ZLIB::ZLIB)
 else()
   omc_add_subdirectory(zlib)
-  add_library(omc::3rd::zlib ALIAS zlib)
+  # zlib/CMakeLists.txt already creates the omc::3rd::zlib alias; creating it a
+  # second time here is fatal under vcpkg's add_library wrapper (LNK/CMake error
+  # on the duplicate ALIAS).
 endif()
 
 # antlr
@@ -308,6 +310,15 @@ if(NOT OM_OMC_ENABLE_FORTRAN)
   set(SUNDIALS_LAPACK_CASE "lower" CACHE STRING "Case of LAPACK function names" FORCE)
   set(SUNDIALS_LAPACK_UNDERSCORES "one" CACHE STRING "Underscores appended to LAPACK function names" FORCE)
 endif()
+
+# SUNDIALS' LAPACK check (SundialsLapack.cmake) links only the LAPACK::LAPACK
+# target and, on CMake >= 3.20, assumes it drags in BLAS::BLAS transitively.
+# With the vcpkg lapack-reference wrapper that is not the case inside the
+# isolated try_compile, so the check fails to resolve the BLAS symbol dcopy_
+# even though LAPACK_LIBRARIES (used for the real link) does list openblas.
+# Skip the check, like SUNDIALS_ENABLE_KLU_CHECKS below; the name-mangling is
+# pinned above and the runtime link gets the full LAPACK_LIBRARIES list.
+set(SUNDIALS_ENABLE_LAPACK_CHECKS OFF CACHE BOOL "Enable LAPACK compatibility checks" FORCE)
 
 # We use the C interfaces only, and want neither examples, benchmarks nor tests.
 set(SUNDIALS_ENABLE_FORTRAN OFF CACHE BOOL "Enable SUNDIALS Fortran interfaces" FORCE)
