@@ -66,6 +66,9 @@ set(FMILIB_EXPAT_AS_SUBPROJECT ON CACHE BOOL "Build the bundled Expat with add_s
 set(EXPAT_DEBUG_POSTFIX "" CACHE STRING "Library filename postfix for Debug builds" FORCE)
 # zlib is added above, so FMIL picks up that target instead of building its own copy.
 omc_add_subdirectory(FMIL)
+# Since FMIL does not build zlib, it does not merge it into fmilib either, and it
+# never links what it left out. Consumers see it as undefined minizip symbols.
+target_link_libraries(fmilib PUBLIC omc::3rd::zlib)
 
 # For now we deal with FMIL's nonsensical structure here. They really need to
 # fix up their structure as a whole! It is quite non-conventional.
