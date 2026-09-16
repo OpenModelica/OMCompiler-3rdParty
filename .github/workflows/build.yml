@@ -110,8 +110,10 @@ jobs:
           # already installed for gfortran; point C/CXX at its versioned
           # gcc-N/g++-N binaries too so omp.h resolves the same way it does
           # on Linux/Windows.
-          GCC_CC=$(ls "$(brew --prefix)/bin"/gcc-* | sort -V | tail -1)
-          GCC_CXX=$(ls "$(brew --prefix)/bin"/g++-* | sort -V | tail -1)
+          # [0-9]* (not just *) excludes Homebrew's gcc-ar-N/gcc-nm-N/gcc-ranlib-N
+          # binutils wrappers, which also match "gcc-*" and sort after "gcc-N".
+          GCC_CC=$(ls "$(brew --prefix)/bin"/gcc-[0-9]* | sort -V | tail -1)
+          GCC_CXX=$(ls "$(brew --prefix)/bin"/g++-[0-9]* | sort -V | tail -1)
           cmake -S . -B build -G "Unix Makefiles" \
             -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
             -DCMAKE_C_COMPILER="$GCC_CC" \
