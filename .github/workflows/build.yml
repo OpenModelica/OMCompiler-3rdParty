@@ -86,7 +86,7 @@ jobs:
         run: cmake --build build -j$(nproc)
 
   macos:
-    name: macOS (${{ matrix.compiler }}, ${{ matrix.build-type }})
+    name: macOS (${{ matrix.build-type }})
     runs-on: macos-latest
     timeout-minutes: 120
 
@@ -94,35 +94,22 @@ jobs:
       fail-fast: false
       matrix:
         build-type: [Release]
-        compiler: [clang, gcc]
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
         with:
           submodules: recursive
 
-      # gcc provides gfortran for both compilers. Apple clang supports OpenMP
-      # but does not ship the runtime or <omp.h>, which ColPack needs.
+      # gcc provides gfortran. Apple clang supports OpenMP but does not ship
+      # the runtime or <omp.h>, which ColPack needs.
       - name: Install dependencies
         run: brew install gcc libomp
 
       - name: Configure
         run: |
-          if [ "${{ matrix.compiler }}" = gcc ]; then
-            # [0-9]* excludes the gcc-ar-N/gcc-nm-N/gcc-ranlib-N wrappers.
-            cc=$(ls "$(brew --prefix)/bin"/gcc-[0-9]* | sort -V | tail -1)
-            cxx=$(ls "$(brew --prefix)/bin"/g++-[0-9]* | sort -V | tail -1)
-            openmp_root=
-          else
-            cc=clang
-            cxx=clang++
-            openmp_root=$(brew --prefix libomp)
-          fi
           cmake -S . -B build -G "Unix Makefiles" \
             -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
-            -DCMAKE_C_COMPILER="$cc" \
-            -DCMAKE_CXX_COMPILER="$cxx" \
-            ${openmp_root:+-DOpenMP_ROOT="$openmp_root"}
+            -DOpenMP_ROOT="$(brew --prefix libomp)"
 
       - name: Build
         run: cmake --build build -j$(sysctl -n hw.ncpu)
