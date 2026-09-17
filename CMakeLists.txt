@@ -24,7 +24,6 @@ if(OM_USE_SYSTEM_ZLIB)
   target_link_libraries(omc::3rd::zlib INTERFACE ZLIB::ZLIB)
 else()
   omc_add_subdirectory(zlib)
-  add_library(omc::3rd::zlib ALIAS zlib)
 endif()
 
 # antlr
@@ -311,6 +310,9 @@ if(NOT OM_OMC_ENABLE_FORTRAN)
   set(SUNDIALS_LAPACK_CASE "lower" CACHE STRING "Case of LAPACK function names" FORCE)
   set(SUNDIALS_LAPACK_UNDERSCORES "one" CACHE STRING "Underscores appended to LAPACK function names" FORCE)
 endif()
+
+# SUNDIALS' LAPACK check (SundialsLapack.cmake) isn't working on MSVC
+set(SUNDIALS_ENABLE_LAPACK_CHECKS OFF CACHE BOOL "Enable LAPACK compatibility checks" FORCE)
 
 # We use the C interfaces only, and want neither examples, benchmarks nor tests.
 set(SUNDIALS_ENABLE_FORTRAN OFF CACHE BOOL "Enable SUNDIALS Fortran interfaces" FORCE)
