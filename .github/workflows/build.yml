@@ -86,7 +86,7 @@ jobs:
         run: cmake --build build -j$(nproc)
 
   macos:
-    name: macOS (${{ matrix.build-type }})
+    name: macOS (${{ matrix.compiler }}, ${{ matrix.build-type }})
     runs-on: macos-latest
     timeout-minutes: 120
 
@@ -94,30 +94,35 @@ jobs:
       fail-fast: false
       matrix:
         build-type: [Release]
+        compiler: [clang, gcc]
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
         with:
           submodules: recursive
 
+      # gcc provides gfortran for both compilers. Apple clang supports OpenMP
+      # but does not ship the runtime or <omp.h>, which ColPack needs.
       - name: Install dependencies
-        run: brew install gcc
+        run: brew install gcc libomp
 
       - name: Configure
         run: |
-          # ColPack's SMPGC sources unconditionally #include <omp.h>, which
-          # AppleClang (the default cc/c++) does not ship. Homebrew's gcc is
-          # already installed for gfortran; point C/CXX at its versioned
-          # gcc-N/g++-N binaries too so omp.h resolves the same way it does
-          # on Linux/Windows.
-          # [0-9]* (not just *) excludes Homebrew's gcc-ar-N/gcc-nm-N/gcc-ranlib-N
-          # binutils wrappers, which also match "gcc-*" and sort after "gcc-N".
-          GCC_CC=$(ls "$(brew --prefix)/bin"/gcc-[0-9]* | sort -V | tail -1)
-          GCC_CXX=$(ls "$(brew --prefix)/bin"/g++-[0-9]* | sort -V | tail -1)
+          if [ "${{ matrix.compiler }}" = gcc ]; then
+            # [0-9]* excludes the gcc-ar-N/gcc-nm-N/gcc-ranlib-N wrappers.
+            cc=$(ls "$(brew --prefix)/bin"/gcc-[0-9]* | sort -V | tail -1)
+            cxx=$(ls "$(brew --prefix)/bin"/g++-[0-9]* | sort -V | tail -1)
+            openmp_root=
+          else
+            cc=clang
+            cxx=clang++
+            openmp_root=$(brew --prefix libomp)
+          fi
           cmake -S . -B build -G "Unix Makefiles" \
             -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
-            -DCMAKE_C_COMPILER="$GCC_CC" \
-            -DCMAKE_CXX_COMPILER="$GCC_CXX"
+            -DCMAKE_C_COMPILER="$cc" \
+            -DCMAKE_CXX_COMPILER="$cxx" \
+            ${openmp_root:+-DOpenMP_ROOT="$openmp_root"}
 
       - name: Build
         run: cmake --build build -j$(sysctl -n hw.ncpu)
