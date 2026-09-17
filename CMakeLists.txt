@@ -371,6 +371,9 @@ if(OM_OMC_ENABLE_PRIMME)
 endif() # OM_OMC_ENABLE_PRIMME
 
 if(OM_OMC_ENABLE_COLPACK)
+  # Static only, like the rest of 3rdParty. ColPack's executable and examples are
+  # off by default when it is not the top-level project.
+  set(COLPACK_BUILD_SHARED OFF CACHE BOOL "Build the shared library ColPack_shared." FORCE)
   omc_add_subdirectory(ColPack)
-  add_library(omc::3rd::colpack ALIAS colpack)
+  add_library(omc::3rd::colpack ALIAS ColPack_static)
 endif() # OM_OMC_ENABLE_COLPACK
