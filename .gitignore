@@ -28,14 +28,6 @@
 *.out
 *.app
 
-# MOO
-moo-0.1.0/build/
-moo-0.1.0/scripts/
-moo-0.1.0/.github/
-moo-0.1.0/.vscode/
-moo-0.1.0/.gitignore
-moo-0.1.0/.gitmodules
-
 # gc generated
 gc/config.guess~
 gc/config.sub~

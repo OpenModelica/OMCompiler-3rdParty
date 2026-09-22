@@ -13,3 +13,6 @@
 	url = https://github.com/OpenModelica/ColPack.git
 	branch = v1.1.0
 	shallow = true
+[submodule "moo"]
+	path = moo
+	url = https://github.com/AMIT-HSBI/MOO.git
