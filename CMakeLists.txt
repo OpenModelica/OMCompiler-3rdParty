@@ -363,6 +363,13 @@ if(OM_OMC_ENABLE_OPTIMIZATION)
   omc_add_subdirectory(moo)
   add_library(omc::3rd::moo ALIAS moo)
   add_library(omc::3rd::ipopt ALIAS ipopt)
+  # Nothing uses MUMPS' demos, and they are the only targets that need the
+  # complete MPI symbol set.
+  foreach(_mumps_demo c_example dsimple_test)
+    if(TARGET ${_mumps_demo})
+      set_target_properties(${_mumps_demo} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+    endif()
+  endforeach()
 endif() # OM_OMC_ENABLE_OPTIMIZATION
 
 if(OM_OMC_ENABLE_PRIMME)
