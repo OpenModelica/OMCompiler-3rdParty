@@ -1,4 +1,0 @@
-[submodule "Ipopt/sources"]
-	path = Ipopt/sources
-	url = https://github.com/coin-or/Ipopt.git
-	branch = releases/3.14.19

@@ -360,7 +360,7 @@ add_library(omc::3rd::sundials::sunlinsollapackdense ALIAS sundials_sunlinsollap
 
 if(OM_OMC_ENABLE_OPTIMIZATION)
   add_library(EXTERNAL_METIS_TARGET ALIAS metis)
-  omc_add_subdirectory(moo-0.1.0)
+  omc_add_subdirectory(moo)
   add_library(omc::3rd::moo ALIAS moo)
   add_library(omc::3rd::ipopt ALIAS ipopt)
 endif() # OM_OMC_ENABLE_OPTIMIZATION
