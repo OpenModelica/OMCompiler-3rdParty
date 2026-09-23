@@ -44,9 +44,6 @@ lis-1.4.12/libtool
 lis-1.4.12/src/.libs/
 lis-1.4.12/configure
 
-FMIL/build/
-FMIL/install/
-
 SuiteSparse/build/
 
 antlr/3.2/libantlr3c-3.2/.deps/
@@ -77,8 +74,6 @@ antlr/3.2/libantlr3c-3.2/stamp-h1
 /metis-5.1.0/programs/ndmetis
 
 CMinpack/install_msvc/
-FMIL/build_msvc/
-FMIL/install_msvc/
 SuiteSparse/build_msvc/
 SuiteSparse/install_msvc/
 

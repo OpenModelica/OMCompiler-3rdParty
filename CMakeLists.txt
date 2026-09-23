@@ -65,7 +65,7 @@ set(FMILIB_EXPAT_AS_SUBPROJECT ON CACHE BOOL "Build the bundled Expat with add_s
 # matches the plain name. Force the postfix empty to keep the filename stable.
 set(EXPAT_DEBUG_POSTFIX "" CACHE STRING "Library filename postfix for Debug builds" FORCE)
 # zlib is added above, so FMIL picks up that target instead of building its own copy.
-omc_add_subdirectory(FMIL)
+omc_add_subdirectory(fmi-library)
 # Since FMIL does not build zlib, it does not merge it into fmilib either, and it
 # never links what it left out. Consumers see it as undefined minizip symbols.
 target_link_libraries(fmilib PUBLIC omc::3rd::zlib)
@@ -75,33 +75,35 @@ target_link_libraries(fmilib PUBLIC omc::3rd::zlib)
 # They also need to fix their cmake usage. It is their default build system and it is used in
 # very contrived and unusual ways.
 
-# We create a top level 'include' directory that matches their include structure when FMIL is installed-to-be-used.
+# We create a top level 'include' directory (in the build tree, so that the
+# fmi-library submodule stays clean) that matches their include structure when FMIL is installed-to-be-used.
 # This is how every library should be. That way when you install the library you just change the include
 # path and every include will be resolved as it was during build time.  Ideally it should even be in  'include/FMIL/'
 # but that won't match how they install their files right now.
-file(MAKE_DIRECTORY ${FMILibrary_SOURCE_DIR}/include)
+set(FMIL_INCLUDE_DIR ${FMILibrary_BINARY_DIR}/include)
+file(MAKE_DIRECTORY ${FMIL_INCLUDE_DIR})
 # Do not ask me why the fmilib.h is in the cmake.config directory.
-file(COPY ${FMILibrary_SOURCE_DIR}/Config.cmake/fmilib.h DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+file(COPY ${FMILibrary_SOURCE_DIR}/Config.cmake/fmilib.h DESTINATION ${FMIL_INCLUDE_DIR})
 
-file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI DESTINATION ${FMILibrary_SOURCE_DIR}/include)
-file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI1 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
-file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI2 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
-file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI3 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI DESTINATION ${FMIL_INCLUDE_DIR})
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI1 DESTINATION ${FMIL_INCLUDE_DIR})
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI2 DESTINATION ${FMIL_INCLUDE_DIR})
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Import/include/FMI3 DESTINATION ${FMIL_INCLUDE_DIR})
 
-file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI DESTINATION ${FMILibrary_SOURCE_DIR}/include)
-file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI1 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
-file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI2 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
-file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI3 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
-file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/JM DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI DESTINATION ${FMIL_INCLUDE_DIR})
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI1 DESTINATION ${FMIL_INCLUDE_DIR})
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI2 DESTINATION ${FMIL_INCLUDE_DIR})
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/FMI3 DESTINATION ${FMIL_INCLUDE_DIR})
+file(COPY ${FMILibrary_SOURCE_DIR}/src/Util/include/JM DESTINATION ${FMIL_INCLUDE_DIR})
 
-file(COPY ${FMILibrary_SOURCE_DIR}/ThirdParty/FMI/default/FMI1 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
-file(COPY ${FMILibrary_SOURCE_DIR}/ThirdParty/FMI/default/FMI2 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
-file(COPY ${FMILibrary_SOURCE_DIR}/ThirdParty/FMI/default/FMI3 DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+file(COPY ${FMILibrary_SOURCE_DIR}/ThirdParty/FMI/default/FMI1 DESTINATION ${FMIL_INCLUDE_DIR})
+file(COPY ${FMILibrary_SOURCE_DIR}/ThirdParty/FMI/default/FMI2 DESTINATION ${FMIL_INCLUDE_DIR})
+file(COPY ${FMILibrary_SOURCE_DIR}/ThirdParty/FMI/default/FMI3 DESTINATION ${FMIL_INCLUDE_DIR})
 
-file(COPY ${FMILibrary_BINARY_DIR}/fmilib_config_include/fmilib_config.h DESTINATION ${FMILibrary_SOURCE_DIR}/include)
+file(COPY ${FMILibrary_BINARY_DIR}/fmilib_config_include/fmilib_config.h DESTINATION ${FMIL_INCLUDE_DIR})
 
 # We give this new directory as include dir for targets that depend on FMIL.
-target_include_directories(fmilib INTERFACE ${FMILibrary_SOURCE_DIR}/include)
+target_include_directories(fmilib INTERFACE ${FMIL_INCLUDE_DIR})
 add_library(omc::3rd::fmilib ALIAS fmilib)
 add_library(omc::3rd::FMIL::minizip ALIAS minizip)
 add_library(omc::3rd::FMIL::expat ALIAS expat)

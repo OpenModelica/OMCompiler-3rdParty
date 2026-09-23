@@ -16,3 +16,8 @@
 [submodule "moo"]
 	path = moo
 	url = https://github.com/AMIT-HSBI/MOO.git
+[submodule "fmi-library"]
+	path = fmi-library
+	url = https://github.com/OpenModelica/fmi-library.git
+	branch = om/3.0.4
+	shallow = true
