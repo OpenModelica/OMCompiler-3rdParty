@@ -392,6 +392,14 @@ if(OM_OMC_ENABLE_COLPACK)
   # examples and tests.
   set(COLPACK_BUILD_SHARED OFF CACHE BOOL "Build the shared library ColPack_shared." FORCE)
   set(COLPACK_ENABLE_TESTS OFF CACHE BOOL "Build the ColPack executable and the Basic examples and run them as tests." FORCE)
+  # OpenMP only parallelises SMPGC, which OpenModelica does not use.
+  if(NOT DEFINED COLPACK_ENABLE_OPENMP)
+    if(MSVC AND NOT DEFINED OpenMP_RUNTIME_MSVC)
+      set(OpenMP_RUNTIME_MSVC llvm)
+    endif()
+    find_package(OpenMP COMPONENTS CXX)
+    set(COLPACK_ENABLE_OPENMP ${OpenMP_CXX_FOUND} CACHE BOOL "Enable OpenMP.")
+  endif()
   omc_add_subdirectory(ColPack-src)
   add_library(omc::3rd::colpack ALIAS ColPack_static)
 endif() # OM_OMC_ENABLE_COLPACK
