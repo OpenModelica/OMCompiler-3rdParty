@@ -363,13 +363,21 @@ if(OM_OMC_ENABLE_OPTIMIZATION)
   omc_add_subdirectory(moo)
   add_library(omc::3rd::moo ALIAS moo)
   add_library(omc::3rd::ipopt ALIAS ipopt)
-  # Nothing uses MUMPS' demos, and they are the only targets that need the
-  # complete MPI symbol set.
+  # Nothing uses MUMPS' demos.
   foreach(_mumps_demo c_example dsimple_test)
     if(TARGET ${_mumps_demo})
       set_target_properties(${_mumps_demo} PROPERTIES EXCLUDE_FROM_ALL TRUE)
     endif()
   endforeach()
+  # With a distribution's -flto (el10: GCC 14, binutils 2.41), everything
+  # linking the MUMPS archives loses Fortran symbols defined in them.
+  if(NOT MSVC)
+    foreach(_mumps_lib seq pord mumps_common dmumps)
+      if(TARGET ${_mumps_lib})
+        target_compile_options(${_mumps_lib} PRIVATE -fno-lto)
+      endif()
+    endforeach()
+  endif()
 endif() # OM_OMC_ENABLE_OPTIMIZATION
 
 if(OM_OMC_ENABLE_PRIMME)
