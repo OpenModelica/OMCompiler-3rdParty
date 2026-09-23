@@ -9,7 +9,7 @@
 	branch = v7.8.0
 	shallow = true
 [submodule "ColPack"]
-	path = ColPack
+	path = ColPack-src
 	url = https://github.com/OpenModelica/ColPack.git
 	branch = v1.1.0
 	shallow = true
