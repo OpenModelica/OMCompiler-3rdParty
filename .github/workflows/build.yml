@@ -33,7 +33,54 @@ jobs:
             build-essential \
             gfortran \
             libblas-dev \
-            liblapack-dev
+            liblapack-dev \
+            libexpat1-dev \
+            libminizip-dev \
+            zlib1g-dev
+
+      - name: Configure
+        run: |
+          cmake -S . -B build -G "Unix Makefiles" \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build-type }}
+
+      - name: Build
+        run: cmake --build build -j$(nproc)
+
+  enterprise-linux:
+    name: Enterprise Linux 10 (${{ matrix.build-type }})
+    runs-on: ubuntu-latest
+    container: almalinux:10
+    timeout-minutes: 90
+
+    strategy:
+      fail-fast: false
+      matrix:
+        build-type: [Release]
+
+    steps:
+      # git before checkout, or actions/checkout falls back to a tarball
+      # without submodules. minizip is minizip-ng-compat from EPEL, and
+      # blas-devel/lapack-devel are in CRB.
+      - name: Install dependencies
+        run: |
+          dnf install -y dnf-plugins-core epel-release
+          dnf config-manager --set-enabled crb
+          dnf install -y \
+            git \
+            gcc \
+            gcc-c++ \
+            gcc-gfortran \
+            make \
+            cmake \
+            blas-devel \
+            lapack-devel \
+            expat-devel \
+            minizip-ng-compat-devel \
+            zlib-ng-compat-devel
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+        with:
+          submodules: recursive
 
       - name: Configure
         run: |

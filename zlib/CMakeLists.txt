@@ -12,7 +12,6 @@ project(zlib)
 # that we can link it into our static FMUs.
 file(GLOB libzlib_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
 add_library(zlib STATIC ${libzlib_SOURCES})
-add_library(omc::3rd::zlib ALIAS zlib)
 
 
 target_include_directories(zlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
