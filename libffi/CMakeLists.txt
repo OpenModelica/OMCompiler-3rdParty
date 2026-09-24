@@ -46,6 +46,9 @@ target_include_directories(ffi PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(ffi PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 target_compile_definitions(ffi PRIVATE -DFFI_BUILDING)
+if(LIBFFI_BUILD_STATIC_LIBS)
+    target_compile_definitions(ffi PUBLIC FFI_STATIC_BUILD)
+endif()
 
 
 
