@@ -14,16 +14,30 @@ endif()
 omc_add_subdirectory(ryu)
 add_library(omc::3rd::ryu ALIAS ryu)
 
-# zlib
-option(OM_USE_SYSTEM_ZLIB "Use system zlib" OFF)
-if(OM_USE_SYSTEM_ZLIB)
-  set(ZLIB_USE_STATIC_LIBS ON)
-  find_package(ZLIB MODULE REQUIRED)
-  unset(ZLIB_USE_STATIC_LIBS)
-  add_library(omc::3rd::zlib INTERFACE)
-  target_link_libraries(omc::3rd::zlib INTERFACE ZLIB::ZLIB)
+# The bundled zlib, expat and minizip are static and end up copied into every library
+# using them, which Linux distributions forbid. Other platforms keep the bundled copies.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND NOT CMAKE_CROSSCOMPILING)
+  set(_om_use_system_libs_default ON)
 else()
-  omc_add_subdirectory(zlib)
+  set(_om_use_system_libs_default OFF)
+endif()
+
+# zlib
+# The bundled zlib is always built and installed: generated simulation code links it
+# as -lzlib (Library="zlib" annotations), and FMIL reuses its target instead of
+# building a copy of its own.
+omc_add_subdirectory(zlib)
+option(OM_USE_SYSTEM_ZLIB "Link OpenModelica's own libraries against the shared system zlib" ${_om_use_system_libs_default})
+if(OM_USE_SYSTEM_ZLIB)
+  # Not find_package(ZLIB): OMSimulator defines a ZLIB::ZLIB of its own.
+  find_path(OM_ZLIB_INCLUDE_DIR NAMES zlib.h REQUIRED)
+  find_library(OM_ZLIB_LIBRARY NAMES z REQUIRED)
+  add_library(omc_system_zlib UNKNOWN IMPORTED GLOBAL)
+  set_target_properties(omc_system_zlib PROPERTIES
+    IMPORTED_LOCATION "${OM_ZLIB_LIBRARY}"
+    INTERFACE_INCLUDE_DIRECTORIES "${OM_ZLIB_INCLUDE_DIR}")
+  add_library(omc::3rd::zlib ALIAS omc_system_zlib)
+else()
   add_library(omc::3rd::zlib ALIAS zlib)
 endif()
 
@@ -50,25 +64,45 @@ add_library(omc::3rd::cminpack ALIAS cminpack)
 # omc_add_subdirectory(cppzmq)
 
 
+# expat
+option(OM_USE_SYSTEM_EXPAT "Use the shared system expat instead of the one bundled with FMIL" ${_om_use_system_libs_default})
+if(OM_USE_SYSTEM_EXPAT)
+  find_package(EXPAT REQUIRED)
+  # Visible to every directory, so that omc::3rd::FMIL::expat can alias it.
+  set_target_properties(EXPAT::EXPAT PROPERTIES IMPORTED_GLOBAL TRUE)
+endif()
+
+# minizip
+option(OM_USE_SYSTEM_MINIZIP "Use the shared system minizip instead of the one bundled with FMIL" ${_om_use_system_libs_default})
+if(OM_USE_SYSTEM_MINIZIP)
+  # FMIL creates its own imported target for it, but only visible inside FMIL.
+  find_path(OM_MINIZIP_INCLUDE_DIR NAMES unzip.h PATH_SUFFIXES minizip REQUIRED)
+  find_library(OM_MINIZIP_LIBRARY NAMES minizip REQUIRED)
+  add_library(omc_system_minizip UNKNOWN IMPORTED GLOBAL)
+  set_target_properties(omc_system_minizip PROPERTIES
+    IMPORTED_LOCATION "${OM_MINIZIP_LIBRARY}"
+    INTERFACE_INCLUDE_DIRECTORIES "${OM_MINIZIP_INCLUDE_DIR}")
+endif()
 
 # FMIL
 set(FMILIB_GENERATE_DOXYGEN_DOC OFF CACHE BOOL "Generate doxygen doc target")
 set(FMILIB_BUILD_TESTS OFF CACHE BOOL "Build tests")
 set(FMILIB_BUILD_SHARED_LIB OFF CACHE BOOL "Build the library as shared (dll/so/dylib).")
-# Build the bundled Expat as a subdirectory. FMIL builds it as an ExternalProject by
-# default, which leaves an imported target that the rest of the build cannot link to.
-set(FMILIB_EXPAT_AS_SUBPROJECT ON CACHE BOOL "Build the bundled Expat with add_subdirectory")
-# On Windows, Expat defaults to appending a "d" postfix to its Debug build output
-# (EXPAT_DEBUG_POSTFIX), producing libexpatd.a instead of libexpat.a. No other
-# static lib in this tree does that, and the OMSI/OMSU FMU packaging Makefile
-# (CodegenOMSIC.tpl) copies it via the glob "lib$(EXPAT_LIB).*", which only
-# matches the plain name. Force the postfix empty to keep the filename stable.
-set(EXPAT_DEBUG_POSTFIX "" CACHE STRING "Library filename postfix for Debug builds" FORCE)
+set(FMILIB_SYSTEM_EXPAT ${OM_USE_SYSTEM_EXPAT} CACHE BOOL "Use system expat library instead of the one in FMILibrary/Thirdparty.")
+set(FMILIB_SYSTEM_MINIZIP ${OM_USE_SYSTEM_MINIZIP} CACHE BOOL "Use system minizip library instead of the one in FMILibrary/Thirdparty.")
+if(NOT OM_USE_SYSTEM_EXPAT)
+  # Build the bundled Expat as a subdirectory. FMIL builds it as an ExternalProject by
+  # default, which leaves an imported target that the rest of the build cannot link to.
+  set(FMILIB_EXPAT_AS_SUBPROJECT ON CACHE BOOL "Build the bundled Expat with add_subdirectory")
+  # On Windows, Expat defaults to appending a "d" postfix to its Debug build output
+  # (EXPAT_DEBUG_POSTFIX), producing libexpatd.a instead of libexpat.a. No other
+  # static lib in this tree does that, and the OMSI/OMSU FMU packaging Makefile
+  # (CodegenOMSIC.tpl) copies it via the glob "lib$(EXPAT_LIB).*", which only
+  # matches the plain name. Force the postfix empty to keep the filename stable.
+  set(EXPAT_DEBUG_POSTFIX "" CACHE STRING "Library filename postfix for Debug builds" FORCE)
+endif()
 # zlib is added above, so FMIL picks up that target instead of building its own copy.
 omc_add_subdirectory(fmi-library)
-# Since FMIL does not build zlib, it does not merge it into fmilib either, and it
-# never links what it left out. Consumers see it as undefined minizip symbols.
-target_link_libraries(fmilib PUBLIC omc::3rd::zlib)
 
 # For now we deal with FMIL's nonsensical structure here. They really need to
 # fix up their structure as a whole! It is quite non-conventional.
@@ -105,15 +139,36 @@ file(COPY ${FMILibrary_BINARY_DIR}/fmilib_config_include/fmilib_config.h DESTINA
 # We give this new directory as include dir for targets that depend on FMIL.
 target_include_directories(fmilib INTERFACE ${FMIL_INCLUDE_DIR})
 add_library(omc::3rd::fmilib ALIAS fmilib)
-add_library(omc::3rd::FMIL::minizip ALIAS minizip)
-add_library(omc::3rd::FMIL::expat ALIAS expat)
+if(OM_USE_SYSTEM_MINIZIP)
+  # FMIL merges only its bundled sub-libraries into libfmilib.a, so with the system
+  # minizip its unz*/zip* calls stay unresolved unless fmilib's consumers link it.
+  target_link_libraries(fmilib PUBLIC omc_system_minizip)
+  add_library(omc::3rd::FMIL::minizip ALIAS omc_system_minizip)
+else()
+  # FMIL keeps the minizip headers private; om_unzip.c needs them as well.
+  target_include_directories(minizip INTERFACE ${FMILibrary_SOURCE_DIR}/ThirdParty/Zlib/zlib-1.3.1/contrib/minizip)
+  # The bundled minizip is the only part of fmilib that calls zlib. Since FMIL does
+  # not build zlib, it does not merge it into fmilib either, and it never links what
+  # it left out. Consumers see it as undefined minizip symbols. A system minizip
+  # brings its own libz.
+  target_link_libraries(fmilib PUBLIC omc::3rd::zlib)
+  add_library(omc::3rd::FMIL::minizip ALIAS minizip)
+endif()
+if(OM_USE_SYSTEM_EXPAT)
+  # With a system expat, FMIL links fmixml against a bare "expat" and does not merge
+  # it into fmilib, so nothing would bring it to the consumers of fmilib.
+  target_link_libraries(fmilib PUBLIC EXPAT::EXPAT)
+  add_library(omc::3rd::FMIL::expat ALIAS EXPAT::EXPAT)
+else()
+  add_library(omc::3rd::FMIL::expat ALIAS expat)
 
-# FMIL's own Config.cmake/fmixml.cmake forces EXPAT_ENABLE_INSTALL OFF
-# The OMSI/OMSU FMU packaging Makefile (EXPAT_LIBDIR=$(OMLIB)/omc in CodegenOMSIC.tpl)
-# needs libexpat installed next to the other omc runtime libraries though
-install(TARGETS expat ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-                      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-                      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+  # FMIL's own Config.cmake/fmixml.cmake forces EXPAT_ENABLE_INSTALL OFF
+  # The OMSI/OMSU FMU packaging Makefile (EXPAT_LIBDIR=$(OMLIB)/omc in CodegenOMSIC.tpl)
+  # needs libexpat installed next to the other omc runtime libraries though
+  install(TARGETS expat ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+                        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+                        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
 
 # Boehm GC
 # We use pthreads API even on Windows
