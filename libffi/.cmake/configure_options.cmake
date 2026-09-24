@@ -31,15 +31,21 @@ if(SIZEOF_SIZE_T STREQUAL "")
     set(size_t "unsinged int")
 endif()
 
+# clang-cl assembles the GNU-syntax sources itself; only cl needs MASM.
+if(MSVC AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    set(LIBFFI_MASM ON)
+endif()
+
 if(MSVC)
     get_filename_component(COMPILER_DIR "${CMAKE_C_COMPILER}" DIRECTORY)
-else()
+endif()
+if(NOT LIBFFI_MASM)
     enable_language(ASM)
 endif()
 
 set(FFI_EXEC_TRAMPOLINE_TABLE 0)
 if(TARGET_PLATFORM STREQUAL X86_WIN64)
-    if(MSVC)
+    if(LIBFFI_MASM)
         list(APPEND WIN_ASSEMBLY_LIST src/x86/win64_intel.S)
         enable_language(ASM_MASM)
     else()
