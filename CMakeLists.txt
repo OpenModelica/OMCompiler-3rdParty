@@ -60,10 +60,6 @@ else()
 endif()
 add_library(omc::3rd::cminpack ALIAS cminpack)
 
-# # cppzmq
-# omc_add_subdirectory(cppzmq)
-
-
 # expat
 option(OM_USE_SYSTEM_EXPAT "Use the shared system expat instead of the one bundled with FMIL" ${_om_use_system_libs_default})
 if(OM_USE_SYSTEM_EXPAT)
@@ -96,9 +92,8 @@ if(NOT OM_USE_SYSTEM_EXPAT)
   set(FMILIB_EXPAT_AS_SUBPROJECT ON CACHE BOOL "Build the bundled Expat with add_subdirectory")
   # On Windows, Expat defaults to appending a "d" postfix to its Debug build output
   # (EXPAT_DEBUG_POSTFIX), producing libexpatd.a instead of libexpat.a. No other
-  # static lib in this tree does that, and the OMSI/OMSU FMU packaging Makefile
-  # (CodegenOMSIC.tpl) copies it via the glob "lib$(EXPAT_LIB).*", which only
-  # matches the plain name. Force the postfix empty to keep the filename stable.
+  # static lib in this tree does that, and Library="omcruntime" links it as
+  # -lexpat on Windows. Force the postfix empty to keep the filename stable.
   set(EXPAT_DEBUG_POSTFIX "" CACHE STRING "Library filename postfix for Debug builds" FORCE)
 endif()
 # zlib is added above, so FMIL picks up that target instead of building its own copy.
@@ -162,9 +157,8 @@ if(OM_USE_SYSTEM_EXPAT)
 else()
   add_library(omc::3rd::FMIL::expat ALIAS expat)
 
-  # FMIL's own Config.cmake/fmixml.cmake forces EXPAT_ENABLE_INSTALL OFF
-  # The OMSI/OMSU FMU packaging Makefile (EXPAT_LIBDIR=$(OMLIB)/omc in CodegenOMSIC.tpl)
-  # needs libexpat installed next to the other omc runtime libraries though
+  # FMIL's own Config.cmake/fmixml.cmake forces EXPAT_ENABLE_INSTALL OFF, but
+  # Library="omcruntime" links -lexpat on Windows from the omc runtime libraries
   install(TARGETS expat ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
                         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
                         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -384,9 +378,9 @@ set(SUNDIALS_TEST_ENABLE_UNIT_TESTS OFF CACHE BOOL "Enable SUNDIALS unit tests" 
 set(SUNDIALS_ENABLE_ERROR_CHECKS OFF CACHE BOOL "Enable SUNDIALS error checking" FORCE)
 
 # OMC installs the SUNDIALS headers under <includedir>/sundials, which
-# SimulationRuntime/cpp, SimulationRuntime/OMSICpp and
-# SimulationRuntime/c/Makefile.common all hardcode. SUNDIALS installs everything
-# relative to CMAKE_INSTALL_INCLUDEDIR, so bump that for the subdirectory only.
+# SimulationRuntime/cpp and SimulationRuntime/c/Makefile.common both hardcode.
+# SUNDIALS installs everything relative to CMAKE_INSTALL_INCLUDEDIR, so bump that
+# for the subdirectory only.
 set(_omc_saved_install_includedir "${CMAKE_INSTALL_INCLUDEDIR}")
 set(CMAKE_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}/sundials")
 
