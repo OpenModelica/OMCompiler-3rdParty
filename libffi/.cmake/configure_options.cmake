@@ -118,11 +118,22 @@ elseif(TARGET_PLATFORM MATCHES ARM.*)
 
     list(APPEND SOURCES_LIST src/arm/ffi.c)
     set(TARGETDIR arm)
+elseif(TARGET_PLATFORM STREQUAL POWERPC)
+    # 64-bit ELF (Linux and FreeBSD powerpc64/powerpc64le) only; the sysv
+    # files from configure.host are for 32-bit powerpc.
+    list(APPEND SOURCES_LIST
+        src/powerpc/ffi.c
+        src/powerpc/ffi_linux64.c
+        src/powerpc/linux64.S
+        src/powerpc/linux64_closure.S)
+    set(TARGETDIR powerpc)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL Darwin AND TARGET_PLATFORM STREQUAL AARCH64)
     set(FFI_EXEC_TRAMPOLINE_TABLE 1)
-elseif(CMAKE_SYSTEM_NAME STREQUAL Darwin OR TARGET_PLATFORM MATCHES .*FREEBSD.*)
+elseif(CMAKE_SYSTEM_NAME MATCHES "^(Darwin|FreeBSD|OpenBSD|SunOS|Android)$")
+    # Same systems as libffi's configure.ac: memory from malloc is not
+    # executable there, so closures need the mmap based allocator.
     set(FFI_MMAP_EXEC_WRIT 1)
 endif()
 
