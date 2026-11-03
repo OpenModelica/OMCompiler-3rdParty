@@ -305,7 +305,7 @@ endif()
 # The hand-written 5.8.1 wrapper was replaced with a submodule and we delegate
 # the build to upstream by including the top-level SuiteSparse/CMakeLists.txt.
 # Only the subset required by OMC and Sundials is enabled.
-set(SUITESPARSE_ENABLE_PROJECTS "suitesparse_config;amd;colamd;btf;klu;umfpack" CACHE STRING "SuiteSparse projects to build" FORCE)
+set(SUITESPARSE_ENABLE_PROJECTS "suitesparse_config;amd;colamd;btf;klu" CACHE STRING "SuiteSparse projects to build" FORCE)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(BUILD_STATIC_LIBS ON CACHE BOOL "" FORCE)
 set(SUITESPARSE_USE_OPENMP OFF CACHE BOOL "" FORCE)
@@ -314,7 +314,6 @@ set(SUITESPARSE_USE_FORTRAN OFF CACHE BOOL "" FORCE)
 set(SUITESPARSE_DEMOS OFF CACHE BOOL "" FORCE)
 set(SUITESPARSE_USE_STRICT OFF CACHE BOOL "" FORCE)
 set(KLU_USE_CHOLMOD OFF CACHE BOOL "" FORCE)
-set(UMFPACK_USE_CHOLMOD OFF CACHE BOOL "" FORCE)
 
 omc_add_subdirectory(SuiteSparse)
 
@@ -323,7 +322,6 @@ add_library(omc::3rd::suitesparse::amd ALIAS AMD_static)
 add_library(omc::3rd::suitesparse::colamd ALIAS COLAMD_static)
 add_library(omc::3rd::suitesparse::btf ALIAS BTF_static)
 add_library(omc::3rd::suitesparse::klu ALIAS KLU_static)
-add_library(omc::3rd::suitesparse::umfpack ALIAS UMFPACK_static)
 
 
 # SUNDIALS (LLNL/sundials, submodule pinned to v7.8.0)
